@@ -396,6 +396,91 @@ MV.Faltarbete._flagga = function (entryObj, namn) {
     return false;
 };
 
+/* ================================================================== *
+ * Dialogtexter
+ *
+ * Ligger här, inte i knappscripten, så att de versionshanteras med koden.
+ * Ska ett bibliotek formulera sig annorlunda går de att skriva över i
+ * bibliotekets Shared script:
+ *
+ *     MV.Faltarbete.TEXTER.last.text = "...";
+ * ================================================================== */
+MV.Faltarbete.TEXTER = MV.Faltarbete.TEXTER || {
+    last: {
+        titel: "Varning: Redan sparad",
+        text: "Detta fältarbete är redan markerat som sparat till anläggningen.\n\n" +
+            "Vill du verkligen skriva över och spara igen? Gör så här:\n" +
+            "1. Stäng denna ruta.\n" +
+            "2. Kryssa ur rutan 'Låst för redigering' manuellt.\n" +
+            "3. Kör detta script igen."
+    },
+    validering: {
+        titel: "Avslut avbrutet",
+        text: "Kräver att 'Avslutad' är ikryssad samt antingen 'Läser i CM' " +
+            "eller 'Åter till nätägare'."
+    },
+    ingenKoppling: {
+        titel: "Koppling saknas",
+        text: "Kunde inte hitta någon kopplad anläggning. Ingenting har sparats."
+    },
+    redanAktivt: {
+        titel: "Ett fältarbete är redan aktivt",
+        text: "Det finns redan ett aktivt fältarbete kopplat till denna anläggning.\n\n" +
+            "Du måste avsluta och spara det inifrån fältarbetet innan du kan köra " +
+            "'Nytt Fältarbete' från anläggningen igen!"
+    },
+    ovantatAvslut: { titel: "Avslut misslyckades", text: "Oväntat fel: " },
+    ovantatSkapa: { titel: "Kunde inte skapa fältarbete", text: "Orsak: " }
+};
+
+
+/* ================================================================== *
+ * Knappversioner — gör, och berätta
+ *
+ * skapa() och avsluta() returnerar ett resultat och visar ingenting. Det gör
+ * dem testbara och användbara från batchkörningar. Funktionerna här nedanför
+ * lägger på dialogerna, så att knappscripten i appen blir en rad.
+ * ================================================================== */
+
+/** avsluta() + dialog. Detta är vad avslutsknappen anropar. */
+MV.Faltarbete.avslutaMedDialog = function (entryObj) {
+    var res = MV.Faltarbete.avsluta(entryObj);
+    var t = MV.Faltarbete.TEXTER;
+
+    if (res.ok) {
+        MV.util.say("Fältarbetet har uppdaterats till anläggningen och låsts! (" +
+            res.andringar + " ändring(ar))");
+    } else if (res.reason === "last") {
+        MV.ui.info(t.last.titel, t.last.text);
+    } else if (res.reason === "validering") {
+        MV.ui.info(t.validering.titel, t.validering.text);
+    } else if (res.reason === "ingen-koppling" || res.reason === "anlaggning-saknas") {
+        MV.ui.info(t.ingenKoppling.titel, t.ingenKoppling.text);
+    } else {
+        MV.ui.info(t.ovantatAvslut.titel, t.ovantatAvslut.text + res.reason);
+    }
+    return res;
+};
+
+/** skapa() + dialog. Detta är vad "Nytt Fältarbete"-actionen anropar. */
+MV.Faltarbete.skapaMedDialog = function (anlaggning, opts) {
+    var res = MV.Faltarbete.skapa(anlaggning || entry(), opts);
+    var t = MV.Faltarbete.TEXTER;
+
+    if (res.ok) {
+        MV.util.say("Fältarbete skapat och länkat!" +
+            (res.historik > 0
+                ? " " + res.historik + " tidigare order(s) kopplade."
+                : ""));
+    } else if (res.reason === "redan-aktivt") {
+        MV.ui.info(t.redanAktivt.titel, t.redanAktivt.text);
+    } else {
+        MV.ui.info(t.ovantatSkapa.titel, t.ovantatSkapa.text + res.reason);
+    }
+    return res;
+};
+
+
 /** Ser värdet ut som ett länkfält (array av entries, eller ett entry)? */
 MV.Faltarbete._arLankfalt = function (value) {
     if (MV.fmt.isEntry(value)) return true;
@@ -406,4 +491,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-21 11:58", hash: "32567fb" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-21 12:07", hash: "e77a943" });

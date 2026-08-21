@@ -46,6 +46,13 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Ändrat
 
+- **Dialogerna flyttade från knappscripten till modulen.**
+  `MV.Faltarbete.avslutaMedDialog()` och `skapaMedDialog()` gör arbetet och
+  visar resultatet, så att scripten i appen blir en rad som alla andra. Texterna
+  ligger i `MV.Faltarbete.TEXTER` och är därmed versionshanterade; de går att
+  skriva över per bibliotek. `avsluta()` och `skapa()` är oförändrade och visar
+  fortfarande ingenting — de behövs så av testerna och av batchkörningar.
+
 - **Repot heter `memento-scripts`.** Små bokstäver med bindestreck, och
   prefixet `memento-` så att framtida Memento-repon sorteras intill varandra.
 - **Modulnamnen fick projektprefix.** `mv-` är den generella grunden (core,

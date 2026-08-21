@@ -26,7 +26,7 @@ Generell grund — återanvändbar i vilket Memento-projekt som helst:
 Fältarbetesprojektet:
   fa-anteckning.js   knappflödet spara/hämta anteckning
   fa-firmware.js     Firmware -> Firmware Status
-  fa-faltarbete.js   skapa / ändringslogga / avsluta ett fältarbete
+  fa-faltarbete.js   skapa / ändringslogga / avsluta ett fältarbete, dialogtexter
   fa-import.js       importflödet: hitta befintliga, lägg upp
 
 memento/             Vad som står i respektive script inne i Memento.
@@ -148,6 +148,37 @@ modulerna per script, ersätt script-innehållet med stubben, och radera till si
 de gamla scripten enligt [memento/BORTTAGET.md](memento/BORTTAGET.md).
 
 Repot måste vara publikt för att Memento ska kunna läsa filerna.
+
+---
+
+## Rena funktioner och knappversioner
+
+Varje flöde finns i två skepnader:
+
+| Funktion | Gör | Visar |
+|---|---|---|
+| `MV.Faltarbete.avsluta()` | arbetet | inget, returnerar `{ ok, reason }` |
+| `MV.Faltarbete.avslutaMedDialog()` | anropar `avsluta()` | rätt dialog för varje `reason` |
+| `MV.Faltarbete.skapa()` | arbetet | inget |
+| `MV.Faltarbete.skapaMedDialog()` | anropar `skapa()` | dialog |
+
+Scripten i appen anropar `...MedDialog()` och blir **en rad**. De rena
+funktionerna finns kvar för batchkörningar och för testerna, som inte vill ha
+dialogfönster.
+
+Dialogtexterna ligger i `MV.Faltarbete.TEXTER` — alltså i git, inte i appen. Ska
+ett bibliotek formulera sig annorlunda går de att skriva över i bibliotekets
+`Config`-script:
+
+```js
+MV.Faltarbete.TEXTER.last.text = "...";
+```
+
+Tidigare låg de trettio raderna dialoghantering direkt i knappscriptet. Det var
+ett misstag: texterna hörde till koden och borde ha versionshanterats med den
+från början, och `fa-import.js` gjorde redan sin egen UI via `MV.ui.summary()` —
+så konventionen var inkonsekvent. Ett test kontrollerar att `skapa()` och
+`avsluta()` fortfarande inte visar något.
 
 ---
 

@@ -560,6 +560,96 @@ suite("fa-faltarbete — koordinat och tömningsskydd vid avslut");
 
 
 /* ================================================================ */
+suite("fa-faltarbete — knappversionerna med dialog");
+
+(function () {
+    var s = scenario();
+    mock.use(s.faltLib);
+
+    function senasteDialog() {
+        return mock.dialogs.length ? mock.dialogs[mock.dialogs.length - 1] : null;
+    }
+    function senasteMeddelande() {
+        return mock.messages.length ? mock.messages[mock.messages.length - 1] : null;
+    }
+
+    // --- lyckat avslut -> meddelande, ingen dialog ---
+    var anl = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Kund": "Nisse", "Logg": "" });
+    var f = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Kund": "Kajsa", "Logg": "",
+        "Avslutad": true, "Läser i CM": true, "Åter till nätägare": false,
+        "Låst för redigering": false
+    });
+    f.link("Koppling till anläggning", anl);
+    anl.link("Aktivt Fältarbete", f);
+
+    var res = MV.Faltarbete.avslutaMedDialog(f);
+    ok(res.ok, "avslutaMedDialog returnerar resultatet vidare");
+    ok((senasteMeddelande() || "").indexOf("låsts") > -1, "kvittens visas");
+    eq(mock.dialogs.length, 0, "inget dialogfönster vid lyckat avslut");
+
+    // --- låst -> dialog ---
+    MV.Faltarbete.avslutaMedDialog(f);
+    ok(senasteDialog() !== null, "låst fältarbete ger en dialog");
+    eq(senasteDialog().title, MV.Faltarbete.TEXTER.last.titel, "rätt rubrik");
+    ok(senasteDialog().text.indexOf("Låst för redigering") > -1,
+       "dialogen förklarar hur man låser upp");
+
+    // --- validering -> dialog ---
+    var ovalid = s.faltLib.seed({
+        "Logg": "", "Avslutad": false, "Läser i CM": false,
+        "Åter till nätägare": false, "Låst för redigering": false
+    });
+    MV.Faltarbete.avslutaMedDialog(ovalid);
+    eq(senasteDialog().title, MV.Faltarbete.TEXTER.validering.titel,
+       "valideringsfel ger valideringsdialogen");
+
+    // --- ingen koppling -> dialog ---
+    var utan = s.faltLib.seed({
+        "Logg": "", "Avslutad": true, "Läser i CM": true,
+        "Åter till nätägare": false, "Låst för redigering": false
+    });
+    MV.Faltarbete.avslutaMedDialog(utan);
+    eq(senasteDialog().title, MV.Faltarbete.TEXTER.ingenKoppling.titel,
+       "saknad koppling ger kopplingsdialogen");
+
+    // --- skapaMedDialog ---
+    var s2 = scenario();
+    mock.use(s2.anlLib);
+    MV.db._affix = undefined;
+    var anl2 = s2.anlLib.seed({ "Anl. adress": "Nyvägen 2", "Kund": "Olle", "Logg": "" });
+
+    var r1 = MV.Faltarbete.skapaMedDialog(anl2);
+    ok(r1.ok, "skapaMedDialog lyckas");
+    ok((senasteMeddelande() || "").indexOf("skapat") > -1, "kvittens visas");
+
+    var innan = mock.dialogs.length;
+    var r2 = MV.Faltarbete.skapaMedDialog(anl2);
+    eq(r2.reason, "redan-aktivt", "andra försöket blockeras");
+    ok(mock.dialogs.length === innan + 1, "och ger en dialog");
+    eq(senasteDialog().title, MV.Faltarbete.TEXTER.redanAktivt.titel, "rätt rubrik");
+
+    // --- texterna ska gå att skriva över per bibliotek ---
+    var original = MV.Faltarbete.TEXTER.redanAktivt.titel;
+    MV.Faltarbete.TEXTER.redanAktivt.titel = "Egen rubrik";
+    MV.Faltarbete.skapaMedDialog(anl2);
+    eq(senasteDialog().title, "Egen rubrik",
+       "TEXTER kan skrivas över i bibliotekets Config-script");
+    MV.Faltarbete.TEXTER.redanAktivt.titel = original;
+
+    // --- de rena funktionerna visar fortfarande ingenting ---
+    var s3 = scenario();
+    mock.use(s3.anlLib);
+    MV.db._affix = undefined;
+    var anl3 = s3.anlLib.seed({ "Anl. adress": "Gamla vägen 5", "Logg": "" });
+    MV.Faltarbete.skapa(anl3);
+    MV.Faltarbete.skapa(anl3);
+    eq(mock.dialogs.length, 0,
+       "AVSIKT: skapa() och avsluta() gör ingen UI — de går att köra i batch");
+})();
+
+
+/* ================================================================ */
 suite("fa-faltarbete — historik efter ett helt varv");
 
 (function () {

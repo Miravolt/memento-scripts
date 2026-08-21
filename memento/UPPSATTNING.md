@@ -42,6 +42,7 @@ inte för något script. `Version` räknar modulerna, så avvikelsen upptäcks d
 
 
 
+
 ## Fältarbete
 
 ### Moduler  
@@ -155,32 +156,7 @@ Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg
 Script:
 
 ```js
-var res = MV.Faltarbete.avsluta();
-
-if (res.ok) {
-    MV.util.say("Fältarbetet har uppdaterats till anläggningen och låsts! (" +
-        res.andringar + " ändring(ar))");
-
-} else if (res.reason === "last") {
-    MV.ui.info("Varning: Redan sparad",
-        "Detta fältarbete är redan markerat som sparat till anläggningen.\n\n" +
-        "Vill du verkligen skriva över och spara igen? Gör så här:\n" +
-        "1. Stäng denna ruta.\n" +
-        "2. Kryssa ur rutan 'Låst för redigering' manuellt.\n" +
-        "3. Kör detta script igen.");
-
-} else if (res.reason === "validering") {
-    MV.ui.info("Avslut avbrutet",
-        "Kräver att 'Avslutad' är ikryssad samt antingen 'Läser i CM' eller " +
-        "'Åter till nätägare'.");
-
-} else if (res.reason === "ingen-koppling" || res.reason === "anlaggning-saknas") {
-    MV.ui.info("Koppling saknas",
-        "Kunde inte hitta någon kopplad anläggning. Ingenting har sparats.");
-
-} else {
-    MV.ui.info("Avslut misslyckades", "Oväntat fel: " + res.reason);
-}
+MV.Faltarbete.avslutaMedDialog();
 ```
 
 ### Spara anteckning  
@@ -237,23 +213,9 @@ Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg
 Script:
 
 ```js
-var res = MV.Faltarbete.skapa(entry(), {
+MV.Faltarbete.skapaMedDialog(entry(), {
     loggText: "Nytt fältarbete skapat från anläggningen."
 });
-
-if (res.ok) {
-    MV.util.say("Fältarbete skapat och länkat!" +
-        (res.historik > 0 ? " " + res.historik + " tidigare order(s) kopplade." : ""));
-
-} else if (res.reason === "redan-aktivt") {
-    MV.ui.info("Ett fältarbete är redan aktivt",
-        "Det finns redan ett aktivt fältarbete kopplat till denna anläggning.\n\n" +
-        "Du måste avsluta och spara det inifrån fältarbetet innan du kan köra " +
-        "'Nytt Fältarbete' från anläggningen igen!");
-
-} else {
-    MV.ui.info("Kunde inte skapa fältarbete", "Orsak: " + res.reason);
-}
 ```
 
 ### Version  
