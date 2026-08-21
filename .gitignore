@@ -1,0 +1,13 @@
+# Listan över ord som aldrig får hamna i det publika repot.
+# Innehåller kundnamn — får därför inte versionshanteras här.
+.forbjudna-ord
+
+# Exporter från desktop-appen (arbetskopior, inte källkod)
+Raw/
+Build/
+
+__pycache__/
+*.pyc
+
+.DS_Store
+Thumbs.db

@@ -1,0 +1,15 @@
+# Ord som aldrig får hamna i det publika repot.
+#
+# Kopiera denna fil till .forbjudna-ord och fyll i era riktiga termer.
+# .forbjudna-ord är gitignorerad, så själva listan hamnar aldrig på GitHub.
+#
+# Ett ord per rad. Rader som börjar med # är kommentarer.
+# Matchningen är skiftlägesokänslig och görs både i filinnehåll och filnamn.
+#
+# push.cmd kontrollerar listan före varje push och vägrar pusha vid träff.
+
+# Kundnamn
+Exempelkund AB
+EXKUND
+
+# Personnamn, adresser, anläggnings-ID eller annat som inte hör hemma publikt
