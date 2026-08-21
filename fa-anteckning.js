@@ -109,4 +109,5 @@ MV.Anteckning.laggTillDatumIKommentar = function (entryObj, faltnamn) {
 };
 
 // byggstämpel — skrivs av tools/stamp.js
-MV.stamp("fa-anteckning", "2026-08-21 05:41", "b3b30fa");
+MV.build = MV.build || { moduler: [] };
+MV.build.moduler.push({ namn: "fa-anteckning", byggd: "2026-08-21 08:51", hash: "b3b30fa" });

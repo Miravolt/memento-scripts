@@ -20,10 +20,12 @@ Kopplingen läggs till **per script**, så modulerna måste bockas i för varje
 script enligt tabellerna nedan. Repot behöver bara läggas till en gång per
 bibliotek; därefter finns trädet där.
 
-**Ordningen i listan spelar roll.** `mv-core.js` måste ligga före övriga
-`mv-`/`fa-`-moduler, och `mv-format.js` före `mv-db.js`.
+**Ordningen spelar ingen roll.** Memento laddar biblioteken alfabetiskt oavsett
+i vilken ordning man bockar i dem — modulerna är byggda för att tåla det. Bocka
+bara i rätt uppsättning.
 
 ---
+
 
 
 
@@ -233,6 +235,17 @@ Script:
 MV.Import.satKoordinatStatus();
 ```
 
+
+---
+
+## Valfritt: Config som Shared script
+
+Behöver ett bibliotek avvika — annat fältnamn, framtvingat prefix eller suffix,
+en beteendeflagga — lägg `shared/Config.js` som ett **Shared script** i det
+biblioteket. Det körs för varje script där, så avvikelsen sätts en gång i
+stället för i varje script.
+
+Hoppa över detta om inget avviker, vilket är normalfallet.
 
 ---
 

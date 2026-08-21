@@ -58,6 +58,15 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Rättat
 
+- **Modulerna tålde inte Mementos laddningsordning.** Memento laddar
+  biblioteken alfabetiskt, inte i ibockad ordning, så `mv-core.js` kommer sist
+  — efter alla `fa-`-moduler som bygger på den. Två följder rättade:
+  byggstämpeln anropade `MV.stamp()` som inte fanns än, och `mv-core` raderade
+  `MV.config.faltarbete` och `MV.config.importen` genom att skriva
+  `MV.config = { ... }` rakt av. All konfiguration sätts nu additivt, och
+  stämpeln skriver direkt i `MV.build.moduler`. Testsviten laddar numera
+  modulerna alfabetiskt för att köra under appens villkor.
+
 Alla har ett test som failar om buggen återinförs. Detaljerna längre ner.
 
 - Historiken följde inte med till nya fältarbeten

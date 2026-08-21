@@ -13,30 +13,54 @@
 var MV = MV || {};
 
 /* ------------------------------------------------------------------ *
+ * LADDNINGSORDNING — läs detta innan du ändrar något här
+ *
+ * Memento laddar JavaScript-biblioteken i ALFABETISK ordning, inte i den
+ * ordning man bockar i dem. "fa-anteckning.js" körs alltså före
+ * "mv-core.js", trots att den bygger på MV.
+ *
+ * Därför får INGEN modul förutsätta att en annan redan är laddad. Praktiskt
+ * betyder det två regler:
+ *
+ *   1. Skriv aldrig `MV.nagot = { ... }` rakt av — det raderar vad en
+ *      tidigare laddad modul lagt dit. Använd `MV.nagot = MV.nagot || {}`
+ *      och `if (!MV.nagot.nyckel) MV.nagot.nyckel = ...`.
+ *
+ *   2. Anropa aldrig en funktion ur en annan modul på toppnivå. Definiera
+ *      bara — anropen sker vid körning, då allt är inläst.
+ *
+ * Byggstämpeln längst ner i varje modul följer samma regel: den skriver
+ * direkt i en array i stället för att anropa MV.stamp().
+ * ------------------------------------------------------------------ */
+
+/* ------------------------------------------------------------------ *
  * Konfiguration
  *
  * Fältnamn på ett ställe. Ska ett enskilt bibliotek avvika, skriv över
- * i bibliotekets egna Shared script (körs efter att biblioteken laddats):
+ * i bibliotekets egna script (körs efter att biblioteken laddats):
  *
  *     MV.config.fields.logg = "Historik";
  * ------------------------------------------------------------------ */
-MV.config = {
-    fields: {
-        logg: "Logg",
-        loggDatum: "Logg Datum",
-        anteckning: "Anteckning",
-        redigeringslage: "Redigeringsläge",
-        kommentar: "Kommentar",
-        firmware: "Firmware",
-        firmwareStatus: "Firmware Status",
-        firmwareUppgraderades: "Firmware uppgraderades"
-    },
-    theme: {
-        main: "#1e902b",
-        light: "#f4fbf4",
-        line: "#7dc284"
-    },
-    dateFormat: "YYYY-MM-DD",
+MV.config = MV.config || {};
+
+if (!MV.config.fields) MV.config.fields = {
+    logg: "Logg",
+    loggDatum: "Logg Datum",
+    anteckning: "Anteckning",
+    redigeringslage: "Redigeringsläge",
+    kommentar: "Kommentar",
+    firmware: "Firmware",
+    firmwareStatus: "Firmware Status",
+    firmwareUppgraderades: "Firmware uppgraderades"
+};
+
+if (!MV.config.theme) MV.config.theme = {
+    main: "#1e902b",
+    light: "#f4fbf4",
+    line: "#7dc284"
+};
+
+if (MV.config.dateFormat === undefined) MV.config.dateFormat = "YYYY-MM-DD";
 
     /* -------------------------------------------------------------- *
      * Biblioteksnamn
@@ -62,21 +86,20 @@ MV.config = {
      * Sätt libPrefix/libSuffix till en sträng för att tvinga fram ett visst
      * värde ("" = ingen). null = härled automatiskt.
      * -------------------------------------------------------------- */
-    libPrefix: null,
-    libSuffix: null,
+if (MV.config.libPrefix === undefined) MV.config.libPrefix = null;
+if (MV.config.libSuffix === undefined) MV.config.libSuffix = null;
 
-    /**
-     * Basnamnen — den gemensamma delen av varje biblioteksnamn, utan prefix
-     * och utan kundnamn. Ordningen spelar ingen roll; längsta matchning vinner,
-     * så att "Import Fältarbete" inte förväxlas med "Fältarbete".
-     */
-    libBaseNames: [
-        "Anläggningar",
-        "Fältarbete",
-        "Import Fältarbete",
-        "Nyckelregister"
-    ]
-};
+/**
+ * Basnamnen — den gemensamma delen av varje biblioteksnamn, utan prefix och
+ * utan kundnamn. Ordningen spelar ingen roll; längsta matchning vinner, så att
+ * "Import Fältarbete" inte förväxlas med "Fältarbete".
+ */
+if (!MV.config.libBaseNames) MV.config.libBaseNames = [
+    "Anläggningar",
+    "Fältarbete",
+    "Import Fältarbete",
+    "Nyckelregister"
+];
 
 /* ------------------------------------------------------------------ *
  * Byggstämplar — vilken version körs egentligen?
@@ -93,21 +116,27 @@ MV.config = {
  *       Modulen rapporterar då en äldre byggtid än de andra, och MV.about()
  *       flaggar den. Det är annars nästan omöjligt att upptäcka.
  * ------------------------------------------------------------------ */
-MV.build = { moduler: [] };
+MV.build = MV.build || { moduler: [] };
 
-/** Anropas av varje modul. Skrivs av tools/stamp.js — redigera inte manuellt. */
-MV.stamp = function (namn, byggd, hash) {
-    MV.build.moduler.push({ namn: namn, byggd: byggd, hash: hash });
-
-    // Nyaste byggtiden bland de laddade modulerna är referensen.
-    if (!MV.build.byggd || byggd > MV.build.byggd) MV.build.byggd = byggd;
+/**
+ * Nyaste byggtiden bland de laddade modulerna — referensen alla jämförs mot.
+ * Räknas ut vid anrop, inte vid inläsning, eftersom modulerna kan komma i
+ * vilken ordning som helst.
+ */
+MV.byggd = function () {
+    var senast = "";
+    for (var i = 0; i < MV.build.moduler.length; i++) {
+        if (MV.build.moduler[i].byggd > senast) senast = MV.build.moduler[i].byggd;
+    }
+    return senast;
 };
 
 /** Moduler vars byggtid avviker från den nyaste — troligen cachade. */
 MV.avvikande = function () {
+    var senast = MV.byggd();
     var out = [];
     for (var i = 0; i < MV.build.moduler.length; i++) {
-        if (MV.build.moduler[i].byggd !== MV.build.byggd) out.push(MV.build.moduler[i]);
+        if (MV.build.moduler[i].byggd !== senast) out.push(MV.build.moduler[i]);
     }
     return out;
 };
@@ -122,7 +151,7 @@ MV.about = function (opts) {
 
     var antal = MV.build.moduler.length;
     var avvikande = MV.avvikande();
-    var byggd = MV.build.byggd || "ostämplad";
+    var byggd = MV.byggd() || "ostämplad";
 
     if (opts.kort) {
         return "Bygge " + byggd + ", " + antal + " moduler" +
@@ -134,7 +163,7 @@ MV.about = function (opts) {
     for (var i = 0; i < MV.build.moduler.length; i++) {
         var m = MV.build.moduler[i];
         rader.push(m.namn + "  " + m.hash +
-            (m.byggd !== MV.build.byggd ? "  <- AVVIKER: " + m.byggd : ""));
+            (m.byggd !== byggd ? "  <- AVVIKER: " + m.byggd : ""));
     }
 
     if (avvikande.length > 0) {
@@ -145,7 +174,7 @@ MV.about = function (opts) {
     return rader.join("\n");
 };
 
-MV.util = {};
+MV.util = MV.util || {};
 
 /** Fältnamn ur config, med fallback till nyckeln själv. */
 MV.util.f = function (key) {
@@ -234,7 +263,7 @@ MV.util.say = function (text) {
 /* ------------------------------------------------------------------ *
  * Dialoger
  * ------------------------------------------------------------------ */
-MV.ui = {};
+MV.ui = MV.ui || {};
 
 /** Enkel informationsruta med en OK-knapp. Faller tillbaka på message(). */
 MV.ui.info = function (title, text) {
@@ -270,4 +299,5 @@ MV.ui.summary = function (title, lines) {
 };
 
 // byggstämpel — skrivs av tools/stamp.js
-MV.stamp("mv-core", "2026-08-21 05:41", "ccb4f84");
+MV.build = MV.build || { moduler: [] };
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-08-21 08:51", hash: "fc68a16" });

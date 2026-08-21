@@ -14,6 +14,8 @@
 var MV = MV || {};
 MV.Faltarbete = MV.Faltarbete || {};
 
+// MV.config kan saknas — mv-core.js laddas efter fa-* (alfabetisk ordning).
+MV.config = MV.config || {};
 MV.config.faltarbete = {
     libAnlaggning: "Anläggningar",
     libFaltarbete: "Fältarbete",
@@ -403,4 +405,5 @@ MV.Faltarbete._arLankfalt = function (value) {
 };
 
 // byggstämpel — skrivs av tools/stamp.js
-MV.stamp("fa-faltarbete", "2026-08-21 05:41", "b03eed8");
+MV.build = MV.build || { moduler: [] };
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-21 08:51", hash: "32567fb" });

@@ -263,4 +263,5 @@ MV.db.copyFields = function (sourceEntry, fieldNames) {
 };
 
 // byggstämpel — skrivs av tools/stamp.js
-MV.stamp("mv-db", "2026-08-21 05:41", "0c42526");
+MV.build = MV.build || { moduler: [] };
+MV.build.moduler.push({ namn: "mv-db", byggd: "2026-08-21 08:51", hash: "0c42526" });

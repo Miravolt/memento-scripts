@@ -13,9 +13,14 @@
 var mock = require("./mock");
 
 // Ett enda eval på toppnivå — samma gemensamma scope som Memento ger jsLibs.
+//
+// ORDNINGEN ÄR AVSIKTLIGT ALFABETISK. Memento laddar biblioteken alfabetiskt,
+// inte i den ordning man bockar i dem, så mv-core.js kommer SIST — efter alla
+// fa-moduler som bygger på den. Testerna körs därför under exakt de villkor
+// appen ger. Sorterar du om listan "logiskt" försvinner den täckningen.
 eval(mock.source([
-    "mv-core.js", "mv-format.js", "mv-db.js", "mv-logg.js",
-    "fa-anteckning.js", "fa-firmware.js", "fa-faltarbete.js", "fa-import.js"
+    "fa-anteckning.js", "fa-faltarbete.js", "fa-firmware.js", "fa-import.js",
+    "mv-core.js", "mv-db.js", "mv-format.js", "mv-logg.js"
 ]));
 
 /* ---------------------------------------------------------------- */
@@ -84,12 +89,17 @@ suite("mv-core — byggstämpel och version");
 
 (function () {
     eq(MV.build.moduler.length, 8, "alla åtta moduler stämplade sig vid inläsning");
-    ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(MV.build.byggd || ""),
+    ok(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(MV.byggd() || ""),
        "byggtiden har formatet YYYY-MM-DD HH:mm");
     eq(MV.avvikande().length, 0, "inga moduler avviker i ett rent bygge");
 
+    // REGRESSION: stämpeln får inte anropa en funktion ur mv-core, eftersom
+    // mv-core laddas sist. Att vi ens kommer hit bevisar att den inte gör det.
+    eq(typeof MV.stamp, "undefined",
+       "REGRESSION: ingen MV.stamp()-funktion — stämpeln skriver direkt i arrayen");
+
     var rapport = MV.about();
-    ok(rapport.indexOf(MV.build.byggd) > -1, "rapporten visar byggtiden");
+    ok(rapport.indexOf(MV.byggd()) > -1, "rapporten visar byggtiden");
     ok(rapport.indexOf("mv-core") > -1 && rapport.indexOf("fa-import") > -1,
        "rapporten listar modulerna");
     ok(rapport.indexOf("AVVIKER") === -1, "inget flaggas i ett rent bygge");
@@ -100,7 +110,6 @@ suite("mv-core — byggstämpel och version");
 
     // Simulera att Memento cachat en gammal version av EN modul
     var sparade = MV.build.moduler.slice(0);
-    var sparadByggd = MV.build.byggd;
 
     MV.build.moduler.push({ namn: "fa-gammal", byggd: "2020-01-01 00:00", hash: "old1234" });
     eq(MV.avvikande().length, 1, "en cachad modul upptäcks");
@@ -110,8 +119,16 @@ suite("mv-core — byggstämpel och version");
     ok(MV.about({ kort: true }).indexOf("1 AVVIKER") > -1, "kort form varnar också");
 
     MV.build.moduler = sparade;
-    MV.build.byggd = sparadByggd;
     eq(MV.avvikande().length, 0, "återställt");
+
+    // Konfiguration från fa-modulerna får inte ha raderats av mv-core, som
+    // laddades efter dem.
+    ok(MV.config.faltarbete !== undefined,
+       "REGRESSION: fa-faltarbetes config överlevde att mv-core laddades efter");
+    ok(MV.config.importen !== undefined,
+       "REGRESSION: fa-imports config överlevde likaså");
+    ok(MV.config.fields !== undefined && MV.config.libBaseNames !== undefined,
+       "och mv-cores egen config finns kvar");
 })();
 
 

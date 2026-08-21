@@ -30,6 +30,7 @@ Fältarbetesprojektet:
 
 memento/             Vad som står i respektive script inne i Memento.
   <Bibliotek>/       Versionshanterat så att git speglar appens innehåll.
+    shared/Config.js valfria avvikelser som gäller hela biblioteket
   UPPSATTNING.md     checklista för uppsättningen i appen
   BORTTAGET.md       Script som ska raderas i appen
 
@@ -79,24 +80,56 @@ Repot är `github.com/Miravolt/memento-scripts`.
 
 ---
 
-## Beroenden mellan modulerna
+## Laddningsordning — och varför den inte går att styra
 
-Ordningen i script-editorns bibliotekslista spelar roll. Ta bara med det ett
-script behöver, men håll ordningen:
+**Memento laddar JavaScript-biblioteken i alfabetisk ordning**, inte i den
+ordning man bockar i dem. `fa-anteckning.js` körs alltså före `mv-core.js`,
+trots att den bygger på `MV`.
+
+Det upptäcktes den hårda vägen: byggstämpeln anropade `MV.stamp()`, en funktion
+i `mv-core.js`, och första körningen gav
 
 ```
-moment.min.js
-mv-core.js          <- alltid, allt annat bygger på MV
-mv-format.js        <- före mv-db och fa-faltarbete
-mv-db.js
-mv-logg.js
-fa-anteckning.js    <- kräver mv-logg
-fa-firmware.js
-fa-faltarbete.js    <- kräver mv-format, mv-db, mv-logg
-fa-import.js        <- kräver fa-faltarbete
+TypeError: Cannot find function stamp in object [object Object].
+  (.../fa-anteckning.js#112)
 ```
 
-Varje stub under `memento/` har sin egen lista i huvudet. Följ den.
+Konsekvensen är en regel som gäller **all** kod här:
+
+> Ingen modul får förutsätta att en annan redan är laddad.
+
+Praktiskt betyder det två saker:
+
+1. **Skriv aldrig `MV.nagot = { ... }` rakt av.** Det raderar vad en tidigare
+   laddad modul lagt dit. Använd `MV.nagot = MV.nagot || {}` och
+   `if (!MV.nagot.nyckel) MV.nagot.nyckel = ...`. `mv-core.js` skulle annars
+   radera `MV.config.faltarbete`, eftersom den laddas efter `fa-faltarbete.js`.
+2. **Anropa aldrig en funktion ur en annan modul på toppnivå.** Definiera bara.
+   Anropen sker vid körning, då allt är inläst. Byggstämpeln skriver därför
+   direkt i `MV.build.moduler` i stället för att anropa en funktion.
+
+Testsviten laddar modulerna i **alfabetisk ordning** just för att köra under
+appens villkor — se kommentaren i `tools/test.js`. Sorterar man om listan
+"logiskt" försvinner den täckningen.
+
+### Vilka moduler behöver vilka
+
+Ordningen spelar alltså ingen roll, men beroendena finns:
+
+| Modul | Bygger på |
+|---|---|
+| `mv-core.js` | — |
+| `mv-format.js` | `mv-core` |
+| `mv-db.js` | `mv-core`, `mv-format` |
+| `mv-logg.js` | `mv-core` |
+| `fa-anteckning.js` | `mv-core`, `mv-logg` |
+| `fa-firmware.js` | `mv-core` |
+| `fa-faltarbete.js` | `mv-core`, `mv-format`, `mv-db`, `mv-logg` |
+| `fa-import.js` | allt ovan + `fa-faltarbete` |
+
+Bocka i det ett script behöver — varje stub under `memento/` listar sitt eget
+behov. Saknas en modul upptäcks det först vid körning, som ett
+`TypeError` på det första anropet.
 
 ---
 
@@ -111,6 +144,32 @@ modulerna per script, ersätt script-innehållet med stubben, och radera till si
 de gamla scripten enligt [memento/BORTTAGET.md](memento/BORTTAGET.md).
 
 Repot måste vara publikt för att Memento ska kunna läsa filerna.
+
+---
+
+## Shared scripts — vad de är kvar till
+
+Ett **Shared script** i Memento körs för varje script i biblioteket, efter att
+JavaScript-biblioteken lästs in men före scriptets egen kod. Det är alltså ett
+sätt att dela kod — men bara **inom ett bibliotek**.
+
+Det är precis därför `LoggWriter` fanns i två exemplar, ett per bibliotek, och
+hann glida isär. Repot löser fallet *mellan* bibliotek; Shared kunde aldrig
+göra det.
+
+Kvar har Shared en roll som repot inte kan ta: **avvikelser som gäller hela ett
+bibliotek.** Fältnamn som skiljer sig, ett framtvingat prefix eller suffix, en
+beteendeflagga. Sätts de i ett Shared script gäller de varje script i
+biblioteket, utan att upprepas.
+
+`memento/<Bibliotek>/shared/Config.js` är en färdig mall för det, med
+exempelrader bortkommenterade. **Den behövs inte i normalfallet** — biblioteks-
+och kundnamn härleds automatiskt och fältnamnen stämmer redan. Lägg in den när
+något faktiskt avviker.
+
+Vad som däremot **inte** hör i ett Shared script längre är logik. All kod som
+mer än ett script använder ska ligga i en modul i repot, annars är vi tillbaka
+i kopiorna.
 
 ---
 

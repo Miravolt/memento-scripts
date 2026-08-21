@@ -7,7 +7,12 @@
  * Varje modul avslutas med:
  *
  *     // byggstämpel — skrivs av tools/stamp.js
- *     MV.stamp("mv-core", "2026-08-20 14:32", "a1b2c3d");
+ *     MV.build = MV.build || { moduler: [] };
+ *     MV.build.moduler.push({ namn: "mv-core", byggd: "...", hash: "..." });
+ *
+ * Stämpeln skriver DIREKT i arrayen i stället för att anropa MV.stamp().
+ * Memento laddar biblioteken i alfabetisk ordning, så mv-core.js — där en
+ * sådan funktion skulle bo — är inte nödvändigtvis inläst än.
  *
  * Byggtiden är gemensam för alla moduler i samma körning. Hashen är per fil och
  * beräknas på innehållet OVANFÖR stämpeln, så att den bara ändras när koden
@@ -73,7 +78,7 @@ filer.forEach(function (fil) {
 
     if (CHECK) {
         // Stämmer hashen i filen med innehållet?
-        const m = text.match(/MV\.stamp\("([^"]+)",\s*"([^"]+)",\s*"([^"]+)"\);/);
+        const m = text.match(/namn: "([^"]+)", byggd: "([^"]+)", hash: "([^"]+)"/);
         if (!m) {
             console.error("  " + fil + ": saknar byggstämpel");
             fel++;
@@ -88,7 +93,9 @@ filer.forEach(function (fil) {
     }
 
     const ny = body + "\n\n" + MARKER + "\n" +
-        'MV.stamp("' + namn + '", "' + byggd + '", "' + h + '");\n';
+        "MV.build = MV.build || { moduler: [] };\n" +
+        'MV.build.moduler.push({ namn: "' + namn + '", byggd: "' + byggd +
+        '", hash: "' + h + '" });\n';
 
     if (ny !== text) {
         fs.writeFileSync(full, ny, "utf8");

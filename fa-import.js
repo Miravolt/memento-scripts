@@ -15,6 +15,8 @@
 var MV = MV || {};
 MV.Import = MV.Import || {};
 
+// MV.config kan saknas — mv-core.js laddas efter fa-* (alfabetisk ordning).
+MV.config = MV.config || {};
 MV.config.importen = {
     libAnlaggning: "Anläggningar",
 
@@ -330,4 +332,5 @@ MV.Import._forklara = function (reason) {
 };
 
 // byggstämpel — skrivs av tools/stamp.js
-MV.stamp("fa-import", "2026-08-21 05:41", "fe34e2f");
+MV.build = MV.build || { moduler: [] };
+MV.build.moduler.push({ namn: "fa-import", byggd: "2026-08-21 08:51", hash: "57837e5" });

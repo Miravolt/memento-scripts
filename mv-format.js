@@ -191,4 +191,5 @@ MV.fmt.diffFields = function (oldEntry, newEntry, fieldNames) {
 };
 
 // byggstämpel — skrivs av tools/stamp.js
-MV.stamp("mv-format", "2026-08-21 05:41", "ec8e92e");
+MV.build = MV.build || { moduler: [] };
+MV.build.moduler.push({ namn: "mv-format", byggd: "2026-08-21 08:51", hash: "ec8e92e" });
