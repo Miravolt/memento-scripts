@@ -1,5 +1,5 @@
 // Version
-// Bibliotek: Import Fältarbete  |  Action
+// Bibliotek: Fältarbete  |  Action
 //
 // JS-bibliotek (i denna ordning) — ALLA biblioteket använder, så att
 // rapporten säger något om samtliga och inte bara om de få som är ibockade:
@@ -8,8 +8,9 @@
 //   mv-format.js
 //   mv-db.js
 //   mv-logg.js
+//   fa-anteckning.js
+//   fa-firmware.js
 //   fa-faltarbete.js
-//   fa-import.js
 //
 // Visar vilket bygge som faktiskt körs på den här enheten. Jämför byggtiden
 // med den i git för att se om en push kommit hela vägen. Flaggas en modul som

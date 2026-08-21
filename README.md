@@ -30,6 +30,7 @@ Fältarbetesprojektet:
 
 memento/             Vad som står i respektive script inne i Memento.
   <Bibliotek>/       Versionshanterat så att git speglar appens innehåll.
+  UPPSATTNING.md     checklista för uppsättningen i appen
   BORTTAGET.md       Script som ska raderas i appen
 
 CHANGELOG.md         vad som ändrats, och varför
@@ -101,11 +102,13 @@ Varje stub under `memento/` har sin egen lista i huvudet. Följ den.
 
 ## Engångsuppsättning i Memento
 
-1. **Lägg till repot.** Script-editorn → *Add JavaScript libraries* → fliken
-   *Repositories* → `github.com/Miravolt/memento-scripts`.
-2. **Bocka i modulerna** enligt listan i varje stub.
-3. **Ersätt script-innehållet** med motsvarande fil under `memento/`.
-4. **Ta bort de gamla scripten** enligt [memento/BORTTAGET.md](memento/BORTTAGET.md).
+Följ **[memento/UPPSATTNING.md](memento/UPPSATTNING.md)** — en ordnad checklista
+med exakt vilka moduler som ska bockas i för varje script, och vad som ska stå i
+det.
+
+Kort version: lägg till repot via *Add URL* → *Add GitHub Repository*, bocka i
+modulerna per script, ersätt script-innehållet med stubben, och radera till sist
+de gamla scripten enligt [memento/BORTTAGET.md](memento/BORTTAGET.md).
 
 Repot måste vara publikt för att Memento ska kunna läsa filerna.
 

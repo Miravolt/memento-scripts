@@ -1,0 +1,11 @@
+# Radslut normaliseras till LF i git, oavsett vad arbetskopian har.
+# Memento hämtar filerna råa från GitHub, så LF är det som gäller där.
+# Utan detta varnar git för LF/CRLF vid varje add, och en Windows-checkout
+# kan få hela filer att se ändrade ut utan att en rad faktiskt skiljer sig.
+* text=auto eol=lf
+
+# Binärt, ska aldrig konverteras
+*.png binary
+*.jpg binary
+*.pdf binary
+*.mlt2 -text
