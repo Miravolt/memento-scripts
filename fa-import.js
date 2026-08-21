@@ -333,4 +333,4 @@ MV.Import._forklara = function (reason) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-import", byggd: "2026-08-21 12:07", hash: "57837e5" });
+MV.build.moduler.push({ namn: "fa-import", byggd: "2026-08-21 12:34", hash: "57837e5" });

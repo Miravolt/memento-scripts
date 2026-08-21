@@ -17,7 +17,10 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 - **`memento/KOPIERING.md`** — checklista för de åtta länkfält som binder mot
   bibliotekets ID och därför pekar på originalet efter en kopiering. Missas det
-  kan en testkörning skriva i driftdata.
+  kan en testkörning skriva i driftdata. Innehåller nu även vilka
+  **Library permission** scripten i varje bibliotek behöver, och att
+  permissions inte synkroniseras mellan enheter — de måste sättas om på varje
+  telefon och dator, annars fungerar samma bygge på en enhet men inte på nästa.
 - **`ARBETSFLODE.md`** — arbetsflödet från nätägarens lista till avslut,
   vad de sexton statusvärdena betyder, och specifikationer för det planerade.
 - **`Moduler` som Shared script.** Bibliotek ibockade på ett Shared script blir

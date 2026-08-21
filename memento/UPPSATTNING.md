@@ -5,7 +5,9 @@ Ordnad lista över vad som ska göras i appen. Gör ett bibliotek färdigt i tag
 > **Har biblioteken kopierats?** Läs [KOPIERING.md](KOPIERING.md) först.
 > Länkfält binder mot bibliotekets **ID**, inte dess namn, så en kopia pekar
 > fortfarande på originalet. Åtta fält behöver pekas om, annars kan en
-> testkörning skriva i driftdata.
+> testkörning skriva i driftdata. Där står också vilka **Library permission**
+> varje bibliotek behöver — de synkroniseras inte mellan enheter och måste
+> sättas om på varje telefon och dator.
 
 **Bocka av under vägen.** Går något sönder mitt i är det ingen katastrof:
 `appendToLog()` och `updateFirmwareStatus()` finns kvar som shims i modulerna,

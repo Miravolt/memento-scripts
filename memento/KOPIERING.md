@@ -62,6 +62,63 @@ båda riktningarna.
 
 ---
 
+## Script-permissions — måste sättas per bibliotek OCH per enhet
+
+Ett script får inte automatiskt läsa eller skriva i andra bibliotek. Rättigheten
+sätts i script-editorn under **Permissions**:
+
+- **Library permission** — vilka bibliotek scriptet får nå. Bocka i de bibliotek
+  som listas nedan.
+- **Read files / Write files / Network** — behövs **inte** av modulerna.
+  Modulerna hämtas av Memento som JavaScript-bibliotek, inte av scriptkoden, så
+  ingen `Network`-rättighet krävs för det.
+
+> **Permissions synkroniseras INTE mellan enheter.**
+> Det står i klartext i Mementos egen panel. Rättigheterna måste alltså sättas
+> om på **varje telefon** och på **varje dator** — annars fungerar scripten på
+> en enhet och kraschar tyst på nästa, med samma kod och samma bygge. Det är en
+> av de svåraste felkällorna att förstå, eftersom `Version` ser identisk ut på
+> båda enheterna.
+
+### Vilka bibliotek varje uppsättning behöver
+
+| Scripten i… | Behöver Library permission till |
+|---|---|
+| **Anläggningar** | Anläggningar *(sig självt)*, Fältarbete, Nyckelregister |
+| **Fältarbete** | Fältarbete *(sig självt)*, Anläggningar, Nyckelregister |
+| **Import Fältarbete** | alla fyra: Import Fältarbete, Anläggningar, Fältarbete, Nyckelregister |
+| **Nyckelregister** | inga — biblioteket har inga script |
+
+Alltid **samma uppsättning** (samma prefix och samma kund). Bibliotek som inget
+script rör — arkiv, kartbibliotek och liknande — ska lämnas obockade.
+
+### Varför just dessa
+
+Listan är läst ur modulkoden, inte gissad:
+
+- **Anläggningar** → `MV.Faltarbete.skapa()` skapar och länkar i *Fältarbete*,
+  och `LINK_FROM_ANLAGGNING = ["Nyckel"]` länkar in ur *Nyckelregister*.
+- **Fältarbete** → `avsluta()` skriver tillbaka till *Anläggningar* (fältvärden,
+  logg, koordinat, historiklänk), och `MV.fmt.value(e, "Nyckel")` läser fält ur
+  länkade *Nyckelregister*-entries för loggtexten.
+- **Import Fältarbete** → `hittaBefintliga()` och `laggUpp()` söker och skapar i
+  *Anläggningar*, och `laggUpp()` anropar därefter `MV.Faltarbete.skapa()`, som
+  når *Fältarbete* och *Nyckelregister*. Alltså hela kedjan.
+
+Ändras något av detta i modulerna kan behovet ändras — tabellen hör ihop med
+koden och bör uppdateras samtidigt.
+
+### Symptom när det saknas
+
+Felen ser inte ut som rättighetsfel. Räkna med:
+
+- `Hittade inte biblioteket. Sökte: '…'` från `MV.db.lib()` — biblioteket finns,
+  men scriptet får inte se det.
+- Länkningar och fältkopieringar som verkar gå igenom men inte syns efteråt.
+- Fungerar på datorn, inte i telefonen (eller omvänt) — se rutan ovan.
+
+---
+
 ## Glöm inte resten av strukturen
 
 Länkfälten är de uppenbara. Dessa kan också bära biblioteksreferenser och är
@@ -82,6 +139,7 @@ Kör igenom ett helt varv i **testbiblioteken** och kontrollera efteråt att
 
 1. `Lägg upp` i importen → skapar anläggning och fältarbete. Ligger de i
    testbiblioteken?
+   *Går det inte alls: kontrollera Library permission innan du letar vidare.*
 2. Avsluta fältarbetet → hamnar det i *test*anläggningens historik?
 3. Skapa ett nytt fältarbete → syns historiken, och pekar den på testposter?
 4. Öppna driftbiblioteken. Har antalet fältarbeten ändrats? Har någon anläggning
@@ -99,10 +157,14 @@ Samma sak gäller när en uppsättning kopieras för en ny kund. Efter kopiering
 1. Döp om biblioteken enligt konventionen — `<Basnamn> <Kund>`, se
    *Biblioteksnamn* i [README](../README.md).
 2. Peka om alla åtta länkfälten ovan till den nya uppsättningen.
-3. `Moduler`-scriptet följer med och behöver inget — modulerna hämtas från
+3. Sätt **Library permission** enligt tabellen ovan — i varje bibliotek och på
+   varje enhet.
+4. `Moduler`-scriptet följer med och behöver inget — modulerna hämtas från
    repot och är kundneutrala.
-4. Kör `Version` i varje bibliotek. Åtta moduler, ingen som avviker.
-5. Kör verifieringen ovan.
+5. Kör `Version` i varje bibliotek. Åtta moduler, ingen som avviker.
+6. Kör verifieringen ovan.
 
-Punkt 1 och 2 är oberoende: namnen styr vad *scripten* hittar, ID:na styr vad
-*länkfälten* pekar på. Båda måste göras.
+Punkt 1, 2 och 3 är oberoende av varandra: namnen styr vad *scripten hittar*,
+ID:na styr vad *länkfälten pekar på*, och permissions styr vad scripten
+*får lov* att nå. Alla tre måste göras — och punkt 3 dessutom om på varje ny
+enhet som ska användas i fält.
