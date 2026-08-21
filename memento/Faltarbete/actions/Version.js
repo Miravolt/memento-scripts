@@ -1,8 +1,9 @@
 // Version
 // Bibliotek: Fältarbete  |  Action
 //
-// JS-bibliotek (i denna ordning) — ALLA biblioteket använder, så att
-// rapporten säger något om samtliga och inte bara om de få som är ibockade:
+// JS-bibliotek — bocka i ALLA biblioteket använder, så att rapporten säger
+// något om samtliga och inte bara om de få som är ibockade.
+// Ordningen spelar ingen roll; Memento laddar dem alfabetiskt ändå:
 //   moment.min.js
 //   mv-core.js
 //   mv-format.js

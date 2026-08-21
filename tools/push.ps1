@@ -6,10 +6,12 @@
 # Gör i tur och ordning:
 #   1. kontrollerar att git finns
 #   2. skriver byggstämpeln i modulerna (tools/stamp.js)
-#   3. kör node tools/test.js — avbryter vid fel, så trasig kod inte pushas
-#   4. sekretesskontroll mot .forbjudna-ord — avbryter vid träff
-#   5. visar vad som ändrats
-#   6. commit + push
+#   3. invariantkontroll (tools/kontroll.js) — ES5, laddningsordning, döda
+#      referenser i dokumentationen
+#   4. kör node tools/test.js — avbryter vid fel, så trasig kod inte pushas
+#   5. sekretesskontroll mot .forbjudna-ord — avbryter vid träff
+#   6. visar vad som ändrats
+#   7. commit + push
 
 param([string]$Message)
 
@@ -57,7 +59,29 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
     Write-Host ""
 }
 
-# --- 3. testerna ---
+# --- 3. invariantkontroll ---
+# Testerna kontrollerar att koden gör rätt. Den här kontrollerar sådant
+# testerna inte kan se: ES6-syntax som Rhino kraschar på, moduler som skriver
+# över varandra på toppnivå, och dokumentation som pekar på filer som bytt
+# namn. Se CLAUDE.md.
+if (Get-Command node -ErrorAction SilentlyContinue) {
+    Write-Host "  Invariantkontroll..." -ForegroundColor Yellow
+    $kontrollOut = & node tools/kontroll.js 2>&1
+    $kontrollExit = $LASTEXITCODE
+
+    $kontrollOut | Where-Object { $_ -match "VARNING" } | ForEach-Object {
+        Write-Host "  $_" -ForegroundColor Yellow
+    }
+    if ($kontrollExit -ne 0) {
+        $kontrollOut | Where-Object { $_ -match "FEL" } | Select-Object -First 30 |
+            ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
+        Fail "Invariantkontrollen failade. Inget pushat. Se CLAUDE.md."
+    }
+    Write-Host "  $($kontrollOut | Select-Object -Last 1)" -ForegroundColor Green
+    Write-Host ""
+}
+
+# --- 4. testerna ---
 if (Get-Command node -ErrorAction SilentlyContinue) {
     Write-Host "  Kör tester..." -ForegroundColor Yellow
     $testOutput = & node tools/test.js 2>&1
@@ -77,7 +101,7 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
 }
 Write-Host ""
 
-# --- 4. sekretesskontroll ---
+# --- 5. sekretesskontroll ---
 # Repot är publikt. .forbjudna-ord innehåller ord som aldrig får hamna där —
 # kundnamn, personnamn, adresser. Filen är själv gitignorerad, så listan
 # läcker inte. Se .forbjudna-ord.exempel.
@@ -128,7 +152,7 @@ if (Test-Path $ordfil) {
 }
 Write-Host ""
 
-# --- 5. vad har ändrats? ---
+# --- 6. vad har ändrats? ---
 $changes = & git status --porcelain
 if (-not $changes) {
     Write-Host "  Inget har ändrats sedan senaste push." -ForegroundColor Green
@@ -141,7 +165,7 @@ Write-Host "  Ändrat:" -ForegroundColor Cyan
 $changes | ForEach-Object { Write-Host "    $_" }
 Write-Host ""
 
-# --- 6. commit + push ---
+# --- 7. commit + push ---
 if (-not $Message) {
     $Message = Read-Host "  Beskriv andringen (Enter = standardtext)"
 }

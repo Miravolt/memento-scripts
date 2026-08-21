@@ -15,6 +15,18 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **`CLAUDE.md` och `ARBETSLAGE.md`.** De uppmätta sanningarna om Memento
+  (alfabetisk laddning, desktop-cachen, länkfältens ID-bindning, permissions
+  per enhet), invarianterna som följer av dem, och var arbetet står just nu.
+  Kom till för att ingen — människa eller AI — ska behöva upptäcka samma sak
+  två gånger. Varje invariant har ett faktiskt fel bakom sig; felen står
+  namngivna, så att regeln går att ifrågasätta i stället för att bara följas.
+- **`tools/kontroll.js`.** Kontrollerar det testerna inte kan se: ES6-syntax
+  som Rhino kraschar på, moduler som skriver över varandras data på toppnivå,
+  moduler som inte laddas i testerna eller inte nämns i `UPPSATTNING.md`,
+  saknade byggstämplar och döda länkar i dokumentationen. Körs som steg 3 i
+  `push.cmd` och stoppar pushen vid fel. En regel i en textfil kan glömmas;
+  det här kan den inte.
 - **`memento/KOPIERING.md`** — checklista för de åtta länkfält som binder mot
   bibliotekets ID och därför pekar på originalet efter en kopiering. Missas det
   kan en testkörning skriva i driftdata. Innehåller nu även vilka

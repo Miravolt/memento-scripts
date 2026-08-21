@@ -5,7 +5,7 @@ Dessa finns inte längre som stubbar — de ska raderas i appen.
 | Bibliotek | Script | Varför |
 |---|---|---|
 | Fältarbete | Shared: `LoggWriter` | Ligger nu i `mv-logg.js` |
-| Fältarbete | Shared: `FirmwareSync` | Ligger nu i `mv-firmware.js` |
+| Fältarbete | Shared: `FirmwareSync` | Ligger nu i `fa-firmware.js` |
 | Fältarbete | Action: `Flyttad till knapp - - Spara ändringar och avsluta Fältarbete` | Avstängd (`enabled: false`) — flyttad till knappfältet, precis som namnet säger. Dubblett. |
 | Anläggningar | Shared: `Shared_LoggWriter` | Identisk kopia av `LoggWriter`. Ligger nu i `mv-logg.js` |
 

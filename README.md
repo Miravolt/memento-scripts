@@ -9,8 +9,11 @@ anropar en funktion. En ändring pushad hit slår igenom i **alla** bibliotek oc
 på **alla** enheter — ingen copy-paste.
 
 Ny med GitHub? Läs **[GITHUB.md](GITHUB.md)** först.
+Var arbetet står just nu: **[ARBETSLAGE.md](ARBETSLAGE.md)**.
 Hur verksamheten faktiskt fungerar: **[ARBETSFLODE.md](ARBETSFLODE.md)**.
 Vad som ändrats och varför: **[CHANGELOG.md](CHANGELOG.md)**.
+Regler och invarianter för den som — människa eller AI — ändrar i koden:
+**[CLAUDE.md](CLAUDE.md)**.
 
 ---
 
@@ -36,14 +39,18 @@ memento/             Vad som står i respektive script inne i Memento.
   KOPIERING.md       vad som måste pekas om när bibliotek kopieras
   BORTTAGET.md       Script som ska raderas i appen
 
+CLAUDE.md            regler, invarianter och Memento-sanningar som inte får
+                     glömmas. Läses först av den som kommer in i arbetet.
+ARBETSLAGE.md        var arbetet står, vad som är kvar, beslutslogg
 ARBETSFLODE.md       arbetsflödet, statusvärdenas betydelse, planerat
 CHANGELOG.md         vad som ändrats, och varför
 tools/test.js        node tools/test.js — tester mot en Memento-simulator
 tools/mock.js        simulatorn
+tools/kontroll.js    invariantkontroll: ES5, laddningsordning, döda referenser
 tools/stamp.js       skriver byggstämpeln i modulerna
 tools/mementools.py  extract / inject / diff för .mlt2-templates
                      (triggers, actions, shared, knappfält OCH JavaScript-fält)
-tools/push.ps1       stämpla, testa, sekretesskontrollera, commit + push
+tools/push.ps1       stämpla, kontrollera, testa, sekretess, commit + push
 push.cmd             dubbelklicka för att pusha
 .forbjudna-ord.exempel  mall för ord som aldrig får bli publika
 ```
