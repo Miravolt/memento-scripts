@@ -6,9 +6,12 @@ En .mlt2 är JSON där script ligger inbäddade som strängar på två ställen:
 
   triggers                              -> JSON-sträng med en lista triggers/actions/
                                            shared scripts, script i .script
-  templates[i].json_options             -> JSON-sträng; för knapp- och JS-fält
-                                           ligger script i .script (också JSON-sträng)
+  templates[i].json_options             -> JSON-sträng; för knappfält ligger
+                                           script i .script (också JSON-sträng)
                                            med koden i .script
+  templates[i].cnt[].s                  -> JSON-sträng; för JavaScript-fält
+                                           (ft_script) ligger uttrycket i .expr,
+                                           och fältets egna jsLibs i .libs
 
 Kommandon
 ---------
@@ -37,7 +40,7 @@ import os
 import re
 import sys
 
-HEADER_RE = re.compile(r"^// (?:Källa|Typ|Namn|Fält|Sökväg i template):.*\n", re.M)
+HEADER_RE = re.compile(r"^// (?:Källa|Typ|Namn|Fält|jsLibs|Sökväg i template):.*\n", re.M)
 REF_RE = re.compile(r"^//\s*@script:\s*(.+?)\s*$", re.M)
 
 
@@ -126,6 +129,31 @@ def field_script(tpl):
 SUBDIR = {"ACTION": "actions", "COMMON": "common"}
 
 
+def field_expr(tpl):
+    """(cnt-post, uttrycksobjekt, setter) för ett JavaScript-fält, annars (None, None, None).
+
+    JavaScript-fält (ft_script) lagrar sitt uttryck i cnt[].s som JSON med
+    nyckeln "expr" — inte i json_options som knappfälten. Missas det blir
+    fältens kod aldrig versionshanterad.
+    """
+    for post in tpl.get("cnt") or []:
+        raw = post.get("s")
+        if not isinstance(raw, str) or "expr" not in raw:
+            continue
+        try:
+            obj = json.loads(raw)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(obj.get("expr"), str):
+            continue
+
+        def setter(_post=post, _obj=obj):
+            _post["s"] = json.dumps(_obj, ensure_ascii=False)
+
+        return post, obj, setter
+    return None, None, None
+
+
 # --------------------------------------------------------------------------- #
 # extract
 # --------------------------------------------------------------------------- #
@@ -169,6 +197,25 @@ def cmd_extract(in_dir, scripts_dir, stripped_dir):
             data["triggers"] = json.dumps(triggers, ensure_ascii=False)
 
         for idx, tpl in enumerate(data.get("templates", [])):
+            _post, expr_obj, expr_setter = field_expr(tpl)
+            if expr_obj is not None:
+                code = expr_obj["expr"]
+                label = tpl.get("tt") or "field_%d" % idx
+                rel = target("%s/fields/%s.js" % (libslug, slug(label)))
+                write_text(
+                    os.path.join(scripts_dir, rel),
+                    "// Källa: %s\n// Typ: %s (JavaScript-fält, uttryck)\n// Fält: %s\n"
+                    "// jsLibs: %s\n"
+                    "// Sökväg i template: templates[%d].cnt[].s.expr\n\n%s"
+                    % (fname, tpl.get("type"), label,
+                       json.dumps(expr_obj.get("libs") or [], ensure_ascii=False), idx, code),
+                )
+                expr_obj["expr"] = "// @script: %s" % rel
+                expr_setter()
+                entries.append({"file": rel, "kind": tpl.get("type"), "name": label,
+                                "json_path": "templates[%d].cnt[].s.expr" % idx,
+                                "chars": len(code)})
+
             script, setter = field_script(tpl)
             if script is None:
                 continue
@@ -233,6 +280,14 @@ def cmd_inject(stripped_dir, scripts_dir, out_dir):
             data["triggers"] = json.dumps(triggers, ensure_ascii=False)
 
         for tpl in data.get("templates", []):
+            _post, expr_obj, expr_setter = field_expr(tpl)
+            if expr_obj is not None:
+                code = resolve(expr_obj["expr"], scripts_dir)
+                if code is not None:
+                    expr_obj["expr"] = code
+                    expr_setter()
+                    count += 1
+
             script, setter = field_script(tpl)
             if script is None:
                 continue
@@ -289,6 +344,12 @@ def cmd_diff(in_dir, scripts_dir):
                         trig["script"], "%s :: %s" % (fname, name))
 
         for idx, tpl in enumerate(data.get("templates", [])):
+            _post, expr_obj, _ = field_expr(tpl)
+            if expr_obj is not None:
+                label = tpl.get("tt") or "field_%d" % idx
+                compare("%s/fields/%s.js" % (libslug, slug(label)),
+                        expr_obj["expr"], "%s :: %s (JS-fält)" % (fname, label))
+
             script, _ = field_script(tpl)
             if script is None:
                 continue

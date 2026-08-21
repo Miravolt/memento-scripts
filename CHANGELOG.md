@@ -15,6 +15,14 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **`memento/KOPIERING.md`** — checklista för de åtta länkfält som binder mot
+  bibliotekets ID och därför pekar på originalet efter en kopiering. Missas det
+  kan en testkörning skriva i driftdata.
+- **`ARBETSFLODE.md`** — arbetsflödet från nätägarens lista till avslut,
+  vad de sexton statusvärdena betyder, och specifikationer för det planerade.
+- **`Moduler` som Shared script.** Bibliotek ibockade på ett Shared script blir
+  tillgängliga för alla script i biblioteket — verifierat på Android och
+  desktop. Ett ställe per bibliotek i stället för på varje script.
 - **Byggstämpel och versionsrapport.** Varje modul stämplas av
   `tools/stamp.js` med gemensam byggtid och en hash per fil. `MV.about()` visar
   vad som körs, och flaggar moduler vars byggtid avviker från de övriga — då har
@@ -58,6 +66,11 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Rättat
 
+- **`mementools` missade JavaScript-fält.** `ft_script`-fält lagrar sitt uttryck
+  i `templates[i].cnt[].s.expr`, inte i `json_options` som knappfälten. Fem fält
+  i Fältarbete låg därför ospårade. Alla var triviala alias så inget gick
+  förlorat, men verktyget påstod att det extraherade allt. `extract`, `inject`
+  och `diff` täcker nu även dem, och round-trip-verifieringen är utökad.
 - **Modulerna tålde inte Mementos laddningsordning.** Memento laddar
   biblioteken alfabetiskt, inte i ibockad ordning, så `mv-core.js` kommer sist
   — efter alla `fa-`-moduler som bygger på den. Två följder rättade:
@@ -69,7 +82,8 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 Alla har ett test som failar om buggen återinförs. Detaljerna längre ner.
 
-- Historiken följde inte med till nya fältarbeten
+- Historiken följde inte med till nya fältarbeten *(orsaken omvärderad — se
+  detaljen nedan)*
 - `Nyckel` följde inte med till nya fältarbeten
 - Ingenting av vad som ändrades nådde anläggningens logg vid avslut
 - Importerade anläggningar gav halvtomma fältarbeten
@@ -105,17 +119,26 @@ räcker det att lägga till namnet i rätt lista i `fa-faltarbete.js`.
 
 #### Historiken följde inte med till nya fältarbeten
 
-Det du beskrev: tidigare ordrar syns inte i det nya fältarbetet, så man måste
-gå till anläggningsbiblioteket.
+**Orsaken var inte den jag först skrev.** Symptomet var att tidigare ordrar inte
+syntes i ett nytt fältarbete, så man måste gå till anläggningsbiblioteket.
 
-Orsak: objektet `lib().create()` returnerar är inte ett fullt levande entry.
-`link()` på det tystnar. `Nytt Fältarbete` och `Lägg upp` länkade historiken på
-det färska objektet, alltså i tomma luften. `Spara ändringar och avsluta` hade
-redan rätt mönster med en egen kommentar om saken — *"Vi hämtar ett fullt
-skrivbart, levande entry från systemet"* — men det saknades i de två andra.
+Min diagnos var att objektet `lib().create()` returnerar inte är ett fullt
+levande entry, och att `link()` på det tystnar. Det byggde på en extrapolering:
+originalkoden hämtade om ett entry ur ett *länkfält* med `findById()` och
+kommenterade att det behövdes. Jag drog slutsatsen att samma sak gällde
+`create()`.
 
-Rättat: `MV.db.create()` hämtar alltid om entryt med `findById()` innan det
-lämnas ut. `MV.db.linkOnce()` hämtar om båda sidor och länkar aldrig dubbelt.
+**Den verkliga orsaken var troligen en annan.** `Link to entry`-fält binder mot
+bibliotekets **ID**, inte dess namn. I drift pekade `Historiska Fältarbeten` på
+ett gammalt testbibliotek. Länkningen hade alltså aldrig kunnat lyckas —
+entryna tillhörde ett annat bibliotek än fältet förväntade sig. Det förklarar
+symptomet direkt, och förklarar dessutom varför det *fungerade* vid test men
+inte i drift.
+
+Omhämtningen i `mv-db.js` behålls ändå: den är billig, den löser bevisligen
+`Nyckel`-fallet nedan, och originalkoden hade redan funnit den nödvändig på ett
+ställe. Men den ska läsas som **skydd**, inte som en bevisad rättning av just
+det här felet. Se [memento/KOPIERING.md](memento/KOPIERING.md).
 
 #### `Nyckel` följde inte med till nya fältarbeten
 

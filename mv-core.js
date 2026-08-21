@@ -1,8 +1,9 @@
 /**
  * mv-core.js — grund för alla Miravolt-moduler i Memento Database.
  *
- * Laddas som JavaScript-bibliotek via GitHub-repot. Måste ligga FÖRST i
- * bibliotekslistan i script-editorn, eftersom övriga mv-*.js bygger på MV.
+ * Laddas som JavaScript-bibliotek via GitHub-repot. Övriga moduler bygger på
+ * MV, men ordningen i bibliotekslistan går inte att styra — se
+ * LADDNINGSORDNING nedan.
  *
  * Kräver: moment.min.js
  *
@@ -62,30 +63,32 @@ if (!MV.config.theme) MV.config.theme = {
 
 if (MV.config.dateFormat === undefined) MV.config.dateFormat = "YYYY-MM-DD";
 
-    /* -------------------------------------------------------------- *
-     * Biblioteksnamn
-     *
-     * Ett biblioteksnamn består av tre delar:
-     *
-     *     [prefix] BASNAMN [suffix]
-     *      "Test "  "Fältarbete"  " Kraft AB"
-     *
-     * Prefixet skiljer test från drift. Suffixet skiljer kund från kund.
-     * Koden känner bara till basnamnen — prefix och suffix härleds vid
-     * körning ur namnet på det bibliotek scriptet körs i:
-     *
-     *   körs i "Test Fältarbete Kraft AB"  ->  "Test Anläggningar Kraft AB"
-     *   körs i "Fältarbete Kraft AB"       ->  "Anläggningar Kraft AB"
-     *   körs i "Fältarbete Elnät Syd"      ->  "Anläggningar Elnät Syd"
-     *
-     * Följden är att varje uppsättning bibliotek bara hittar sina egna. En
-     * testkörning kan inte skriva i driftdata, och en kunds bibliotek kan
-     * inte nå en annan kunds. Ingen kod behöver ändras för en ny kund — det
-     * räcker att biblioteken döps konsekvent.
-     *
-     * Sätt libPrefix/libSuffix till en sträng för att tvinga fram ett visst
-     * värde ("" = ingen). null = härled automatiskt.
-     * -------------------------------------------------------------- */
+/* -------------------------------------------------------------- *
+ * Biblioteksnamn
+ *
+ * Ett biblioteksnamn består av tre delar:
+ *
+ *     [prefix] BASNAMN [suffix]
+ *      "Test "  "Fältarbete"  " Kraft AB"
+ *
+ * Prefixet skiljer test från drift. Suffixet skiljer kund från kund.
+ * Koden känner bara till basnamnen — prefix och suffix härleds vid
+ * körning ur namnet på det bibliotek scriptet körs i:
+ *
+ *   körs i "Test Fältarbete Kraft AB"  ->  "Test Anläggningar Kraft AB"
+ *   körs i "Fältarbete Kraft AB"       ->  "Anläggningar Kraft AB"
+ *   körs i "Fältarbete Elnät Syd"      ->  "Anläggningar Elnät Syd"
+ *
+ * Följden är att varje uppsättning bibliotek bara hittar sina egna. Ingen kod
+ * behöver ändras för en ny kund — det räcker att biblioteken döps konsekvent.
+ *
+ * OBS: detta gäller SCRIPTENS biblioteksuppslag. Länkfält binder mot
+ * bibliotekets ID och följer med vid en kopiering — de måste pekas om för
+ * hand, annars kan en testkörning nå driftdata. Se memento/KOPIERING.md.
+ *
+ * Sätt libPrefix/libSuffix till en sträng för att tvinga fram ett visst
+ * värde ("" = ingen). null = härled automatiskt.
+ * -------------------------------------------------------------- */
 if (MV.config.libPrefix === undefined) MV.config.libPrefix = null;
 if (MV.config.libSuffix === undefined) MV.config.libSuffix = null;
 
@@ -300,4 +303,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-08-21 08:51", hash: "fc68a16" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-08-21 11:58", hash: "1483910" });

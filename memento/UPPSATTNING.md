@@ -2,94 +2,71 @@
 
 Ordnad lista över vad som ska göras i appen. Gör ett bibliotek färdigt i taget.
 
+> **Har biblioteken kopierats?** Läs [KOPIERING.md](KOPIERING.md) först.
+> Länkfält binder mot bibliotekets **ID**, inte dess namn, så en kopia pekar
+> fortfarande på originalet. Åtta fält behöver pekas om, annars kan en
+> testkörning skriva i driftdata.
+
 **Bocka av under vägen.** Går något sönder mitt i är det ingen katastrof:
 `appendToLog()` och `updateFirmwareStatus()` finns kvar som shims i modulerna,
 så script som ännu inte migrerats fortsätter fungera.
 
 ---
 
-## 0. En gång per bibliotek
+## 0. En gång per bibliotek — Moduler-scriptet
 
-1. Öppna **Automation** → välj ett script → panelen **JavaScript Libraries**
-   till höger → penn-ikonen.
-2. **+ Add URL** → **Add GitHub Repository** →
-   `https://github.com/Miravolt/memento-scripts`
-3. Repot dyker upp som en trädnod med alla moduler under sig.
+Modulerna behöver **inte** bockas i på varje script. Bibliotek som är ibockade
+på ett **Shared script** blir tillgängliga för alla script i biblioteket
+— verifierat på både Android och desktop.
 
-Kopplingen läggs till **per script**, så modulerna måste bockas i för varje
-script enligt tabellerna nedan. Repot behöver bara läggas till en gång per
-bibliotek; därefter finns trädet där.
+1. **Automation** → **Script** → nytt **Shared**-script, döp det `Moduler`.
+2. Panelen **JavaScript Libraries** → penn-ikonen → **+ Add URL** →
+   **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
+3. Bocka i modulerna enligt `shared/Moduler.js` för det biblioteket.
+4. Koden i scriptet kan vara tom. Spara.
 
 **Ordningen spelar ingen roll.** Memento laddar biblioteken alfabetiskt oavsett
-i vilken ordning man bockar i dem — modulerna är byggda för att tåla det. Bocka
-bara i rätt uppsättning.
+i vilken ordning man bockar i dem — modulerna är byggda för att tåla det.
+
+Modullistorna i avsnitten nedan står kvar som **dokumentation** av vad varje
+script faktiskt beror på. Du behöver inte bocka i dem script för script, men
+listan visar varför en modul inte får plockas bort ur `Moduler`.
+
+Lägger du till en ny modul i repot: bocka i den i `Moduler`, annars syns den
+inte för något script. `Version` räknar modulerna, så avvikelsen upptäcks där.
 
 ---
 
 
 
 
+
+
 ## Fältarbete
 
-### Version  
-*Action*
+### Moduler  
+*Shared script*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-firmware.js`, `fa-faltarbete.js`
+**Bocka i dessa moduler här** — det är detta scripts enda syfte:
 
-Script:
-
-```js
-MV.ui.info("Version", MV.about());
-```
-
-### Hamta anteckning for valt datum  
-*Knappfält (ft_button)*
-
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`
+`moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-firmware.js`, `fa-faltarbete.js`
 
 Script:
 
 ```js
-MV.Anteckning.hamta();
+
 ```
 
-### Lagg till datum i kommentar  
-*Knappfält (ft_button)*
+### Config  — VALFRI, hoppa över  
+*Shared script*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`
-
-Script:
-
-```js
-MV.Anteckning.laggTillDatumIKommentar();
-```
-
-### Spara andringar och avsluta Faltarbete  
-*Knappfält (ft_button)*
-
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`
-
-Script:
-
-```js
-(flera rader — se filen)
-```
-
-### Spara anteckning  
-*Knappfält (ft_button)*
-
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`
-
-Script:
-
-```js
-MV.Anteckning.spara();
-```
+Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliotek avviker — se filen för vad som går att sätta.
 
 ### Set Logg Datum  
 *Trigger: MODIFY_ENTRY*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-logg.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -100,7 +77,20 @@ MV.Logg.setDatum();
 ### Update Firmware Status (MODIFY_ENTRY)  
 *Trigger: MODIFY_ENTRY*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `fa-firmware.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.Firmware.syncStatus();
+```
+
+### Update Firmware Status (MODIFY_FIELD)  
+*Trigger: MODIFY_FIELD*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -111,7 +101,8 @@ MV.Firmware.syncStatus();
 ### Updating an entry - Before saving the entry  
 *Trigger: MODIFY_ENTRY*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -119,35 +110,11 @@ Script:
 MV.Faltarbete.loggaAndringar();
 ```
 
-### Update Firmware Status (MODIFY_FIELD)  
-*Trigger: MODIFY_FIELD*
-
-Bocka i: `moment.min.js`, `mv-core.js`, `fa-firmware.js`
-
-Script:
-
-```js
-MV.Firmware.syncStatus();
-```
-
-
-## Anläggningar
-
-### Nytt Faltarbete  
-*Action*
-
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`
-
-Script:
-
-```js
-(flera rader — se filen)
-```
-
 ### Version  
 *Action*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-faltarbete.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-firmware.js`, `fa-faltarbete.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -158,7 +125,154 @@ MV.ui.info("Version", MV.about());
 ### Hamta anteckning for valt datum  
 *Knappfält (ft_button)*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.Anteckning.hamta();
+```
+
+### Lagg till datum i kommentar  
+*Knappfält (ft_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.Anteckning.laggTillDatumIKommentar();
+```
+
+### Spara andringar och avsluta Faltarbete  
+*Knappfält (ft_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+var res = MV.Faltarbete.avsluta();
+
+if (res.ok) {
+    MV.util.say("Fältarbetet har uppdaterats till anläggningen och låsts! (" +
+        res.andringar + " ändring(ar))");
+
+} else if (res.reason === "last") {
+    MV.ui.info("Varning: Redan sparad",
+        "Detta fältarbete är redan markerat som sparat till anläggningen.\n\n" +
+        "Vill du verkligen skriva över och spara igen? Gör så här:\n" +
+        "1. Stäng denna ruta.\n" +
+        "2. Kryssa ur rutan 'Låst för redigering' manuellt.\n" +
+        "3. Kör detta script igen.");
+
+} else if (res.reason === "validering") {
+    MV.ui.info("Avslut avbrutet",
+        "Kräver att 'Avslutad' är ikryssad samt antingen 'Läser i CM' eller " +
+        "'Åter till nätägare'.");
+
+} else if (res.reason === "ingen-koppling" || res.reason === "anlaggning-saknas") {
+    MV.ui.info("Koppling saknas",
+        "Kunde inte hitta någon kopplad anläggning. Ingenting har sparats.");
+
+} else {
+    MV.ui.info("Avslut misslyckades", "Oväntat fel: " + res.reason);
+}
+```
+
+### Spara anteckning  
+*Knappfält (ft_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.Anteckning.spara();
+```
+
+
+## Anläggningar
+
+### Moduler  
+*Shared script*
+
+**Bocka i dessa moduler här** — det är detta scripts enda syfte:
+
+`moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-faltarbete.js`
+
+Script:
+
+```js
+
+```
+
+### Config  — VALFRI, hoppa över  
+*Shared script*
+
+Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliotek avviker — se filen för vad som går att sätta.
+
+### Set Logg Datum  
+*Trigger: OPEN_ENTRY_CARD*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.Logg.setDatum();
+```
+
+### Nytt Faltarbete  
+*Action*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+var res = MV.Faltarbete.skapa(entry(), {
+    loggText: "Nytt fältarbete skapat från anläggningen."
+});
+
+if (res.ok) {
+    MV.util.say("Fältarbete skapat och länkat!" +
+        (res.historik > 0 ? " " + res.historik + " tidigare order(s) kopplade." : ""));
+
+} else if (res.reason === "redan-aktivt") {
+    MV.ui.info("Ett fältarbete är redan aktivt",
+        "Det finns redan ett aktivt fältarbete kopplat till denna anläggning.\n\n" +
+        "Du måste avsluta och spara det inifrån fältarbetet innan du kan köra " +
+        "'Nytt Fältarbete' från anläggningen igen!");
+
+} else {
+    MV.ui.info("Kunde inte skapa fältarbete", "Orsak: " + res.reason);
+}
+```
+
+### Version  
+*Action*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-faltarbete.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.ui.info("Version", MV.about());
+```
+
+### Hamta anteckning for valt datum  
+*Knappfält (ft_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -169,7 +283,8 @@ MV.Anteckning.hamta();
 ### Spara anteckning  
 *Knappfält (ft_button)*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -177,24 +292,44 @@ Script:
 MV.Anteckning.spara();
 ```
 
-### Set Logg Datum  
-*Trigger: OPEN_ENTRY_CARD*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-logg.js`
+## Import Fältarbete
+
+### Moduler  
+*Shared script*
+
+**Bocka i dessa moduler här** — det är detta scripts enda syfte:
+
+`moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`
 
 Script:
 
 ```js
-MV.Logg.setDatum();
+
 ```
 
+### Config  — VALFRI, hoppa över  
+*Shared script*
 
-## Import Fältarbete
+Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliotek avviker — se filen för vad som går att sätta.
+
+### Lagg in koordinater  
+*Trigger: MODIFY_ENTRY*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.Import.satKoordinatStatus();
+```
 
 ### Hitta befintliga  
 *Action*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -205,7 +340,8 @@ MV.Import.hittaBefintliga();
 ### Lagg upp  
 *Action*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -216,23 +352,13 @@ MV.Import.laggUpp();
 ### Version  
 *Action*
 
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
 ```js
 MV.ui.info("Version", MV.about());
-```
-
-### Lagg in koordinater  
-*Trigger: MODIFY_ENTRY*
-
-Bocka i: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`
-
-Script:
-
-```js
-MV.Import.satKoordinatStatus();
 ```
 
 

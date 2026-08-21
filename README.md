@@ -9,6 +9,7 @@ anropar en funktion. En ändring pushad hit slår igenom i **alla** bibliotek oc
 på **alla** enheter — ingen copy-paste.
 
 Ny med GitHub? Läs **[GITHUB.md](GITHUB.md)** först.
+Hur verksamheten faktiskt fungerar: **[ARBETSFLODE.md](ARBETSFLODE.md)**.
 Vad som ändrats och varför: **[CHANGELOG.md](CHANGELOG.md)**.
 
 ---
@@ -32,13 +33,16 @@ memento/             Vad som står i respektive script inne i Memento.
   <Bibliotek>/       Versionshanterat så att git speglar appens innehåll.
     shared/Config.js valfria avvikelser som gäller hela biblioteket
   UPPSATTNING.md     checklista för uppsättningen i appen
+  KOPIERING.md       vad som måste pekas om när bibliotek kopieras
   BORTTAGET.md       Script som ska raderas i appen
 
+ARBETSFLODE.md       arbetsflödet, statusvärdenas betydelse, planerat
 CHANGELOG.md         vad som ändrats, och varför
 tools/test.js        node tools/test.js — tester mot en Memento-simulator
 tools/mock.js        simulatorn
 tools/stamp.js       skriver byggstämpeln i modulerna
 tools/mementools.py  extract / inject / diff för .mlt2-templates
+                     (triggers, actions, shared, knappfält OCH JavaScript-fält)
 tools/push.ps1       stämpla, testa, sekretesskontrollera, commit + push
 push.cmd             dubbelklicka för att pusha
 .forbjudna-ord.exempel  mall för ord som aldrig får bli publika
@@ -157,8 +161,27 @@ Det är precis därför `LoggWriter` fanns i två exemplar, ett per bibliotek, o
 hann glida isär. Repot löser fallet *mellan* bibliotek; Shared kunde aldrig
 göra det.
 
-Kvar har Shared en roll som repot inte kan ta: **avvikelser som gäller hela ett
-bibliotek.** Fältnamn som skiljer sig, ett framtvingat prefix eller suffix, en
+Kvar har Shared **två** roller som repot inte kan ta.
+
+### 1. Bära bibliotekslistan
+
+Bibliotek som är ibockade på ett Shared script blir tillgängliga för **alla**
+script i biblioteket. Verifierat på både Android och desktop — anropskedjan
+`evaluateCommons -> evaluateLibraries` i desktoploggen visar det svart på vitt.
+
+`memento/<Bibliotek>/shared/Moduler.js` är ett tomt Shared script vars enda
+syfte är att bära listan. Ett ställe per bibliotek i stället för på arton
+script, och nya script fungerar direkt.
+
+Priset är att beroendena blir osynliga där de används. Därför står listorna
+kvar i varje stubs huvud — som dokumentation av vad scriptet faktiskt behöver.
+Och läggs en ny modul till i repot måste den bockas i i `Moduler`, annars syns
+den inte för något script. **Version-actionen räknar modulerna**, så den
+avvikelsen upptäcks där.
+
+### 2. Avvikelser som gäller hela biblioteket
+
+Fältnamn som skiljer sig, ett framtvingat prefix eller suffix, en
 beteendeflagga. Sätts de i ett Shared script gäller de varje script i
 biblioteket, utan att upprepas.
 
@@ -193,10 +216,15 @@ det bibliotek scriptet körs i:
 | `Fältarbete Elnät Syd` | `Anläggningar Elnät Syd` |
 | `Fältarbete` | `Anläggningar` |
 
-Följden är att varje uppsättning bibliotek bara hittar sina egna. En testkörning
-kan inte skriva i driftdata, och en kunds bibliotek kan inte nå en annan kunds.
-**Ingen kod behöver ändras för en ny kund** — det räcker att biblioteken döps
-konsekvent. Och inget kundnamn finns i repot.
+Följden är att varje uppsättning bibliotek bara hittar sina egna. **Ingen kod
+behöver ändras för en ny kund** — det räcker att biblioteken döps konsekvent.
+Och inget kundnamn finns i repot.
+
+> **Namnen räcker inte hela vägen.** `Link to entry`- och `Lookup`-fält binder
+> mot bibliotekets **ID**, inte dess namn. En kopierad uppsättning pekar därför
+> fortfarande på originalet, och det kan ingen kod rätta — bindningen ligger i
+> bibliotekets struktur. Se [memento/KOPIERING.md](memento/KOPIERING.md) för de
+> åtta fält som måste pekas om.
 
 ### Namnkonventionen
 
@@ -322,6 +350,21 @@ modulen en äldre byggtid än de andra, och raden flaggas `AVVIKER`. Utan
 stämpeln är det nästan omöjligt att upptäcka — koden ser rätt ut i git, allt
 verkar uppdaterat, men en modul beter sig som förr.
 
+### Desktop-appen cachar modulerna för hela sin körning
+
+Desktop hämtar en modul en gång per appsession och återanvänder den sedan —
+`Run` hämtar **inte** om. Loggen visar `Begin download script from url` vid
+första körningen, och därefter inga fler nedladdningsrader trots nya körningar.
+
+Följden: efter en push kan desktop köra gammal kod hur länge som helst medan
+Android kör den nya. Det ser ut som en plattformsskillnad men är en cache.
+
+Efter en push, i desktop:
+
+1. Klicka **uppdateringsikonen** (den runda pilen) i *JavaScript Libraries*.
+2. Hjälper det inte — **starta om appen**. Det tömmer cachen säkert.
+3. Kör `Version` och kontrollera byggtiden.
+
 ### Fördröjningen efter en push
 
 *Add GitHub Repository* expanderar repot till enskilda
@@ -401,19 +444,33 @@ python tools/mementools.py diff "Raw" "Extraherade scripts"
 python tools/mementools.py inject "Templates utan script" "Extraherade scripts" "Build"
 ```
 
-`extract` och `inject` är exakta inverser — verifierat mot alla fyra templates.
+`extract` och `inject` är exakta inverser — verifierat mot alla fyra templates,
+inklusive JavaScript-fältens uttryck.
+
+**Script göms på tre ställen i en `.mlt2`,** och det tredje är lätt att missa:
+
+| Var | Vad |
+|---|---|
+| `triggers` | triggers, actions och shared scripts |
+| `templates[i].json_options.script.script` | knappfält (`ft_button`) |
+| `templates[i].cnt[].s.expr` | **JavaScript-fält** (`ft_script`) |
+
+Det sista upptäcktes först efter att verktyget varit i bruk ett tag — fem
+JavaScript-fält i Fältarbete låg ospårade. De var alla triviala alias
+(`field('Anl. adress')`), så inget gick förlorat, men luckan var verklig. Samma
+plats bär också fältets egen `libs`-lista.
+
 Kräver bara Python 3, inga beroenden.
 
 ---
 
 ## Kvar att ta ställning till
 
+- **`Nytt fältarbete krävs` och omstartsräkningen** — specificerade under
+  *Planerat* i [ARBETSFLODE.md](ARBETSFLODE.md). Väntar på att pariteten är
+  verifierad.
 - **Offline-cachning av GitHub-modulerna** — testa i flygplansläge innan detta
   går ut på en fältenhet. Det är det enda som kan sänka arkitekturen.
-- **Nyckelregister-biblioteket** innehåller inga script alls. Avsiktligt?
-- **Fältet `Lookup`** i Fältarbete pekar på ett bibliotek som inte finns bland de
-  fyra exporterade templaterna (`libraryId: @[gC<Cjv3mgqUnDOPJQz`). Värt att
-  kontrollera att det inte är en bruten referens.
 - **Dubbelkodningen** i den avstängda action-dubbletten är inte Mementos
   generella teckenhantering — det aktiva knappscriptet i *samma* fil har noll
   korrupta tecken. Det är alltså specifikt för det scriptet, troligen från en

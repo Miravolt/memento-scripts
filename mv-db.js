@@ -3,17 +3,20 @@
  *
  * BAKGRUNDEN, och varför den här modulen finns:
  *
- * Objektet som lib().create() returnerar är inte ett fullt levande entry. Det
- * går att läsa de fält man precis skrev, men link() och field() på fält man
- * INTE angav vid create() beter sig opålitligt — länkar tystnar och fältvärden
- * kommer tillbaka som null. Samma sak gäller entries man fått via find().
+ * Entries man just fått i handen — från create(), från find(), eller ur ett
+ * länkfält — beter sig inte som fullt levande entries. Originalkoden i "Spara
+ * ändringar och avsluta Fältarbete" hade redan upptäckt det och löst det med
+ * findById() plus kommentaren "Vi hämtar ett fullt skrivbart, levande entry
+ * från systemet". Samma mönster saknades i "Nytt Fältarbete" och "Lägg upp".
  *
- * Lösningen är att alltid hämta om entryt med findById() innan man länkar eller
- * läser brett. Det mönstret fanns redan i "Spara ändringar och avsluta
- * Fältarbete" ("Vi hämtar ett fullt skrivbart, levande entry från systemet")
- * men saknades i "Nytt Fältarbete" och "Lägg upp" — vilket är varför historik
- * inte följde med till nya fältarbeten, och varför importerade anläggningar
- * blev halvtomma.
+ * Modulen gör omhämtningen till regel i stället för undantag. Det är billigt
+ * och tar bort en hel klass av tysta fel.
+ *
+ * OBS om orsakssamband: att detta var orsaken till att historik inte följde
+ * med till nya fältarbeten är INTE bevisat. Ett länkfälts måltabell binds mot
+ * bibliotekets ID, och i drift pekade "Historiska Fältarbeten" på ett gammalt
+ * testbibliotek — vilket förklarar samma symptom direkt och mer troligt.
+ * Omhämtningen behålls som skydd, inte som bevisad rättning. Se KOPIERING.md.
  *
  * Kräver: mv-core.js
  */
@@ -264,4 +267,4 @@ MV.db.copyFields = function (sourceEntry, fieldNames) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-db", byggd: "2026-08-21 08:51", hash: "0c42526" });
+MV.build.moduler.push({ namn: "mv-db", byggd: "2026-08-21 11:58", hash: "0f56dd9" });

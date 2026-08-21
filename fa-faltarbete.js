@@ -406,4 +406,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-21 08:51", hash: "32567fb" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-21 11:58", hash: "32567fb" });
