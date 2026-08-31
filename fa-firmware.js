@@ -2,6 +2,7 @@
  * fa-firmware.js — håller "Firmware Status" i takt med "Firmware".
  *
  * Kräver: mv-core.js, moment.min.js
+ * Test rad
  */
 
 var MV = MV || {};
@@ -50,4 +51,4 @@ function updateFirmwareStatus() {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-firmware", byggd: "2026-08-31 13:37", hash: "57dc413" });
+MV.build.moduler.push({ namn: "fa-firmware", byggd: "2026-08-31 15:23", hash: "adf641c" });

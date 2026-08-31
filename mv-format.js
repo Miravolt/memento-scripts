@@ -9,6 +9,7 @@
  * i tre olika versioner i olika script.
  *
  * Kräver: mv-core.js
+ * Test rad
  */
 
 var MV = MV || {};
@@ -192,4 +193,4 @@ MV.fmt.diffFields = function (oldEntry, newEntry, fieldNames) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-format", byggd: "2026-08-31 13:37", hash: "ec8e92e" });
+MV.build.moduler.push({ namn: "mv-format", byggd: "2026-08-31 15:23", hash: "e816ef3" });

@@ -6,6 +6,7 @@
  * sorterade med nyaste datum först.
  *
  * Kräver: mv-core.js, moment.min.js
+ * Test rad
  */
 
 var MV = MV || {};
@@ -135,4 +136,4 @@ function appendToLog(entryObj, loggFalt, nyText, appendMode) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-logg", byggd: "2026-08-31 13:37", hash: "413f34d" });
+MV.build.moduler.push({ namn: "mv-logg", byggd: "2026-08-31 15:23", hash: "797bd8b" });

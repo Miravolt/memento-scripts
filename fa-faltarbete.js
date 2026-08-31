@@ -9,6 +9,7 @@
  * ställe — lägger du till ett fält i biblioteket räcker det att lägga till det här.
  *
  * Kräver: mv-core.js, mv-db.js, mv-format.js, mv-logg.js, moment.min.js
+ * Test rad
  */
 
 var MV = MV || {};
@@ -491,4 +492,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-31 13:37", hash: "e77a943" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-31 15:23", hash: "a15d4fe" });

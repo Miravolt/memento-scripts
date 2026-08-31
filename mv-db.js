@@ -19,6 +19,7 @@
  * Omhämtningen behålls som skydd, inte som bevisad rättning. Se KOPIERING.md.
  *
  * Kräver: mv-core.js
+ * Test rad
  */
 
 var MV = MV || {};
@@ -267,4 +268,4 @@ MV.db.copyFields = function (sourceEntry, fieldNames) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-db", byggd: "2026-08-31 13:37", hash: "0f56dd9" });
+MV.build.moduler.push({ namn: "mv-db", byggd: "2026-08-31 15:23", hash: "d7fd2f9" });
