@@ -195,3 +195,60 @@ ut; de varierar sannolikt med nätägare.
 ### 5. Utseende och widgets
 
 Dashboards, dialoger, kortlayout. Efter paritet.
+
+### 6. Varning när enheten kör en gammal version
+
+Idag upptäcks en gammal version bara om **någon** modul är nyare än de andra —
+då flaggar `MV.avvikande()` den, gratis och offline. Är *alla* åtta lika gamla
+finns det ingen intern ledtråd alls: modulerna är konsekventa med varandra,
+bara inte med git. Det är precis det läget som en gång såg ut som en
+Android/desktop-skillnad.
+
+Det enda som kan avgöra det är en fråga ut på nätet.
+
+**Så det skulle fungera.** `tools/stamp.js` skriver också en `senaste.json` i
+repot vid varje push:
+
+```json
+{ "byggd": "2026-08-21 13:42", "moduler": 8 }
+```
+
+En ny funktion `MV.version.kolla()` hämtar den med `http().get()` och jämför mot
+`MV.byggd()`. Returnerar `{ status: "aktuell" | "gammal" | "okand" }` och kastar
+aldrig — allt som går fel, inklusive ingen täckning, blir `"okand"`.
+
+**Den avgörande detaljen:** `senaste.json` får INTE bockas i som ett
+JavaScript-bibliotek. Då hämtas den genom exakt samma cache som modulerna, blir
+gammal i takt med dem, och kan strukturellt aldrig upptäcka problemet. Den måste
+hämtas med `http()`, med en cache-brytande parameter (`?t=` plus millisekunder).
+
+**Reglerna som gör det ofarligt:**
+
+- **Aldrig i en trigger.** `http().get()` används synkront —
+  `var result = http().get(url)` — så scriptet står still tills svaret kommer
+  eller tiden går ut. En trigger på `MODIFY_ENTRY` skulle alltså blockera
+  *varje sparning* i flygplansläge. Det är hela skillnaden mellan ofarligt och
+  oanvändbart.
+- **Bara i användarstartade actions**, där en paus är begriplig: alltid i
+  `Version`, och möjligen i `Lägg upp` (som körs inomhus och redan tar tid).
+- **`message()`, aldrig `dialog()`.** En rad, ingen knapp att trycka på:
+  *"Ny version finns (bygge X). Uppdatera modullistan i Moduler."* Scripten
+  fortsätter köra på den gamla koden — varningen stoppar ingenting.
+- **Tyst när svaret är `"okand"`.** Ingen täckning är inte ett fel.
+
+**Tre saker måste mätas först.** Inget av dem står i Mementos dokumentation:
+
+1. **Hur länge blockerar `http().get()` i flygplansläge?** Ta tid på det. Är det
+   30 sekunder duger idén bara i `Version`, och ingen annanstans.
+2. **Vad betyder "HTTP requests must be executed asynchronously in the last
+   Phase of an Event"?** Det står i API-dokumentationen utan förklaring och kan
+   betyda att triggers är uteslutna även tekniskt — vilket vi ändå vill.
+3. **Överlever `MV`-tillstånd mellan två script-körningar i samma
+   app-session?** Gör det det räcker en flagga i minnet för att kolla en gång
+   per app-session, gratis. Gör det inte behöver kontrollen antingen ske vid
+   varje explicit anrop, eller så måste senaste kontrolltid sparas i ett fält.
+
+**Värdet är begränsat men verkligt.** `push.cmd` säger redan vad byggtiden ska
+vara, och `Version` visar vad den är — den som följer rutinen behöver inte
+detta. Det här är ett skyddsnät för den som glömmer, och för telefoner som
+ingen rört på en månad.

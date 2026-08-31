@@ -26,10 +26,17 @@ Optimering och utseende kommer efter, se `CLAUDE.md` del 6.
   `skapaMedDialog()`. Båda stubbarna är en rad.
 - `memento/KOPIERING.md` täcker både de åtta länkfälten och
   script-permissions per bibliotek och per enhet.
+- **Offline-cachningen verifierad.** `Version` kördes i flygplansläge på telefon
+  och fungerade som vanligt — modulerna finns lokalt. Det var den enda risken
+  som kunde ha sänkt hela arkitekturen. Samtidigt bekräftades att *ingen* enhet
+  hämtar om av sig själv, och att Mementos strukturuppdatering inte rör
+  JavaScript-biblioteken.
 
 ## Kvar innan parity kan kallas verifierad
 
-Ordnad. Punkt 4 är den som avgör.
+Den fullständiga listan står i **[memento/TESTPLAN.md](memento/TESTPLAN.md)** —
+den är facit, och resultaten skrivs in där. Nedan är bara ordningen att göra
+det i. Punkt 4 är den som avgör.
 
 1. **Uppsättning i appen.** `Fältarbete` är nästan klar. Kvar:
    **Anläggningar** och **Import Fältarbete** — `Moduler` (Shared),
@@ -37,16 +44,15 @@ Ordnad. Punkt 4 är den som avgör.
 2. **Ersätt de två stubbar som nyss blev enradare** —
    `Spara ändringar och avsluta Fältarbete` och `Nytt Fältarbete`.
 3. **Radera de fyra gamla scripten** enligt `memento/BORTTAGET.md`.
-4. **Kör ett helt varv i testbiblioteken:** import → hitta befintliga → lägg
-   upp → fältarbete → avsluta → nytt fältarbete. Kontrollera att historiken
-   följer med, att åtgärder och kommentarer når anläggningens logg, och att
-   koordinaten skrivs tillbaka.
+4. **Kör hela `TESTPLAN.md`** — importflödet, fältarbetets livscykel,
+   historiken, cache/offline, spridning över enheter och bibliotek. Skriv in
+   resultaten i filen.
 5. **Kontrollera att driftbiblioteken är orörda** — `KOPIERING.md`, avsnittet
    *Efter omkopplingen*. Gör den kontrollen **först** av allt i punkt 4–5.
 6. **Sätt Library permission** i varje bibliotek, på varje enhet.
-7. **Flygplanslägestest på telefon.** Den enskilda sak som kan sänka hela
-   upplägget: hämtas modulerna offline, eller inte? Görs innan något annat
-   byggs vidare.
+7. ~~**Flygplanslägestest på telefon.**~~ Klart — modulerna finns lokalt.
+   Kvar av det: kör `Version` en gång **med** täckning på varje ny enhet innan
+   den går ut i fält, så att cachen är fylld.
 
 ## Parkerat till efter parity
 
@@ -60,9 +66,14 @@ Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
    Nyckelregister.
 4. PDF → CSV för importen.
 5. Widgets och utseende.
+6. Varning när enheten kör en gammal version — `senaste.json` + `http()`, aldrig
+   i en trigger. Tre saker måste mätas först, se `ARBETSFLODE.md`.
 
 ## Öppna frågor
 
+- **Hämtar en omstart av appen ny version av modulerna?** Bara manuell
+  uppdatering är prövad. Två teorier med samma förutsägelse men olika mekanism,
+  se `TESTPLAN.md` avsnitt 3 — där står också hur man skiljer dem åt.
 - Nollställer `Mätare bytt` omstartsräknaren? (punkt 2 ovan)
 - Behöver `Config`-scriptet finnas i alla bibliotek, eller bara där något
   faktiskt avviker? Står som *VALFRI* i `UPPSATTNING.md` tills det avgjorts.

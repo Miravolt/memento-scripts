@@ -57,6 +57,10 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
     }
     Write-Host "  $($stampOut | Select-Object -Last 1)" -ForegroundColor Green
     Write-Host ""
+
+    # Byggtiden visas igen på slutet, så man kan jämföra med Version i appen.
+    $m = [regex]::Match(($stampOut -join " "), "(\d{4}-\d{2}-\d{2} \d{2}:\d{2})")
+    if ($m.Success) { $byggtid = $m.Groups[1].Value }
 }
 
 # --- 3. invariantkontroll ---
@@ -187,6 +191,22 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 Write-Host ""
-Write-Host "  Klart. Memento hämtar den nya versionen." -ForegroundColor Green
+Write-Host "  Pushat. Koden ligger nu på GitHub." -ForegroundColor Green
+Write-Host ""
+Write-Host "  Men Memento hämtar den INTE av sig själv." -ForegroundColor Yellow
+Write-Host "  Appen återanvänder det den redan laddat, hela sin körning." -ForegroundColor Yellow
+Write-Host ""
+Write-Host "  Gör så här, i varje bibliotek — och på varje enhet:" -ForegroundColor Cyan
+Write-Host "    1. Automation -> Script -> Moduler"
+Write-Host "    2. Klicka uppdateringsikonen (runda pilen) ovanför modullistan"
+Write-Host "    3. Kör Version och kontrollera byggtiden"
+if ($byggtid) {
+    Write-Host "       Den ska visa:  $byggtid" -ForegroundColor Cyan
+}
+Write-Host ""
+Write-Host "  Visar den en äldre tid:" -ForegroundColor DarkGray
+Write-Host "    - vänta nagra minuter. GitHubs CDN cachar filerna en kort stund." -ForegroundColor DarkGray
+Write-Host "    - hjälper det inte: starta om appen. Det tömmer cachen säkert." -ForegroundColor DarkGray
+Write-Host "    - avviker EN modul men inte de andra: just den är cachad." -ForegroundColor DarkGray
 Write-Host ""
 Read-Host "Tryck Enter for att stanga"

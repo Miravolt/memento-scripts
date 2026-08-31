@@ -5,8 +5,9 @@ Delad JavaScript-kod för Memento Database-biblioteken **Fältarbete**,
 
 All logik bor här, i git. Memento hämtar modulerna direkt från repot via
 script-editorns GitHub-koppling. Script inne i Memento krymper till en rad som
-anropar en funktion. En ändring pushad hit slår igenom i **alla** bibliotek och
-på **alla** enheter — ingen copy-paste.
+anropar en funktion. En ändring pushad hit gäller **alla** bibliotek och **alla**
+enheter — ingen copy-paste. Den slår däremot inte igenom av sig själv: varje
+enhet måste hämta om modulerna en gång, se *Vardagen*.
 
 Ny med GitHub? Läs **[GITHUB.md](GITHUB.md)** först.
 Var arbetet står just nu: **[ARBETSLAGE.md](ARBETSLAGE.md)**.
@@ -36,6 +37,7 @@ memento/             Vad som står i respektive script inne i Memento.
   <Bibliotek>/       Versionshanterat så att git speglar appens innehåll.
     shared/Config.js valfria avvikelser som gäller hela biblioteket
   UPPSATTNING.md     checklista för uppsättningen i appen
+  TESTPLAN.md        vad som ska provas i appen innan paritet är nådd
   KOPIERING.md       vad som måste pekas om när bibliotek kopieras
   BORTTAGET.md       Script som ska raderas i appen
 
@@ -337,19 +339,25 @@ MV.config.faltarbete.tillatTomningVidAvslut = true;
 ## Vardagen
 
 ```
-1. Ändra en mv-*.js
-2. Dubbelklicka push.cmd   (tester, sekretesskontroll, commit, push)
-3. Memento hämtar nya versionen
+1. Ändra en mv-*.js eller fa-*.js
+2. Dubbelklicka push.cmd   (stämpel, kontroll, tester, sekretess, push)
+3. Tvinga Memento att hämta om — appen gör det INTE av sig själv
+4. Kör Version och kontrollera att byggtiden stämmer
 ```
 
-`push.cmd` vägrar pusha om testerna failar, eller om något ord ur
-`.forbjudna-ord` dyker upp i en fil eller ett filnamn. Den listan är
-gitignorerad — kopiera `.forbjudna-ord.exempel` och fyll i era termer.
+`push.cmd` vägrar pusha om testerna failar, om en invariant är bruten, eller om
+något ord ur `.forbjudna-ord` dyker upp i en fil eller ett filnamn. Den listan
+är gitignorerad — kopiera `.forbjudna-ord.exempel` och fyll i era termer.
 
-Steg 3 är värt att verifiera första gången: kontrollera hur din version cachar
-biblioteken, och — viktigast för fältarbete — att modulerna finns lokalt när
-telefonen saknar täckning. **Testa i flygplansläge innan detta går ut på en
-fältenhet.**
+**Steg 3 är ett manuellt moment, inte en väntan.** Memento återanvänder det den
+redan laddat, hela appens körning. I varje bibliotek och på varje enhet:
+*Automation → Script → `Moduler` →* uppdateringsikonen (den runda pilen) ovanför
+modullistan. Sedan `Version`, och jämför byggtiden med den `push.cmd` skrev ut.
+Stämmer den inte: se *Desktop-appen cachar modulerna* och *Fördröjningen efter
+en push* nedan.
+
+Att modulerna dessutom finns lokalt när telefonen saknar täckning är inte
+verifierat. **Testa i flygplansläge innan detta går ut på en fältenhet.**
 
 Ändrar du undantagsvis ett script direkt i desktop-appen: exportera biblioteket
 som `.mlt2`, kör `python tools/mementools.py diff` och kopiera ändringen in i git.
@@ -388,20 +396,63 @@ modulen en äldre byggtid än de andra, och raden flaggas `AVVIKER`. Utan
 stämpeln är det nästan omöjligt att upptäcka — koden ser rätt ut i git, allt
 verkar uppdaterat, men en modul beter sig som förr.
 
-### Desktop-appen cachar modulerna för hela sin körning
+### Ingen enhet hämtar om av sig själv
+
+Detta gäller **både desktop och Android**, och det är den enskilt viktigaste
+driftsdetaljen i hela upplägget.
 
 Desktop hämtar en modul en gång per appsession och återanvänder den sedan —
 `Run` hämtar **inte** om. Loggen visar `Begin download script from url` vid
 första körningen, och därefter inga fler nedladdningsrader trots nya körningar.
 
-Följden: efter en push kan desktop köra gammal kod hur länge som helst medan
-Android kör den nya. Det ser ut som en plattformsskillnad men är en cache.
+Android behåller sin version ännu envisare: en telefon har körts vidare på ett
+bygge som var flera timmar gammalt, trots att appen under tiden tagit emot och
+tillämpat en **strukturuppdatering** för biblioteket. Det är värt att lägga på
+minnet: *Mementos egen synkronisering av bibliotekets struktur rör inte
+JavaScript-biblioteken.* Att man fått notisen "strukturen har uppdaterats"
+säger ingenting om vilken kod som körs.
 
-Efter en push, i desktop:
+Efter en push, på **varje** enhet och i **varje** bibliotek:
 
-1. Klicka **uppdateringsikonen** (den runda pilen) i *JavaScript Libraries*.
-2. Hjälper det inte — **starta om appen**. Det tömmer cachen säkert.
-3. Kör `Version` och kontrollera byggtiden.
+1. Öppna *Automation → Script →* **`Moduler`** — det är där bibliotekslistan
+   för hela biblioteket bor — och klicka **uppdateringsknappen** vid listan i
+   *JavaScript Libraries*. På desktop är det den runda pilen ovanför listan; på
+   Android ligger den längst ner till höger under bibliotekslistan.
+2. Kör `Version` och kontrollera byggtiden mot den `push.cmd` skrev ut.
+3. Stämmer den inte: vänta några minuter (CDN, se nedan) och försök igen.
+
+**Obekräftat:** om en omstart av appen räcker i stället för steg 1. På desktop
+tömmer omstarten minnescachen och borde göra det. På Android är det tvärtom
+troligt att den *inte* gör det — se nedan.
+
+### Hur cachen fungerar — två teorier, ingen bevisad
+
+- **A: olika mekanism per plattform.** Desktop cachar i minnet per appsession;
+  Android på disk, permanent tills man uppdaterar manuellt.
+- **B: cachen fylls vid första körningen.** Modulen skrivs till disk när den
+  faktiskt körs, och läses därefter därifrån — på båda plattformarna.
+
+B är sparsammare: den behöver ingen skillnad mellan plattformarna för att
+förklara samma observationer. Båda förklarar varför telefonen satt kvar på ett
+gammalt bygge i timmar, och varför modulerna finns offline. Båda förklarar också
+varför "Android fungerade, desktop inte" en gång såg ut som en plattformsskillnad
+— det var det inte, det var en cache.
+
+Teorierna går att skilja åt, och `memento/TESTPLAN.md` avsnitt 3 beskriver hur:
+uppdatera modullistan men **kör ingenting**, starta om, och se om den nya
+versionen finns kvar. Enligt B ska den vara borta. Skriv in utfallet där, och
+skriv om det här avsnittet när svaret finns.
+
+### Offline fungerar — modulerna finns lokalt
+
+`Version` har körts i **flygplansläge på telefon** och rapporterade alla **8**
+moduler, ingen avvikande. Hela uppsättningen fanns alltså i den lokala cachen —
+inte bara några enstaka moduler. Det var den enda risken som kunde ha sänkt hela
+arkitekturen, och den är därmed i praktiken avskriven.
+
+Vad testet inte visar: hur en **ny** enhet, eller ett nytt bibliotek, beter sig
+första gången — den måste rimligen ha nät en gång för att fylla cachen. Sätt
+därför upp och kör `Version` en gång med täckning innan en enhet går ut i fält.
 
 ### Fördröjningen efter en push
 

@@ -30,6 +30,12 @@ på ett **Shared script** blir tillgängliga för alla script i biblioteket
 **Ordningen spelar ingen roll.** Memento laddar biblioteken alfabetiskt oavsett
 i vilken ordning man bockar i dem — modulerna är byggda för att tåla det.
 
+**Efter varje push måste modulerna hämtas om för hand** — i det här scriptet,
+med uppdateringsknappen vid bibliotekslistan. Ingen enhet gör det av sig själv,
+och Mementos strukturuppdatering rör inte JavaScript-biblioteken. På Android
+ligger knappen längst ner till höger under listan. Kör `Version` efteråt och
+jämför byggtiden med den `push.cmd` skrev ut.
+
 Modullistorna i avsnitten nedan står kvar som **dokumentation** av vad varje
 script faktiskt beror på. Du behöver inte bocka i dem script för script, men
 listan visar varför en modul inte får plockas bort ur `Moduler`.

@@ -29,9 +29,12 @@ härleda — de är uppmätta i appen.
 | **Memento laddar JS-bibliotek i ALFABETISK ordning**, inte i den ordning man bockar i dem | `fa-*` laddas före `mv-core.js`. Ingen modul får förutsätta att en annan är laddad. Se invariant I1. |
 | **Rhino 1.7.15 = ES5** | Ingen `let`/`const`, inga arrow functions, inga template literals, inget `Object.assign`, inget `Array.includes`, inget `for...of`. Invariant I2. |
 | **Bibliotek ibockade på ett *Shared*-script blir tillgängliga för alla script i biblioteket** | Därför finns `Moduler` som Shared script — ett ställe per bibliotek. Verifierat på både Android och desktop. |
-| **Desktop-appen cachar hämtade moduler i minnet hela app-sessionen** | `Run` hämtar inte om. Refresh-ikonen i script-editorn, eller omstart, krävs. *Detta har två gånger sett ut som en Android/desktop-skillnad — det är det inte.* |
+| **Ingen enhet hämtar om moduler av sig själv — varken desktop eller Android** | En push slår igenom först när man klickar uppdateringsknappen i `Moduler`-scriptet, per bibliotek och per enhet. Skriv aldrig att en push "når enheterna" av sig själv; det gör den inte. *Detta har två gånger sett ut som en Android/desktop-skillnad — det är det inte.* |
+| **Mementos strukturuppdatering rör inte JavaScript-biblioteken** | En telefon har tagit emot och tillämpat en strukturuppdatering och ändå fortsatt köra ett flera timmar gammalt bygge. Notisen "strukturen har uppdaterats" säger ingenting om vilken kod som körs. |
+| **Modulerna finns lokalt och fungerar offline** | `Version` har körts i flygplansläge på telefon och rapporterade alla **8** moduler, ingen avvikande — hela uppsättningen fanns alltså i cachen. Detta var den enda risken som kunde ha sänkt hela arkitekturen. Obesvarat: om cachen fylls vid nedladdningen eller vid **första körningen** av modulen. Se `memento/TESTPLAN.md` avsnitt 3. |
 | **`Link to entry`- och `Lookup`-fält binder mot bibliotekets ID, inte namnet** | En kopia pekar fortfarande på originalet. `mv-db.js` namnmekanik hjälper INTE här. Se `memento/KOPIERING.md`. |
 | **Script-permissions synkroniseras inte mellan enheter** | Måste sättas per bibliotek *och* per telefon/dator. Ser identiskt ut i `Version` på båda. |
+| **`http().get()` används synkront** — `var r = http().get(url)` — och kräver `Network`-permission | Scriptet står still tills svaret kommer. Aldrig i en trigger: det blockerar varje sparning när täckningen saknas. Dokumentationen säger dessutom "must be executed asynchronously in the last Phase of an Event" utan att förklara vad det betyder. |
 | **Ett kartfält som just skrivits läses tillbaka som null i samma körning** | Därför sätts koordinatstatus från källvärdet, inte från fältet. Reproduceras i mocken av flaggan `LAZY_MAP`. |
 | **Entries direkt från `create()`, `find()` eller ett länkfält är inte fullt skrivbara** | Hämta om med `findById()`. Det är hela poängen med `mv-db.js`. Mockens flagga `COLD_CREATE`. |
 
@@ -172,6 +175,7 @@ tools/
 
 memento/             det som ska göras i appen, inte kod som körs
   UPPSATTNING.md     checklista + all scriptkod att klistra in
+  TESTPLAN.md        paritetstestet. Facit för när vi är klara.
   KOPIERING.md       länkfält och permissions efter en kopiering
   BORTTAGET.md       script som ska raderas i appen
   <Bibliotek>/       stubbar per bibliotek
@@ -216,3 +220,8 @@ git. Sedan optimering och utseende.** Föreslå inte widgets, dialoger eller
 förfining innan `ARBETSLAGE.md` säger att parity är verifierad. Det som ändå
 är värt att göra sedan står under *Planerat* i `ARBETSFLODE.md` — parkera nya
 idéer där i stället för att bygga dem.
+
+Facit för när paritet är nådd är `memento/TESTPLAN.md`. Hittas en avvikelse där:
+skriv `REGRESSION`-testet **före** rättningen, och står det sig som avsiktligt
+beteende blir det ett `AVSIKT`-test plus en rad i planens tabell över
+avsiktliga skillnader.
