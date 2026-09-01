@@ -54,6 +54,57 @@ det i. Punkt 4 är den som avgör.
    Kvar av det: kör `Version` en gång **med** täckning på varje ny enhet innan
    den går ut i fält, så att cachen är fylld.
 
+## Avvikelser från testkörningen (31 aug)
+
+Hela `TESTPLAN.md` avsnitt 0–3 är körd. Avsnitt 4 och 5 återstår. Fem fynd,
+rangordnade. **A1 blockerar — den ändrar arkitekturen, inte bara koden.**
+
+**A1 — LÖST i koden, kvar i appen. `Historiska Fältarbeten` i Fältarbete kan
+inte finnas.**
+*Beslut 31 aug: anläggningen är facit; fältarbetet får en textsammanfattning.
+Arkivbibliotek utreds separat — det kräver att bildöverföring visar sig
+fungera. Kvar att göra i appen: lägg till fältet `Tidigare fältarbeten` i
+Fältarbete och ta bort dess `Historiska Fältarbeten`.*
+Ett `Link to entry`-fält kan inte peka på sitt eget bibliotek; Memento erbjuder
+inte det egna biblioteket i listan. Ett fältarbete kan alltså inte länka till
+andra fältarbeten. Detta förklarar i efterhand varför fältet i drift pekade på
+ett gammalt *test*-Fältarbete: det var inte ett slarvfel utan det enda sättet
+att få fältet att acceptera ett mål alls — och därmed också varför historiken
+aldrig fungerade. Kräver ett arkitekturbeslut, se nedan. Anläggningens
+`Historiska Fältarbeten` fungerar som det ska; historiken FINNS, den går bara
+inte att spegla in i fältarbetet med ett länkfält.
+
+**A2 — TYSTNADEN ÅTGÄRDAD, orsaken kvar. `Nytt Fältarbete` från Anläggningar
+länkar inte `Aktivt Fältarbete`.**
+*`skapa()` läser nu tillbaka båda länkarna och returnerar `varningar`, och
+dialogen visar dem. Nästa gång det inträffar får du veta det på plats i stället
+för veckor senare. Varför länkningen misslyckas är fortfarande obevisat.*
+Fältarbetet skapas, men kopplingen till anläggningens `Aktivt Fältarbete` blir
+inte gjord, och inget fel visas. `skapa()` anropar `MV.db.linkOnce()` utan att
+kontrollera returvärdet — därför tystnaden. *Hypotes, obevisad:* `skapa()` skriver
+på ett omhämtat entry (`MV.db.reload`), och när målet är det bibliotek scriptet
+självt körs i kan det öppna kortets kopia skriva över länken vid spara.
+Importflödet, där anläggningen ligger i ett annat bibliotek, fungerar.
+
+**A3 — Avslut utan koppling till anläggning stoppas inte.**
+`avsluta()` har kontrollen (`reason: "ingen-koppling"`) och `avslutaMedDialog()`
+har dialogen, men fältarbetet gick ändå att avsluta utan varning. Måste
+reproduceras: trycktes knappen, eller sattes kryssen för hand? Knappfältet kan
+fortfarande innehålla gammal kod — stubbytet är punkt 2 i listan ovan.
+
+**A4 — `Firmware Status` ändringsloggas inte.**
+Fältet ligger i `TRACK_FIELDS`, så listan är inte problemet. *Hypotes:* både
+`MV.Firmware.syncStatus()` och `MV.Faltarbete.loggaAndringar()` körs på
+`MODIFY_ENTRY`, och diffen tas innan firmwarestatus hunnit skrivas.
+
+**A5 — Importen uppdaterar inte befintliga anläggningar.**
+Kunduppgifter, `Nätstation` och `Leveranspunkt` följer bara med när anläggningen
+är ny. Detta fungerade inte förr heller, så det bryter inte pariteten — men
+verksamheten behöver det: nätbolagen kopplar om i nätet och kunduppgifter
+ändras. Önskemål: dialog som visar vad som skulle ändras och när det senast
+ändrades, med möjlighet att avbryta, samt loggning av ändringen. Parkeras som
+punkt 7 under *Planerat*.
+
 ## Parkerat till efter parity
 
 Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
@@ -68,12 +119,22 @@ Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
 5. Widgets och utseende.
 6. Varning när enheten kör en gammal version — `senaste.json` + `http()`, aldrig
    i en trigger. Tre saker måste mätas först, se `ARBETSFLODE.md`.
+7. Importen ska kunna uppdatera **befintliga** anläggningar — kunduppgifter,
+   `Nätstation`, `Leveranspunkt` — med en dialog som visar vad som skulle
+   ändras och när det senast ändrades, går att avbryta, och loggar ändringen.
+8. Arkivbibliotek för avslutade fältarbeten. Skulle ge äkta länkar från ett
+   fältarbete till tidigare ärenden, vilket inte går inom ett bibliotek.
+   **Utred först om bilder går att föra över** — det var där det fastnade förra
+   gången. Beställaren har sagt att allt ska ligga i ett bibliotek, så det
+   kräver också ett omtag med dem.
 
 ## Öppna frågor
 
-- **Hämtar en omstart av appen ny version av modulerna?** Bara manuell
-  uppdatering är prövad. Två teorier med samma förutsägelse men olika mekanism,
-  se `TESTPLAN.md` avsnitt 3 — där står också hur man skiljer dem åt.
+- **Varför hämtade desktop om en gång, av sig själv?** Vid ett tillfälle visade
+  `Version` den nya byggtiden på desktop utan att modullistan uppdaterats — men
+  vid en senare omstart hände det inte. Mekanismen är okänd (periodisk kontroll?).
+  Lita aldrig på den: uppdatera för hand. I övrigt är cachefrågan besvarad, se
+  `TESTPLAN.md` avsnitt 3.
 - Nollställer `Mätare bytt` omstartsräknaren? (punkt 2 ovan)
 - Behöver `Config`-scriptet finnas i alla bibliotek, eller bara där något
   faktiskt avviker? Står som *VALFRI* i `UPPSATTNING.md` tills det avgjorts.

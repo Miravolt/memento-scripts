@@ -15,6 +15,15 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **Historiken som text i fältarbetet.** `MV.Faltarbete.historikText()` skriver
+  en sammanfattning av anläggningens tidigare fältarbeten — datum, status,
+  åtgärder, nyaste först — i fältet `Tidigare fältarbeten`, eller i loggen om
+  fältet inte finns. Ersätter historiklänkfältet, som aldrig kunde fungera.
+- **Utebliven länkning syns.** `skapa()` läser tillbaka `Koppling till
+  anläggning` och `Aktivt Fältarbete` efter att ha länkat, och returnerar
+  `varningar`. `skapaMedDialog()` visar dem. Tidigare ignorerades returvärdet
+  från `linkOnce()`, och ett fältarbete kunde skapas utan koppling helt tyst.
+
 - **`CLAUDE.md` och `ARBETSLAGE.md`.** De uppmätta sanningarna om Memento
   (alfabetisk laddning, desktop-cachen, länkfältens ID-bindning, permissions
   per enhet), invarianterna som följer av dem, och var arbetet står just nu.
@@ -87,6 +96,19 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
   avsluta Fältarbete`. Se `memento/BORTTAGET.md`.
 
 ### Rättat
+
+- **Historiklänken i Fältarbete togs bort — den kunde aldrig fungera.**
+  Ett `Link to entry`-fält kan inte peka på sitt eget bibliotek, så ett
+  fältarbete kan inte länka till andra fältarbeten. Fältet i drift pekade på
+  ett gammalt test-Fältarbete, vilket var det enda mål det kunde få — och
+  därför följde historiken aldrig med. Detta är den tredje och strukturella
+  förklaringen till buggen; de två tidigare (kalla `create()`-entries,
+  felpekande länkfält efter kopiering) var symptombeskrivningar.
+- **Datum i historiksammanfattningen.** `MV.fmt.value()` formaterar bara äkta
+  `Date`-objekt, och Memento lämnar datumfält som millisekunder — raden blev
+  `1784505600000` i stället för `2026-04-12`. Egen datumformatering.
+  *OBS: samma sak gäller ändringsloggen om ett rent datumfält någonsin läggs
+  till i `TRACK_FIELDS`. Inget sådant finns där idag.*
 
 - **`mementools` missade JavaScript-fält.** `ft_script`-fält lagrar sitt uttryck
   i `templates[i].cnt[].s.expr`, inte i `json_options` som knappfälten. Fem fält

@@ -9,7 +9,6 @@
  * ställe — lägger du till ett fält i biblioteket räcker det att lägga till det här.
  *
  * Kräver: mv-core.js, mv-db.js, mv-format.js, mv-logg.js, moment.min.js
- * Test rad
  */
 
 var MV = MV || {};
@@ -23,7 +22,26 @@ MV.config.faltarbete = {
 
     linkKoppling: "Koppling till anläggning",  // i FÄLTARBETET -> anläggningen
     linkAktivt: "Aktivt Fältarbete",           // i ANLÄGGNINGEN -> pågående
-    linkHistorik: "Historiska Fältarbeten",    // i BÅDA -> avslutade
+    /**
+     * Historiken bor i ANLÄGGNINGEN. Fältarbetet kan inte ha ett eget
+     * historiklänkfält: ett Link to entry-fält kan inte peka på sitt eget
+     * bibliotek, så ett fältarbete kan inte länka till andra fältarbeten.
+     * Uppmätt i appen 2026-08-31 — se CLAUDE.md del 1.
+     *
+     * I stället skriver skapa() in en läsbar sammanfattning i fältarbetet,
+     * och anläggningen är facit för den som vill se hela historiken.
+     */
+    linkHistorik: "Historiska Fältarbeten",    // ENDAST i anläggningen
+
+    /**
+     * Rich text-fält i FÄLTARBETET där sammanfattningen av tidigare ärenden
+     * skrivs vid skapandet. Finns fältet inte hamnar sammanfattningen i
+     * Logg-fältet i stället — inget går förlorat.
+     */
+    faltHistorikText: "Tidigare fältarbeten",
+
+    /** Hur många tidigare ärenden som sammanfattas. Resten räknas bara. */
+    historikAntal: 5,
 
     faltLast: "Låst för redigering",
     faltAvslutad: "Avslutad",
@@ -149,6 +167,93 @@ MV.Faltarbete.byggAtgardsblock = function (newEntry, oldEntry) {
 
 
 /* ================================================================== *
+ * Historik
+ *
+ * Ett fältarbete kan inte länka till andra fältarbeten — se kommentaren vid
+ * linkHistorik. Sammanfattningen nedan är ersättningen: en ögonblicksbild,
+ * skriven en gång när fältarbetet skapas, så att fälteknikern ser att det
+ * finns tidigare ärenden utan att gå till anläggningen.
+ *
+ * Den är med flit en ÖGONBLICKSBILD. Ändras ett gammalt ärende efteråt
+ * uppdateras inte texten. Anläggningens "Historiska Fältarbeten" är facit.
+ * ================================================================== */
+
+/** Ett datumfält som "YYYY-MM-DD". Tom sträng om fältet är tomt. */
+MV.Faltarbete._datum = function (entryObj, fieldName) {
+    var raw;
+    try {
+        raw = entryObj.field(fieldName);
+    } catch (ex) {
+        return "";
+    }
+    if (raw === null || raw === undefined || raw === "") return "";
+    if (raw instanceof Date) return MV.util.dateStr(raw.getTime());
+    if (typeof raw === "number") return MV.util.dateStr(raw);
+
+    var num = Number(raw);
+    return isNaN(num) ? String(raw) : MV.util.dateStr(num);
+};
+
+/** En rad per tidigare fältarbete: "2026-04-12 · Avslutad · Mätare bytt". */
+MV.Faltarbete.historikRad = function (tidigare) {
+    var cfg = MV.config.faltarbete;
+
+    // Datumfält kommer tillbaka som millisekunder, inte som Date. MV.fmt.value
+    // formaterar bara äkta Date-objekt, så utan detta blir raden "1784505600000".
+    var datum = MV.Faltarbete._datum(tidigare, cfg.faltDatumAvslut);
+    if (datum === "") datum = MV.Faltarbete._datum(tidigare, cfg.faltSkapad);
+    if (datum === "") datum = "utan datum";
+
+    var delar = [datum];
+
+    var status = MV.fmt.value(tidigare, cfg.faltStatus);
+    if (status !== "") delar.push(status);
+
+    var atgarder = MV.fmt.list(tidigare, cfg.faltAtgarder);
+    if (atgarder.length > 0) delar.push(atgarder.join(", "));
+
+    return delar.join(" · ");
+};
+
+/**
+ * Läsbar sammanfattning av anläggningens tidigare fältarbeten.
+ *
+ * @param anl  anläggningsentry
+ * @return sträng, tom om ingen historik finns
+ */
+MV.Faltarbete.historikText = function (anl) {
+    var cfg = MV.config.faltarbete;
+    var historik = MV.fmt.toArray(anl ? anl.field(cfg.linkHistorik) : null);
+
+    if (historik.length === 0) return "";
+
+    // Nyast först. Länkfältets ordning är inte garanterad, så sortera på den
+    // rad vi faktiskt visar — den inleds med datumet.
+    var rader = [];
+    for (var i = 0; i < historik.length; i++) {
+        rader.push(MV.Faltarbete.historikRad(
+            MV.db.reload(historik[i], cfg.libFaltarbete)));
+    }
+    rader.sort();
+    rader.reverse();
+
+    var visa = rader.length < cfg.historikAntal ? rader.length : cfg.historikAntal;
+    var ut = [historik.length === 1
+        ? "1 tidigare fältarbete på denna anläggning:"
+        : historik.length + " tidigare fältarbeten på denna anläggning:"];
+
+    for (var j = 0; j < visa; j++) ut.push("• " + rader[j]);
+
+    if (rader.length > visa) {
+        ut.push("…och " + (rader.length - visa) + " till.");
+    }
+    ut.push("Hela historiken finns på anläggningen.");
+
+    return ut.join("\n");
+};
+
+
+/* ================================================================== *
  * Skapa
  * ================================================================== */
 
@@ -193,8 +298,31 @@ MV.Faltarbete.skapa = function (anlaggning, opts) {
     if (!nytt) return { ok: false, reason: "create-misslyckades" };
 
     // Tvåvägskopplingen mellan fältarbete och anläggning.
+    //
+    // Returvärdena kontrolleras. Tidigare struntade koden i dem, och när
+    // länkningen till "Aktivt Fältarbete" misslyckades från actionen i
+    // Anläggningar skapades fältarbetet ändå — utan koppling, utan fel.
+    // Ett tyst fel är värre än ett fult.
+    // OBS: linkOnce() returnerar true så fort den anropat link(), inte när
+    // länken bevisligen finns. Returvärdet duger alltså inte — vi läser om.
+    //
+    // Osäkerhet, ärligt redovisad: att läsa tillbaka ett fält direkt efter
+    // skrivning är inte pålitligt i Memento (jämför kartfältet, som läses
+    // tillbaka som null). Slår varningen till trots att länken finns, är det
+    // läsningen som ljuger — och då vet vi det, vilket vi inte gör idag.
+    var varningar = [];
+
     MV.db.linkOnce(nytt, cfg.linkKoppling, anl);
     MV.db.linkOnce(anl, cfg.linkAktivt, nytt);
+
+    if (!MV.Faltarbete._arLankat(MV.db.reload(nytt, cfg.libFaltarbete),
+            cfg.linkKoppling, anl)) {
+        varningar.push(cfg.linkKoppling);
+    }
+    if (!MV.Faltarbete._arLankat(MV.db.reload(anl, cfg.libAnlaggning),
+            cfg.linkAktivt, nytt)) {
+        varningar.push(cfg.linkAktivt);
+    }
 
     // Länkfält kopieras inte av create() — de länkas här.
     for (var n = 0; n < MV.Faltarbete.LINK_FROM_ANLAGGNING.length; n++) {
@@ -207,18 +335,45 @@ MV.Faltarbete.skapa = function (anlaggning, opts) {
         } catch (ex) { /* fältet finns inte i båda biblioteken */ }
     }
 
-    // Historiken från anläggningen speglas in i det nya fältarbetet, så att
-    // tidigare ordrar syns direkt utan att man behöver gå till anläggningen.
-    var kopplade = 0;
-    for (var i = 0; i < historik.length; i++) {
-        var tidigare = MV.db.reload(historik[i], cfg.libFaltarbete);
-        if (MV.db.linkOnce(nytt, cfg.linkHistorik, tidigare)) kopplade++;
+    // Historiken kan inte länkas in (se kommentaren vid linkHistorik) — den
+    // sammanfattas i text i stället.
+    var sammanfattning = MV.Faltarbete.historikText(anl);
+
+    if (sammanfattning !== "") {
+        var skrevs = false;
+        try {
+            nytt.set(cfg.faltHistorikText, MV.util.textToHtml(sammanfattning));
+            skrevs = true;
+        } catch (ex) {
+            skrevs = false;          // fältet finns inte i biblioteket
+        }
+        if (!skrevs) {
+            MV.Logg.append(nytt, MV.util.f("logg"), sammanfattning);
+        }
     }
 
     MV.Logg.append(nytt, MV.util.f("logg"),
         opts.loggText || "Nytt fältarbete skapat.");
 
-    return { ok: true, entry: nytt, historik: kopplade };
+    return {
+        ok: true,
+        entry: nytt,
+        historik: historik.length,
+        sammanfattning: sammanfattning,
+        varningar: varningar
+    };
+};
+
+/** Är toEntry länkat från fromEntry i fältet? Används för att bekräfta. */
+MV.Faltarbete._arLankat = function (fromEntry, fieldName, toEntry) {
+    if (!fromEntry || !toEntry) return false;
+    try {
+        var items = MV.fmt.toArray(fromEntry.field(fieldName));
+        for (var i = 0; i < items.length; i++) {
+            if (items[i] && items[i].id === toEntry.id) return true;
+        }
+    } catch (ex) { /* fältet saknas */ }
+    return false;
 };
 
 
@@ -430,6 +585,13 @@ MV.Faltarbete.TEXTER = MV.Faltarbete.TEXTER || {
             "Du måste avsluta och spara det inifrån fältarbetet innan du kan köra " +
             "'Nytt Fältarbete' från anläggningen igen!"
     },
+    lankFel: {
+        titel: "Fältarbetet skapades — men en koppling saknas",
+        text: "Fältarbetet är skapat, men följande länk blev inte gjord: ",
+        atgard: "Öppna anläggningen och kontrollera 'Aktivt Fältarbete'. " +
+            "Saknas kopplingen: länka för hand, och säg till att det hände " +
+            "— det här ska inte kunna inträffa."
+    },
     ovantatAvslut: { titel: "Avslut misslyckades", text: "Oväntat fel: " },
     ovantatSkapa: { titel: "Kunde inte skapa fältarbete", text: "Orsak: " }
 };
@@ -468,10 +630,15 @@ MV.Faltarbete.skapaMedDialog = function (anlaggning, opts) {
     var res = MV.Faltarbete.skapa(anlaggning || entry(), opts);
     var t = MV.Faltarbete.TEXTER;
 
-    if (res.ok) {
+    if (res.ok && res.varningar && res.varningar.length > 0) {
+        // Fältarbetet finns, men en koppling saknas. Det MÅSTE synas — annars
+        // upptäcks det först när historiken ser tom ut veckor senare.
+        MV.ui.info(t.lankFel.titel,
+            t.lankFel.text + res.varningar.join(", ") + "\n\n" + t.lankFel.atgard);
+    } else if (res.ok) {
         MV.util.say("Fältarbete skapat och länkat!" +
             (res.historik > 0
-                ? " " + res.historik + " tidigare order(s) kopplade."
+                ? " " + res.historik + " tidigare fältarbete(n) sammanfattade."
                 : ""));
     } else if (res.reason === "redan-aktivt") {
         MV.ui.info(t.redanAktivt.titel, t.redanAktivt.text);
@@ -492,4 +659,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-08-31 15:23", hash: "a15d4fe" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-01 15:50", hash: "edd200f" });

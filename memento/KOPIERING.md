@@ -46,7 +46,7 @@ efter fältarbeten och historikkopplingar som inte hör dit.
 | Fält | Typ | Ska peka på |
 |---|---|---|
 | `Koppling till anläggning` | Link to entry | Anläggningar *(samma uppsättning)* |
-| `Historiska Fältarbeten` | Link to entry | Fältarbete — **sig självt** |
+| ~~`Historiska Fältarbeten`~~ | — | **Går inte.** Ett länkfält kan inte peka på sitt eget bibliotek. Fältet i drift pekar på ett gammalt test-Fältarbete, vilket är varför historiken aldrig fungerat. Arkitekturbeslut pågår, se `ARBETSLAGE.md` A1. |
 | `Nyckel` | Link to entry | Nyckelregister *(samma uppsättning)* |
 | `Lookup` | Lookup | Nyckelregister *(samma uppsättning)*, fältet med nyckelinfo |
 

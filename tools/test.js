@@ -348,9 +348,17 @@ suite("fa-faltarbete — skapa");
     eq(nytt.field("Status Fältarbete"), "Historik finns",
        "status sätts efter historik");
 
-    eq(res.historik, 2, "REGRESSION: två historikposter rapporterades kopplade");
-    eq(MV.fmt.toArray(nytt.field("Historiska Fältarbeten")).length, 2,
-       "REGRESSION: tidigare ordrar är länkade i det NYA fältarbetet");
+    // AVSIKT: historiken LÄNKAS INTE in i fältarbetet. Ett Link to entry-fält
+    // kan inte peka på sitt eget bibliotek, så ett fältarbete kan inte länka
+    // till andra fältarbeten (uppmätt i appen 2026-08-31). Anläggningen är
+    // facit; fältarbetet får en sammanfattning i text.
+    eq(res.historik, 2, "antalet tidigare fältarbeten rapporteras");
+    ok(res.sammanfattning.indexOf("2 tidigare fältarbeten") === 0,
+       "AVSIKT: sammanfattningen inleds med antalet");
+    ok(res.sammanfattning.indexOf("Hela historiken finns på anläggningen") > 0,
+       "AVSIKT: sammanfattningen pekar vidare till anläggningen");
+    eq(MV.fmt.toArray(nytt.field("Historiska Fältarbeten")).length, 0,
+       "AVSIKT: inget historiklänkfält i fältarbetet — det går inte i Memento");
 
     eq(MV.fmt.toArray(nytt.field("Koppling till anläggning")).length, 1,
        "fältarbetet är kopplat till anläggningen");
@@ -676,9 +684,13 @@ suite("fa-faltarbete — historik efter ett helt varv");
     eq(r2.entry.field("Status Fältarbete"), "Historik finns",
        "status speglar att historik finns");
 
-    var historikIds = MV.fmt.toArray(r2.entry.field("Historiska Fältarbeten"))
+    ok(r2.sammanfattning.indexOf("1 tidigare fältarbete") === 0,
+       "sammanfattningen räknar i singular när det bara finns ett");
+
+    // Historiken ligger kvar där den KAN ligga: i anläggningen.
+    var historikIds = MV.fmt.toArray(anl.field("Historiska Fältarbeten"))
         .map(function (x) { return x.id; });
-    eq(historikIds, [f1.id], "historiken pekar på rätt fältarbete");
+    eq(historikIds, [f1.id], "anläggningens historik pekar på rätt fältarbete");
 })();
 
 
@@ -1039,6 +1051,126 @@ suite("Åter till nätägare — alias under namnbytet");
     f3.link("Koppling till anläggning", anl2);
     eq(MV.Faltarbete.avsluta(f3).reason, "validering",
        "saknas fältet helt stoppas avslutet snyggt i stället för att krascha");
+})();
+
+
+/* ================================================================ */
+suite("fa-faltarbete — historik som text");
+
+/*
+ * Ett Link to entry-fält kan inte peka på sitt eget bibliotek. Ett fältarbete
+ * kan alltså inte länka till andra fältarbeten — uppmätt i appen 2026-08-31.
+ * Historiken bor i anläggningen, och fältarbetet får en sammanfattning.
+ */
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    var anl = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+
+    var g1 = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-04-12"),
+        "Status Fältarbete": "Avslutad", "Åtgärder": ["Mätare bytt"]
+    });
+    var g2 = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-06-01"),
+        "Status Fältarbete": "Avslutad", "Åtgärder": ["Terminal omstartad", "Antenn bytt"]
+    });
+    anl.link("Historiska Fältarbeten", g1);
+    anl.link("Historiska Fältarbeten", g2);
+
+    var text = MV.Faltarbete.historikText(anl);
+
+    ok(text.indexOf("2 tidigare fältarbeten") === 0, "antalet står först");
+    ok(text.indexOf("2026-06-01") < text.indexOf("2026-04-12"),
+       "AVSIKT: nyaste ärendet först");
+    ok(text.indexOf("Mätare bytt") > 0, "åtgärderna kommer med");
+    ok(text.indexOf("Antenn bytt") > 0, "flera åtgärder slås ihop på raden");
+
+    // Ett ärende utan avslutsdatum ska falla tillbaka på Skapad, inte försvinna
+    var g3 = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Skapad": Date.parse("2026-07-20"),
+        "Status Fältarbete": "Pågående"
+    });
+    anl.link("Historiska Fältarbeten", g3);
+    ok(MV.Faltarbete.historikText(anl).indexOf("2026-07-20") > 0,
+       "utan avslutsdatum används Skapad");
+
+    // Taket: bara de senaste sammanfattas, resten räknas
+    MV.config.faltarbete.historikAntal = 2;
+    var kort = MV.Faltarbete.historikText(anl);
+    eq(kort.split("•").length - 1, 2, "bara historikAntal rader visas");
+    ok(kort.indexOf("…och 1 till") > 0, "resten räknas i stället för att döljas");
+    MV.config.faltarbete.historikAntal = 5;
+
+    eq(MV.Faltarbete.historikText(s.anlLib.seed({ "Anl. adress": "Tom" })), "",
+       "ingen historik ger tom sträng, inte en rubrik utan innehåll");
+})();
+
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    var anl = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+    var gammal = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-04-12"),
+        "Status Fältarbete": "Avslutad"
+    });
+    anl.link("Historiska Fältarbeten", gammal);
+
+    var res = MV.Faltarbete.skapa(anl);
+    ok(res.ok, "skapa lyckas");
+
+    // Finns inte fältet i biblioteket ska texten hamna i loggen i stället,
+    // så att den aldrig tappas tyst.
+    var logg = MV.util.htmlToText(res.entry.field("Logg"));
+    ok(logg.indexOf("1 tidigare fältarbete") > 0,
+       "AVSIKT: saknas historikfältet hamnar sammanfattningen i loggen");
+})();
+
+
+/* ================================================================ */
+suite("fa-faltarbete — misslyckad länkning ska synas");
+
+/*
+ * A2 i ARBETSLAGE.md: "Nytt Fältarbete" från Anläggningar skapade fältarbetet
+ * men länkade inte "Aktivt Fältarbete", helt tyst, eftersom returvärdet från
+ * linkOnce() ignorerades. Orsaken är inte fastställd — men tystnaden är
+ * åtgärdad, och det är den som gör felet farligt.
+ */
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    var anl = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+
+    // Simulera exakt det appen gjorde: linkOnce anropas, rapporterar framgång,
+    // men länken finns inte efteråt. Patchen sitter på MV.db.linkOnce och inte
+    // på entryt, eftersom skapa() arbetar på en omhämtad kopia — vilket är
+    // just varför en patch på entryt inte skulle märkas.
+    var origLinkOnce = MV.db.linkOnce;
+    MV.db.linkOnce = function (fromEntry, fieldName, toEntry) {
+        if (fieldName === "Aktivt Fältarbete") return true;   // ljuger, som förr
+        return origLinkOnce(fromEntry, fieldName, toEntry);
+    };
+
+    var res = MV.Faltarbete.skapa(anl);
+    MV.db.linkOnce = origLinkOnce;
+
+    ok(res.ok, "fältarbetet skapas ändå — det är inte förlorat");
+    eq(res.varningar, ["Aktivt Fältarbete"],
+       "REGRESSION: den uteblivna länken rapporteras i stället för att tigas ihjäl");
+    ok(res.entry && res.entry.id !== undefined,
+       "det skapade fältarbetet returneras, så det går att laga för hand");
+})();
+
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+    var anl = s.anlLib.seed({ "Anl. adress": "Nyvägen 2", "Logg": "" });
+
+    var res = MV.Faltarbete.skapa(anl);
+    eq(res.varningar, [], "går allt rätt är varningslistan tom");
 })();
 
 

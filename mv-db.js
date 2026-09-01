@@ -12,14 +12,17 @@
  * Modulen gör omhämtningen till regel i stället för undantag. Det är billigt
  * och tar bort en hel klass av tysta fel.
  *
- * OBS om orsakssamband: att detta var orsaken till att historik inte följde
- * med till nya fältarbeten är INTE bevisat. Ett länkfälts måltabell binds mot
- * bibliotekets ID, och i drift pekade "Historiska Fältarbeten" på ett gammalt
- * testbibliotek — vilket förklarar samma symptom direkt och mer troligt.
- * Omhämtningen behålls som skydd, inte som bevisad rättning. Se KOPIERING.md.
+ * OBS om orsakssamband: omhämtningen var INTE orsaken till att historik inte
+ * följde med till nya fältarbeten. Det vet vi nu. Ett fältarbete kan över huvud
+ * taget inte länka till andra fältarbeten — ett Link to entry-fält kan inte
+ * peka på sitt eget bibliotek (uppmätt 2026-08-31). Fältet i drift pekade på
+ * ett gammalt test-Fältarbete därför att det var det enda mål det kunde få.
+ * Historiken bor numera i anläggningen; fältarbetet får en textsammanfattning.
+ *
+ * Omhämtningen behålls för det den faktiskt gör: den tar bort en klass av
+ * tysta fel vid skrivning. Den är skydd, inte en rättning av historikbuggen.
  *
  * Kräver: mv-core.js
- * Test rad
  */
 
 var MV = MV || {};
@@ -268,4 +271,4 @@ MV.db.copyFields = function (sourceEntry, fieldNames) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-db", byggd: "2026-08-31 15:23", hash: "d7fd2f9" });
+MV.build.moduler.push({ namn: "mv-db", byggd: "2026-09-01 15:50", hash: "70f2698" });

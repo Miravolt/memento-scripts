@@ -9,6 +9,15 @@ Ordnad lista över vad som ska göras i appen. Gör ett bibliotek färdigt i tag
 > varje bibliotek behöver — de synkroniseras inte mellan enheter och måste
 > sättas om på varje telefon och dator.
 
+> **Nytt fält i Fältarbete: `Tidigare fältarbeten`** (Rich text, skrivskyddat
+> för användaren om det går). Här skrivs sammanfattningen av anläggningens
+> tidigare ärenden när ett fältarbete skapas. Saknas fältet hamnar texten i
+> `Logg` i stället, så inget går förlorat — men då syns den inte lika tydligt.
+>
+> **Fältet `Historiska Fältarbeten` i Fältarbete ska tas bort.** Det kan inte
+> fungera: ett länkfält kan inte peka på sitt eget bibliotek. Anläggningens
+> `Historiska Fältarbeten` är facit och ska vara kvar.
+
 **Bocka av under vägen.** Går något sönder mitt i är det ingen katastrof:
 `appendToLog()` och `updateFirmwareStatus()` finns kvar som shims i modulerna,
 så script som ännu inte migrerats fortsätter fungera.
