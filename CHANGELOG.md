@@ -15,6 +15,14 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **`mementools.py links`** — visar vilket bibliotek varje länkfält pekar på.
+  Måltabellen ligger i fältets `cnt[0].s` och fältets egen tabell i `lib`;
+  exporteras alla bibliotek samtidigt går id:na att lösa upp till namn. Kört på
+  augustiexporten pekade **samtliga åtta** länkfält ut ur testuppsättningen —
+  `Aktivt Fältarbete` i Anläggningar pekade inte på Fältarbete, och båda
+  `Historiska Fältarbeten` pekade på samma okända bibliotek. Rapporten skrivs
+  bara till skärmen; den innehåller biblioteksnamnen och därmed kundnamnet.
+
 - **`memento/FALT.md` — genererad fältinventering.** `mementools.py fields`
   läser templaterna och skriver varje fält med typ, i kortets ordning och med
   underrubrikerna kvar, för alla fyra biblioteken. Kundnamn i fältnamn maskeras

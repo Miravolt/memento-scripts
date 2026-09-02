@@ -513,6 +513,104 @@ def cmd_fields(raw_dir, out_file):
     return 0
 
 
+# --------------------------------------------------------------------------- #
+# links — vilket bibliotek pekar varje länkfält på?
+#
+# Kom till för att driftbiblioteken visade sig ha länkfält som pekade på gamla
+# TESTbibliotek. Det gick inte att se någonstans utan att öppna varje fält i
+# appen, ett i taget, och jämföra mot minnet.
+#
+# Måltabellen ligger i fältets cnt[0].s. Fältets EGEN tabell ligger i "lib".
+# Är de exporterade tillsammans går allt att lösa upp till namn.
+#
+# Rapporten skrivs till skärmen och INTE till en fil: den innehåller riktiga
+# biblioteksnamn, alltså kundnamn, och repot är publikt.
+# --------------------------------------------------------------------------- #
+
+def _lib_id(data):
+    """Bibliotekets eget id — samma "lib" på alla dess fält."""
+    for tpl in data.get("templates", []):
+        if tpl.get("lib"):
+            return tpl["lib"]
+    return None
+
+
+def cmd_links(raw_dir):
+    filer = sorted(p for p in os.listdir(raw_dir) if p.endswith(".mlt2"))
+    if not filer:
+        print("inga .mlt2 i %s" % raw_dir)
+        return 2
+
+    # Karta id -> titel, byggd av allt som exporterats.
+    namn = {}
+    laddade = []
+
+    for fil in filer:
+        with io.open(os.path.join(raw_dir, fil), encoding="utf-8") as fh:
+            data = json.load(fh)
+        titel = data.get("title") or fil[:-5]
+        egen = _lib_id(data)
+        if egen:
+            namn[egen] = titel
+        laddade.append((titel, egen, data))
+
+    print("")
+    print("  Exporterade bibliotek")
+    for titel, egen, _ in laddade:
+        print("    %-40s %s" % (titel, egen or "(inget id — inga fält?)"))
+
+    problem = 0
+
+    for titel, egen, data in laddade:
+        rader = []
+        for tpl in data.get("templates", []):
+            typ = tpl.get("type")
+            mal = None
+
+            if typ == "ft_lib_entry":
+                cnt = tpl.get("cnt") or [{}]
+                mal = cnt[0].get("s")
+            elif typ == "ft_lookup":
+                jo = tpl.get("json_options")
+                if isinstance(jo, str):
+                    try:
+                        mal = json.loads(jo).get("libraryId")
+                    except ValueError:
+                        mal = None
+            else:
+                continue
+
+            if not mal:
+                rader.append((tpl.get("tt"), "(inget mål satt)", True))
+                problem += 1
+                continue
+
+            if mal in namn:
+                rader.append((tpl.get("tt"), namn[mal], False))
+            else:
+                rader.append((tpl.get("tt"), "OKÄNT id %s — biblioteket är "
+                              "inte med i exporten" % mal, True))
+                problem += 1
+
+        if not rader:
+            continue
+
+        print("")
+        print("  %s" % titel)
+        for falt, mal, flagga in rader:
+            print("    %-28s -> %s%s" % (falt, mal, "   <-- KONTROLLERA" if flagga else ""))
+
+    print("")
+    if problem:
+        print("  %d länkfält pekar på något som inte finns i exporten." % problem)
+        print("  Exportera ALLA bibliotek — drift och test — och kör igen, så")
+        print("  syns det om ett driftfält pekar på ett testbibliotek.")
+    else:
+        print("  Alla länkfält pekar på bibliotek som finns i exporten.")
+        print("  Kontrollera ändå att drift pekar på drift och test på test.")
+    return 0
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__)
@@ -520,7 +618,8 @@ def main(argv):
 
     cmd, args = argv[1], argv[2:]
     handlers = {"extract": (cmd_extract, 3), "inject": (cmd_inject, 3),
-                "diff": (cmd_diff, 2), "fields": (cmd_fields, 2)}
+                "diff": (cmd_diff, 2), "fields": (cmd_fields, 2),
+                "links": (cmd_links, 1)}
 
     if cmd not in handlers:
         print("okänt kommando: %s" % cmd)

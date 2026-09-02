@@ -220,7 +220,7 @@ tools/
                      återskapar appens egenheter med flit.
   kontroll.js        invariantkontroll — I1, I2, I5, I9, döda doc-referenser
   stamp.js           byggstämplar; --check verifierar hash mot innehåll
-  mementools.py      extract / inject / diff / fields för .mlt2-filer
+  mementools.py      extract / inject / diff / fields / links för .mlt2
   push.ps1           git-check -> stämpel -> kontroll -> tester ->
                      sekretess -> visa diff -> commit + push
 

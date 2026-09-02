@@ -147,4 +147,4 @@ function appendToLog(entryObj, loggFalt, nyText, appendMode) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-logg", byggd: "2026-09-02 13:03", hash: "fdc30ea" });
+MV.build.moduler.push({ namn: "mv-logg", byggd: "2026-09-02 13:16", hash: "fdc30ea" });

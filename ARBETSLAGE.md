@@ -61,13 +61,17 @@ Ordningen att göra det i. Den fullständiga listan står i `TESTPLAN.md`
 4. ~~**Kör hela `TESTPLAN.md`**~~ — körd. Kvar av den: **A3** (reproducera
    avslut utan koppling med känt utgångsläge) och **A4** (`Firmware Status` i
    ändringsloggen).
-5. **Kör `Granska` i drift-Anläggningar.** Ersätter de två kontrollerna i
+5. **Reda ut länkfälten i drift.** De pekar på gamla testbibliotek. Exportera
+   alla åtta bibliotek och kör `python tools/mementools.py links "Raw"`, sedan
+   `Granska` i drift. Se `DRIFTSATTNING.md` steg 1b — det avgör om det räcker
+   att peka om, eller om data ligger i fel bibliotek.
+6. **Kör `Granska` i drift-Anläggningar.** Ersätter de två kontrollerna i
    avsnitt 5 som inte gick att göra för hand. Noll främmande länkar är kravet.
-6. **Sätt Library permission** i varje bibliotek, på varje enhet.
-7. ~~**Flygplanslägestest**~~ — klart, riktiga flöden i varje bibliotek. Kvar:
+7. **Sätt Library permission** i varje bibliotek, på varje enhet.
+8. ~~**Flygplanslägestest**~~ — klart, riktiga flöden i varje bibliotek. Kvar:
    kör `Version` en gång **med** täckning på varje ny enhet innan den går ut i
    fält, så att cachen är fylld.
-8. **Driftsättning** enligt `DRIFTSATTNING.md` — backup först, sedan struktur,
+9. **Driftsättning** enligt `DRIFTSATTNING.md` — backup först, sedan struktur,
    script, enheter, och ett skarpt ärende hela vägen.
 
 ## Avvikelser från testkörningen

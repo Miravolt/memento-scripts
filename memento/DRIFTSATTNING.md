@@ -66,6 +66,70 @@ Ingen av dessa får vara öppen när driften rörs.
 
 ---
 
+## Steg 1b — Länkfält som pekar på fel bibliotek
+
+Driften har länkfält som pekar på gamla **test**bibliotek. Det måste redas ut
+före allt annat, för det avgör om det bara är en inställning som ska ändras
+eller om data ligger på fel ställe.
+
+### Kartlägg först — gissa inte
+
+- [ ] Exportera **alla åtta** bibliotek som `.mlt2` till `Raw/` — fyra i drift,
+      fyra i test. Även gamla testbibliotek som fortfarande finns kvar.
+- [ ] Kör:
+
+      python tools/mementools.py links "Raw"
+
+Rapporten visar varje länkfält och vilket bibliotek det pekar på, med namn.
+Pekar ett driftfält på ett testbibliotek syns det direkt. Ett mål som inte
+finns bland de exporterade skrivs ut som `OKÄNT id …` — då saknas det
+biblioteket i exporten, eller så är det raderat.
+
+Rapporten skrivs **bara till skärmen**, aldrig till fil: den innehåller
+biblioteksnamnen, alltså kundnamnet, och repot är publikt.
+
+### Avgör sedan vilket fall det är
+
+- [ ] Kör `Granska` i **drift**-Anläggningar.
+
+**Fall A — inga främmande länkar.** Fältet pekar fel, men ingenting är länkat
+genom det. Länkningarna har misslyckats tyst hela tiden, vilket är precis det
+symptom som gjorde att historiken aldrig följde med. **Ingen data behöver
+flyttas.** Peka om fältet och bygg upp länkarna igen (nedan).
+
+**Fall B — främmande länkar finns.** Då ligger poster i ett testbibliotek som
+driften pekar på. Först då blir det en dataflytt, med bilder och allt — det som
+inte gick förra gången. Säg till innan du gör något; den vägen behöver planeras
+för sig.
+
+*Fall A är det troliga.* Fältarbeten skapas alltid av koden i det bibliotek
+namnuppslaget ger, alltså rätt ett. Det är bara **länken** från anläggningen som
+gått fel, inte var posterna hamnat.
+
+### Bygg upp länkarna igen — utan att flytta något
+
+Nyckeln är att informationen finns kvar på andra hållet: **varje fältarbete vet
+själv vilken anläggning det hör till**, genom `Koppling till anläggning`.
+`Historiska Fältarbeten` och `Aktivt Fältarbete` går därför att räkna fram:
+
+- ett avslutat fältarbete hör hemma i anläggningens `Historiska Fältarbeten`
+- ett öppet är dess `Aktivt Fältarbete`
+
+Ordning:
+
+- [ ] Peka om fältet till rätt bibliotek *(befintliga länkar genom fältet
+      försvinner — men i fall A fanns inga)*
+- [ ] Kör återuppbyggnaden, **först som torrkörning** som bara rapporterar vad
+      den skulle göra
+- [ ] Läs igenom rapporten. Stämmer den: kör skarpt
+- [ ] Kör `Granska` igen — noll främmande länkar
+
+> Funktionen för återuppbyggnaden är **inte byggd än**. Den ska byggas när
+> kartläggningen ovan visat vilket fall det är, inte innan — den skriver i
+> skarp data och ska inte skrivas på gissningar om vad den möter.
+
+---
+
 ## Steg 2 — Strukturändringar i drift
 
 Gör ett bibliotek i taget. Efter varje bibliotek: öppna ett entry och se att

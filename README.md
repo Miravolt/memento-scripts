@@ -52,7 +52,7 @@ tools/test.js        node tools/test.js — tester mot en Memento-simulator
 tools/mock.js        simulatorn
 tools/kontroll.js    invariantkontroll: ES5, laddningsordning, döda referenser
 tools/stamp.js       skriver byggstämpeln i modulerna
-tools/mementools.py  extract / inject / diff / fields för .mlt2-templates
+tools/mementools.py  extract / inject / diff / fields / links för .mlt2
                      (triggers, actions, shared, knappfält OCH JavaScript-fält)
 tools/push.ps1       stämpla, kontrollera, testa, sekretess, commit + push
 push.cmd             dubbelklicka för att pusha
