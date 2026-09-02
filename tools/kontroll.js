@@ -425,7 +425,79 @@ function kontrolleraArbetslage() {
 
 /* ================================================================== */
 
+/* ================================================================== *
+ * Fältnamn mot fältinventeringen
+ *
+ * memento/FALT.md är genererad ur templaterna och är facit för vilka fält som
+ * finns. Kontrollen kom till efter att ett statusvärde uppfunnits som i själva
+ * verket var ett kryssrutefält. Varning, inte fel: fältnamn får avvika
+ * legitimt (alias under namnbyten, fält som ännu inte lagts till i appen).
+ * ================================================================== */
+
+function kontrolleraFaltnamn() {
+    var fil = path.join(ROOT, "memento", "FALT.md");
+    if (!fs.existsSync(fil)) {
+        warn("fältnamn", "memento/FALT.md saknas — kör" +
+            " `python tools/mementools.py fields \"Raw\" memento/FALT.md`");
+        return;
+    }
+
+    var inventering = las(fil);
+    var kanda = {};
+    var re = /^\| `([^`]+)` \|/gm;
+    var m;
+    while ((m = re.exec(inventering)) !== null) kanda[m[1]] = true;
+
+    // Fält som koden skapar eller läser men som legitimt kan saknas i
+    // inventeringen. Läggs ett namn till här ska det motiveras.
+    var undantag = {
+        "Tidigare fältarbeten": "nytt fält, ska läggas till i appen"
+    };
+
+    // Bara strängar som FAKTISKT används som fältnamn:
+    //   .field("X")  .set("X", …)  och innehållet i fältlistorna.
+    // Att leta efter "allt som ser ut som ett fältnamn" ger 60 träffar på
+    // vanliga meddelandetexter och gör varningen värdelös.
+    var listor = ["COPY_FROM_ANLAGGNING", "LINK_FROM_ANLAGGNING", "TRACK_FIELDS",
+                  "SYNC_TO_ANLAGGNING", "COMMENT_FIELDS", "FALT_MAPPNING"];
+
+    var okanda = [];
+    for (var i = 0; i < moduler.length; i++) {
+        var kod = las(path.join(ROOT, moduler[i]));
+        var kandidater = [];
+
+        var anrop = /\.(?:field|set)\(\s*"([^"]+)"/g;
+        var t;
+        while ((t = anrop.exec(kod)) !== null) kandidater.push(t[1]);
+
+        for (var L = 0; L < listor.length; L++) {
+            var blockRe = new RegExp(listor[L] + "\\s*=\\s*\\[([\\s\\S]*?)\\]");
+            var block = kod.match(blockRe);
+            if (!block) continue;
+            var strRe = /"([^"]+)"/g;
+            var u;
+            while ((u = strRe.exec(block[1])) !== null) kandidater.push(u[1]);
+        }
+
+        var sedda = {};
+        for (var k = 0; k < kandidater.length; k++) {
+            var namn = kandidater[k];
+            if (namn === "" || sedda[namn] || kanda[namn] || undantag[namn]) continue;
+            sedda[namn] = true;
+            okanda.push(moduler[i] + ': "' + namn + '"');
+        }
+    }
+
+    if (okanda.length > 0) {
+        warn("fältnamn", okanda.length + " fältnamn används i koden men finns" +
+            " inte i memento/FALT.md: " + okanda.join(", ") +
+            ". Slå upp i inventeringen — gissa inte. Är fältet nytt: lägg det" +
+            " i appen och generera om inventeringen.");
+    }
+}
+
 kontrolleraTestlista();
+kontrolleraFaltnamn();
 kontrolleraReferenser();
 kontrolleraToppniva();
 kontrolleraES5();

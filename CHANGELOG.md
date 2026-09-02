@@ -15,23 +15,31 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **`memento/FALT.md` — genererad fältinventering.** `mementools.py fields`
+  läser templaterna och skriver varje fält med typ, i kortets ordning och med
+  underrubrikerna kvar, för alla fyra biblioteken. Kundnamn i fältnamn maskeras
+  mot `.forbjudna-ord` innan filen skrivs — det gamla fältet `Åter till <kund>`
+  hade annars nått det publika repot. `tools/kontroll.js` varnar för fältnamn i
+  koden som inte finns i inventeringen. Kom till efter att koden fått ett
+  statusvärde som i själva verket var ett kryssrutefält.
+
 - **Historiken som text i fältarbetet.** `MV.Faltarbete.historikText()` skriver
   en sammanfattning av anläggningens tidigare fältarbeten i fältet
   `Tidigare fältarbeten`, eller i loggen om fältet inte finns. Ersätter
   historiklänkfältet, som aldrig kunde fungera. Per besök, nyaste först:
 
   ```
-  • 2026-06-01 · Läser i CM · Mätaren läser utan åtgärd
-     Gjort: Terminal omstartad, RF8 antenn monterad
-     Not: Kunden ej hemma första gången, kom in via nyckelrör.
+  • 2026-06-01 · Mätaren läser utan åtgärd · Terminal omstartad, Antenn bytt
+     ”Kunden ej hemma första gången, kom in via nyckelrör.”
   ```
 
-  Rubrikraden bär datum, hur ärendet lämnade listan (`Läser i CM` eller
-  `Åter till nätägare`) och anledningen till avslut. Anledningen är
+  En rad per besök: datum, anledning till avslut och vad som kryssats i under
+  `Åtgärder`. Kommentaren får en egen rad inom citattecken, utan etikett.
+  Anledningen är
   `Status Fältarbete` — värden som `Mätaren läser utan åtgärd` och
   `Ström bruten i kabelskåp` är just det man vill veta. Intetsägande värden
-  (`Ny`, `Historik finns`, `Klar`, `Avslutad`) utelämnas, styrt av
-  `historikDoljStatus`. Kommentarfälten klipps vid `historikKommentarLangd`.
+  (`Ny`, `Historik finns`, `Klar`) utelämnas, styrt av
+  `historikDoljStatus`. Kommentaren klipps vid `historikKommentarLangd`.
 - **Utebliven länkning syns.** `skapa()` läser tillbaka `Koppling till
   anläggning` och `Aktivt Fältarbete` efter att ha länkat, och returnerar
   `varningar`. `skapaMedDialog()` visar dem. Tidigare ignorerades returvärdet
@@ -82,6 +90,12 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
   två av Mementos egenheter: kalla `create()`-objekt och tröga kartfält.
 
 ### Ändrat
+
+- **Commit-meddelanden kan vara flera rader.** `push.cmd` frågar fortfarande
+  efter en rad i fönstret, men trycker man bara Enter öppnas Anteckningar med
+  en mall — rubrik, tom rad, brödtext, och de ändrade filerna listade som
+  kommentarer. Meddelandet committas med `git commit -F` i stället för `-m`,
+  vilket också gör att citattecken och åäö slipper escapas.
 
 - **Dialogerna flyttade från knappscripten till modulen.**
   `MV.Faltarbete.avslutaMedDialog()` och `skapaMedDialog()` gör arbetet och

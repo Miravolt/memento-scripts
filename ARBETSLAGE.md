@@ -31,6 +31,11 @@ Optimering och utseende kommer efter, se `CLAUDE.md` del 6.
   som kunde ha sänkt hela arkitekturen. Samtidigt bekräftades att *ingen* enhet
   hämtar om av sig själv, och att Mementos strukturuppdatering inte rör
   JavaScript-biblioteken.
+- **Fältinventering.** `memento/FALT.md` genereras ur templaterna och är facit
+  för vilka fält som finns och av vilken typ. `tools/kontroll.js` varnar för
+  fältnamn i koden som inte står där.
+- **Historiken visas som text** i fältarbetet: en rad per besök med datum,
+  anledning till avslut och åtgärder, plus kommentaren på egen rad.
 
 ## Kvar innan parity kan kallas verifierad
 

@@ -44,14 +44,25 @@ MV.config.faltarbete = {
     historikAntal: 5,
 
     /**
-     * Statusvärden som INTE säger något om varför ärendet avslutades, och
+     * Statusvärden som INTE säger något om VARFÖR ärendet avslutades, och
      * därför utelämnas ur historikraden. Övriga värden — "Mätaren läser utan
      * åtgärd", "Ström bruten i kabelskåp", "Annan orsak, se anmärkning" — är
-     * just den anledning man vill se, och tas med.
+     * just den anledningen, och tas med.
+     *
+     * Samtliga tre finns på riktigt i Status Fältarbete (ft_str_list). Se
+     * memento/FALT.md för fältuppsättningen och ARBETSFLODE.md för vad
+     * statusvärdena betyder.
      */
-    historikDoljStatus: ["Ny", "Historik finns", "Klar", "Avslutad", ""],
+    historikDoljStatus: ["Ny", "Historik finns", "Klar", ""],
 
-    /** Kommentarer klipps här, så att en lång utläggning inte äter hela rutan. */
+    /**
+     * Kommentarfält som tas med i historikraden. Bara "Kommentar" — det som
+     * står under Åtgärder i kortet. De två övriga kommentarfälten hör till
+     * avläsning respektive mätarbyte och skulle göra raden rörig.
+     */
+    historikKommentarFalt: ["Kommentar"],
+
+    /** Kommentaren klipps här, så att en lång utläggning inte äter hela rutan. */
     historikKommentarLangd: 200,
 
     faltLast: "Låst för redigering",
@@ -216,15 +227,6 @@ MV.Faltarbete.historikRad = function (tidigare) {
 
     var rubrik = [datum === "" ? "utan datum" : datum];
 
-    // Hur ärendet lämnade listan: kontoret såg mätaren läsa igen, eller så gick
-    // det tillbaka till nätägaren. Det ena eller det andra, aldrig båda.
-    if (tidigare.field(cfg.faltLaserICM)) {
-        rubrik.push("Läser i CM");
-    } else if (MV.Faltarbete._flagga(tidigare, [
-        cfg.faltAterTillNatagare, cfg.faltAterTillNatagareAlias])) {
-        rubrik.push("Åter till nätägare");
-    }
-
     // Statusvärdet ÄR anledningen till avslut — "Mätaren läser utan åtgärd",
     // "Ström bruten i kabelskåp" — men bara när det säger något. "Klar" och
     // "Historik finns" är brus i en historikrad.
@@ -236,28 +238,30 @@ MV.Faltarbete.historikRad = function (tidigare) {
     }
     if (visaStatus) rubrik.push(status);
 
+    var atgarder = MV.fmt.list(tidigare, cfg.faltAtgarder);
+    if (atgarder.length > 0) rubrik.push(atgarder.join(", "));
+
     var rader = [rubrik.join(" · ")];
 
-    var atgarder = MV.fmt.list(tidigare, cfg.faltAtgarder);
-    if (atgarder.length > 0) rader.push("Gjort: " + atgarder.join(", "));
-
-    var noteringar = MV.Faltarbete._noteringar(tidigare);
-    if (noteringar !== "") rader.push("Not: " + noteringar);
+    // Kommentaren får en egen rad inom citattecken. Ingen etikett — raden
+    // säger sig själv, och en etikett till hade gjort blocket rörigt.
+    var kommentar = MV.Faltarbete._kommentar(tidigare);
+    if (kommentar !== "") rader.push("\u201d" + kommentar + "\u201d");
 
     return { datum: datum, text: rader.join("\n") };
 };
 
 /**
- * Kommentarfälten hopslagna till en rad, klippt vid historikKommentarLangd.
- * Radbrytningar blir mellanslag: historiken ska gå att överblicka, inte vara
- * fullständig. Vill man ha allt öppnar man ärendet.
+ * Kommentaren som en rad, klippt vid historikKommentarLangd. Radbrytningar
+ * blir mellanslag: historiken ska gå att överblicka, inte vara fullständig.
+ * Vill man ha allt öppnar man ärendet.
  */
-MV.Faltarbete._noteringar = function (tidigare) {
+MV.Faltarbete._kommentar = function (tidigare) {
     var cfg = MV.config.faltarbete;
     var delar = [];
 
-    for (var i = 0; i < MV.Faltarbete.COMMENT_FIELDS.length; i++) {
-        var text = MV.fmt.value(tidigare, MV.Faltarbete.COMMENT_FIELDS[i]);
+    for (var i = 0; i < cfg.historikKommentarFalt.length; i++) {
+        var text = MV.fmt.value(tidigare, cfg.historikKommentarFalt[i]);
         text = text.replace(/\s+/g, " ").trim();
         if (text !== "") delar.push(text);
     }
@@ -723,4 +727,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 08:53", hash: "77c404f" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 09:15", hash: "704c981" });

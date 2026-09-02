@@ -122,7 +122,7 @@ Vill du hellre skriva själv:
 ```powershell
 node tools/test.js
 git add -A
-git commit -m "Beskriv vad du ändrade"
+git commit          # utan -m öppnas din editor, flera rader fungerar
 git push
 ```
 
@@ -132,6 +132,29 @@ Texten är vad du läser om ett halvår när du undrar varför något ändrades.
 
 Bra: `Rättade att historik inte kopplades till nya fältarbeten`
 Mindre bra: `fix`, `uppdatering`, `test2`
+
+### Flera rader i meddelandet
+
+`push.cmd` frågar efter en beskrivning. Där går det bara att skriva **en rad** —
+så fungerar inmatningen i ett konsolfönster.
+
+**Tryck bara Enter utan att skriva något**, så öppnas Anteckningar med en mall.
+Skriv hur många rader du vill, **spara** (Ctrl+S) och **stäng fönstret** — då
+fortsätter pushen. Lämnar du allt tomt avbryts den i stället.
+
+Formen är den git använder:
+
+```
+Kort rubrik i imperativ
+
+Sedan en tom rad, och därefter brödtexten. Här finns plats att förklara
+varför ändringen gjordes — vad som var fel, vad som provades, vad som
+fortfarande är oklart.
+```
+
+Raderna som börjar med `#` i mallen är hjälptext och tas bort automatiskt.
+Bland dem listas också vilka filer som ändrats, så du har dem framför dig
+medan du skriver.
 
 ---
 

@@ -36,6 +36,7 @@ Fältarbetesprojektet:
 memento/             Vad som står i respektive script inne i Memento.
   <Bibliotek>/       Versionshanterat så att git speglar appens innehåll.
     shared/Config.js valfria avvikelser som gäller hela biblioteket
+  FALT.md            genererad fältinventering — vad som finns, och av vilken typ
   UPPSATTNING.md     checklista för uppsättningen i appen
   TESTPLAN.md        vad som ska provas i appen innan paritet är nådd
   KOPIERING.md       vad som måste pekas om när bibliotek kopieras
@@ -50,7 +51,7 @@ tools/test.js        node tools/test.js — tester mot en Memento-simulator
 tools/mock.js        simulatorn
 tools/kontroll.js    invariantkontroll: ES5, laddningsordning, döda referenser
 tools/stamp.js       skriver byggstämpeln i modulerna
-tools/mementools.py  extract / inject / diff för .mlt2-templates
+tools/mementools.py  extract / inject / diff / fields för .mlt2-templates
                      (triggers, actions, shared, knappfält OCH JavaScript-fält)
 tools/push.ps1       stämpla, kontrollera, testa, sekretess, commit + push
 push.cmd             dubbelklicka för att pusha

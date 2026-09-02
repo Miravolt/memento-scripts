@@ -1090,31 +1090,30 @@ suite("fa-faltarbete — historik som text");
     // Avslutssätt och anledning — det man vill veta om ett tidigare besök
     var g4 = s.faltLib.seed({
         "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-06-15"),
-        "Läser i CM": true, "Status Fältarbete": "Mätaren läser utan åtgärd",
+        "Status Fältarbete": "Mätaren läser utan åtgärd",
         "Åtgärder": ["Avläsning"], "Kommentar": "Kunden ej hemma\nförsta gången."
     });
     anl.link("Historiska Fältarbeten", g4);
     var medOrsak = MV.Faltarbete.historikText(anl);
 
-    ok(medOrsak.indexOf("Läser i CM") > 0, "avslutssättet syns");
-    ok(medOrsak.indexOf("Mätaren läser utan åtgärd") > 0,
-       "AVSIKT: statusvärdet visas som anledning till avslut");
-    ok(medOrsak.indexOf("Gjort: Avläsning") > 0, "åtgärderna får egen rad");
-    ok(medOrsak.indexOf("Not: Kunden ej hemma första gången.") > 0,
-       "AVSIKT: kommentaren kommer med, radbrytningar blir mellanslag");
+    ok(medOrsak.indexOf("2026-06-15 · Mätaren läser utan åtgärd · Avläsning") > 0,
+       "AVSIKT: datum, anledning och åtgärder på EN rad — inga etiketter");
+    ok(medOrsak.indexOf("\u201dKunden ej hemma första gången.\u201d") > 0,
+       "AVSIKT: kommentaren får egen rad inom citattecken, utan etikett");
+    ok(medOrsak.indexOf("Läser i CM") === -1,
+       "AVSIKT: avslutssättet visas inte — statusvärdet räcker som anledning");
 
     var g5 = s.faltLib.seed({
         "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-06-16"),
-        "Åter till nätägare": true, "Status Fältarbete": "Klar"
+        "Status Fältarbete": "Klar"
     });
     anl.link("Historiska Fältarbeten", g5);
     var utanBrus = MV.Faltarbete.historikText(anl);
 
-    ok(utanBrus.indexOf("Åter till nätägare") > 0, "andra avslutssättet syns");
     ok(utanBrus.indexOf("Klar") === -1,
        "AVSIKT: intetsägande status utelämnas — 'Klar' är brus i en historikrad");
-    ok(utanBrus.indexOf("2026-06-16 · Åter till nätägare\n") > 0,
-       "utan åtgärder och kommentar blir det bara rubrikraden");
+    ok(utanBrus.indexOf("• 2026-06-16\n") > 0,
+       "utan anledning, åtgärder och kommentar blir det bara datumet");
 
     // Långa kommentarer klipps
     MV.config.faltarbete.historikKommentarLangd = 20;

@@ -35,6 +35,7 @@ Exempel
   python tools/mementools.py inject  "Templates utan script" "Extraherade scripts" "Build"
 """
 
+import io
 import json
 import os
 import re
@@ -365,13 +366,161 @@ def cmd_diff(in_dir, scripts_dir):
 
 # --------------------------------------------------------------------------- #
 
+# --------------------------------------------------------------------------- #
+# fields — vilka fält finns egentligen?
+#
+# Kom till efter att koden fått ett statusvärde uppfunnet ur luften ("Avslutad"
+# är en kryssruta, inte ett alternativ i Status Fältarbete). Fältuppsättningen
+# ska gå att slå upp, inte gissas.
+# --------------------------------------------------------------------------- #
+
+# Basnamnen, så att inget kundnamn hamnar i den genererade filen.
+BASNAMN = ["Anläggningar", "Fältarbete", "Import Fältarbete", "Nyckelregister"]
+
+TYPTEXT = {
+    "ft_string": "text",
+    "ft_str_multiline": "text, flera rader",
+    "ft_richtext": "rich text",
+    "ft_int": "heltal",
+    "ft_real": "decimaltal",
+    "ft_boolean": "kryssruta",
+    "ft_date": "datum",
+    "ft_datetime": "datum och tid",
+    "ft_str_list": "lista, ett val",
+    "ft_checkboxes": "kryssrutor, flera val",
+    "ft_radio": "radioknappar",
+    "ft_lib_entry": "länk till entry",
+    "ft_lookup": "lookup",
+    "ft_image": "bild",
+    "ft_location": "karta",
+    "ft_button": "knapp",
+    "ft_script": "javascript-fält",
+    "ft_calc": "beräkning",
+    "ft_contact": "kontakt",
+    "ft_phone": "telefonnummer",
+    "ft_hyperlink": "länk",
+    "ft_file": "fil",
+}
+
+
+def _basnamn(titel):
+    """"Test Fältarbete Kraft AB" -> "Fältarbete". Längsta matchning vinner."""
+    bast, langd = titel, -1
+    for bas in BASNAMN:
+        if bas in titel and len(bas) > langd:
+            bast, langd = bas, len(bas)
+    return bast
+
+
+def _forbjudna(repo_rot):
+    """Orden ur .forbjudna-ord. Filen är gitignorerad; saknas den: tom lista."""
+    sokvag = os.path.join(repo_rot, ".forbjudna-ord")
+    if not os.path.exists(sokvag):
+        return []
+    with io.open(sokvag, encoding="utf-8") as fh:
+        return [r.strip() for r in fh
+                if r.strip() and not r.strip().startswith("#")]
+
+
+def _maskera(text, ord_lista):
+    """Byter ut kundnamn mot <kund>. Fältnamn kan innehålla dem.
+
+    "Åter till Kraft AB" -> "Åter till <kund>". Utan detta skulle den genererade
+    filen stoppas av sekretesskontrollen i push.cmd — eller värre, slinka
+    igenom om ordet inte råkat stå i listan.
+    """
+    for term in ord_lista:
+        text = re.sub(re.escape(term), "<kund>", text, flags=re.IGNORECASE)
+    return text
+
+
+def cmd_fields(raw_dir, out_file):
+    """Skriver en fältinventering för alla .mlt2 i raw_dir."""
+    filer = sorted(p for p in os.listdir(raw_dir) if p.endswith(".mlt2"))
+    if not filer:
+        print("inga .mlt2 i %s" % raw_dir)
+        return 2
+
+    rader = [
+        "# Fältuppsättningen i biblioteken",
+        "",
+        "**Genererad — redigera inte för hand.** Kör:",
+        "",
+        "```",
+        "python tools/mementools.py fields \"Raw\" memento/FALT.md",
+        "```",
+        "",
+        "Detta är facit för vilka fält som finns och vilken typ de har. Slå upp",
+        "här innan du skriver ett fältnamn i koden — att gissa har kostat oss tid",
+        "förr, senast när ett statusvärde uppfanns som i själva verket var en",
+        "kryssruta.",
+        "",
+        "Vilka *värden* ett listfält kan ha ligger inte i templaten. De står i",
+        "[ARBETSFLODE.md](../ARBETSFLODE.md) och kommer från verksamheten.",
+        "",
+    ]
+
+    for fil in filer:
+        with io.open(os.path.join(raw_dir, fil), encoding="utf-8") as fh:
+            data = json.load(fh)
+
+        titel = data.get("title") or fil[:-5]
+        rader.append("## %s" % _basnamn(titel))
+        rader.append("")
+        rader.append("| Fält | Typ | Skrivskyddat |")
+        rader.append("|---|---|---|")
+
+        falt = []
+        for tpl in data.get("templates", []):
+            namn = tpl.get("tt")
+            if not namn:
+                continue
+            falt.append((tpl.get("order", 0), namn, tpl.get("type", ""),
+                         "ja" if tpl.get("readonly") else ""))
+
+        falt.sort()
+        antal = 0
+
+        for _, namn, typ, ro in falt:
+            # Underrubrikerna är kortets indelning. De är inte fält, men de
+            # visar VAR ett fält sitter — och det är så fälten refereras i tal
+            # ("kommentaren under Åtgärder").
+            if typ == "ft_subheader":
+                rader.append("| **— %s —** | | |" % namn)
+            else:
+                antal += 1
+                rader.append("| `%s` | %s | %s |" %
+                             (namn, TYPTEXT.get(typ, typ), ro))
+
+        rader.append("")
+        rader.append("%d fält, i kortets egen ordning." % antal)
+        rader.append("")
+
+    # Fältnamn kan bära kundnamnet (t.ex. det gamla "Åter till <kund>").
+    # Maskera innan filen skrivs — repot är publikt.
+    ord_lista = _forbjudna(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    text = _maskera("\n".join(rader), ord_lista)
+
+    if ord_lista and text != "\n".join(rader):
+        print("  maskerade kundnamn i minst ett fältnamn")
+
+    with io.open(out_file, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+
+    print("skrev %s — %d bibliotek" % (out_file, len(filer)))
+    if not ord_lista:
+        print("  OBS: ingen .forbjudna-ord hittades — inget maskerades")
+    return 0
+
+
 def main(argv):
     if len(argv) < 2:
         print(__doc__)
         return 2
 
     cmd, args = argv[1], argv[2:]
-    handlers = {"extract": (cmd_extract, 3), "inject": (cmd_inject, 3), "diff": (cmd_diff, 2)}
+    handlers = {"extract": (cmd_extract, 3), "inject": (cmd_inject, 3),
+                "diff": (cmd_diff, 2), "fields": (cmd_fields, 2)}
 
     if cmd not in handlers:
         print("okänt kommando: %s" % cmd)

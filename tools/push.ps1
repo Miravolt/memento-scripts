@@ -11,7 +11,8 @@
 #   4. kör node tools/test.js — avbryter vid fel, så trasig kod inte pushas
 #   5. sekretesskontroll mot .forbjudna-ord — avbryter vid träff
 #   6. visar vad som ändrats
-#   7. commit + push
+#   7. commit + push. Meddelandet skrivs på en rad i fönstret, eller på flera
+#      rader i Anteckningar om man bara trycker Enter.
 
 param([string]$Message)
 
@@ -73,11 +74,14 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
     $kontrollOut = & node tools/kontroll.js 2>&1
     $kontrollExit = $LASTEXITCODE
 
-    $kontrollOut | Where-Object { $_ -match "VARNING" } | ForEach-Object {
+    # -cmatch, inte -match: PowerShells -match är skiftlägesokänsligt, så
+    # summeringsraden "Allt i ordning (1 varning(ar))" matchade "VARNING" och
+    # skrevs ut två gånger. Samma sak för "fel" i "225 ok, 0 fel".
+    $kontrollOut | Where-Object { $_ -cmatch "VARNING" } | ForEach-Object {
         Write-Host "  $_" -ForegroundColor Yellow
     }
     if ($kontrollExit -ne 0) {
-        $kontrollOut | Where-Object { $_ -match "FEL" } | Select-Object -First 30 |
+        $kontrollOut | Where-Object { $_ -cmatch "FEL" } | Select-Object -First 30 |
             ForEach-Object { Write-Host "  $_" -ForegroundColor Red }
         Fail "Invariantkontrollen failade. Inget pushat. Se CLAUDE.md."
     }
@@ -92,7 +96,7 @@ if (Get-Command node -ErrorAction SilentlyContinue) {
     $testExit = $LASTEXITCODE
 
     if ($testExit -ne 0) {
-        $testOutput | Where-Object { $_ -match "FEL" } | ForEach-Object {
+        $testOutput | Where-Object { $_ -cmatch "FEL" } | ForEach-Object {
             Write-Host "  $_" -ForegroundColor Red
         }
         Fail "Testerna failade. Inget pushat. Rätta felen och kör igen."
@@ -170,18 +174,72 @@ $changes | ForEach-Object { Write-Host "    $_" }
 Write-Host ""
 
 # --- 7. commit + push ---
-if (-not $Message) {
-    $Message = Read-Host "  Beskriv andringen (Enter = standardtext)"
+#
+# Meddelandet skrivs till en fil och committas med `git commit -F`, inte med
+# -m. Det gör tre saker: flera rader fungerar, citattecken och apostrofer
+# behöver inte escapas, och åäö överlever eftersom filen skrivs som UTF-8
+# utan BOM (en BOM hade hamnat först i commit-texten).
+$msgFil = Join-Path $repo ".git\MIRAVOLT_COMMIT_MSG"
+
+function Skriv-Utf8($sokvag, $text) {
+    $utan_bom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($sokvag, $text, $utan_bom)
 }
+
 if (-not $Message) {
-    $Message = "Uppdaterade script " + (Get-Date -Format "yyyy-MM-dd HH:mm")
+    Write-Host "  Beskriv andringen." -ForegroundColor Cyan
+    Write-Host "    - skriv en rad har och tryck Enter, ELLER" -ForegroundColor DarkGray
+    Write-Host "    - tryck bara Enter for att skriva flera rader i Anteckningar" -ForegroundColor DarkGray
+    Write-Host ""
+    $Message = Read-Host "  Meddelande"
 }
+
+if (-not $Message) {
+    # Tom rad -> editor, precis som git gör när man kör `git commit` utan -m.
+    $mall = @"
+
+# Skriv commit-meddelandet ovanfor den har raden.
+#
+# Forsta raden ar rubriken - kort och i imperativ ("Lagg till ...", inte
+# "Lade till ..."). Lamna sedan en tom rad och skriv brodtexten.
+#
+# Rader som borjar med # tas bort. Ar allt tomt avbryts pushen.
+#
+# Andrat:
+"@
+    foreach ($rad in $changes) { $mall += "`r`n#   $rad" }
+
+    # Anteckningar vill ha CRLF. Repot checkas ut med LF, så här-strängen
+    # ovanför får radbrytningar som gamla Notepad visar som en enda lång rad.
+    $mall = ($mall -replace "`r`n", "`n") -replace "`n", "`r`n"
+    Skriv-Utf8 $msgFil $mall
+
+    Write-Host "  Oppnar Anteckningar. Skriv, spara och stang fonstret." -ForegroundColor Yellow
+    Start-Process -FilePath "notepad.exe" -ArgumentList $msgFil -Wait
+
+    $rader = @()
+    foreach ($rad in (Get-Content $msgFil -Encoding UTF8)) {
+        if (-not $rad.StartsWith("#")) { $rader += $rad }
+    }
+    $Message = ($rader -join "`n").Trim()
+
+    if (-not $Message) {
+        Remove-Item $msgFil -ErrorAction SilentlyContinue
+        Fail "Tomt meddelande - inget pushat. Kor igen nar du vet vad du vill skriva."
+    }
+}
+
+# Själva commit-meddelandet skrivs med LF — CRLF skulle följa med in i
+# git-historiken och synas som skräptecken i vissa verktyg.
+Skriv-Utf8 $msgFil (($Message -replace "`r`n", "`n"))
 
 & git add -A
 if ($LASTEXITCODE -ne 0) { Fail "git add misslyckades." }
 
-& git commit -m $Message
-if ($LASTEXITCODE -ne 0) { Fail "git commit misslyckades." }
+& git commit -F $msgFil
+$commitExit = $LASTEXITCODE
+Remove-Item $msgFil -ErrorAction SilentlyContinue
+if ($commitExit -ne 0) { Fail "git commit misslyckades." }
 
 Write-Host ""
 Write-Host "  Pushar..." -ForegroundColor Yellow

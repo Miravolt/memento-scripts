@@ -68,6 +68,24 @@ behöver aldrig stå i koden. `.forbjudna-ord` är gitignorerad och kontrolleras
 före varje push. *Detta kom till efter att ett kundnamn nådde ett publikt repo
 via README — Jimmy hittade det, inte jag.*
 
+**I exempel och kommentarer används alltid platshållare:** `Kraft AB` för kund,
+`<kund>` i genererad text. Aldrig ett verkligt namn — inte ens "bara som
+exempel", och inte ens i en kommentar som förklarar hur maskeringen fungerar.
+*Det var precis vad jag gjorde: docstringen i `_maskera()` — funktionen vars
+enda syfte är att stryka kundnamn — innehöll kundnamnet. Sekretesskontrollen
+stoppade pushen. Andra gången den räddat mig.*
+
+**Kör kontrollen i containern innan du levererar**, inte bara vid push:
+
+```
+sh /home/claude/sekretess.sh
+```
+
+Ordlistan ligger på `/home/claude/.forbjudna-ord` — **utanför repot**, så den
+inte kan versionshanteras. Containern töms mellan sessioner; saknas filen,
+hämta om den från `<repo>/.forbjudna-ord` via bryggan och skriv den dit.
+Poängen är att ett kundnamn aldrig ens ska nå Jimmys disk.
+
 **I4 — Testerna laddar modulerna i alfabetisk ordning. Sortera inte om listan.**
 Den ordningen är själva testet av I1. Står i en kommentar i `tools/test.js`
 också, men värt att upprepa.
@@ -89,6 +107,16 @@ beteende låses med ett test märkt `AVSIKT`, så nästa förbättring inte rive
 **I7 — Buggrättningar får ett test märkt `REGRESSION`.** Ingen rättning är
 klar utan ett test som fallerar om buggen återinförs.
 
+**I9 — Slå upp fältnamn och fältvärden. Gissa aldrig.**
+`memento/FALT.md` är genererad ur templaterna och listar varje fält och dess
+typ, i kortets ordning med underrubrikerna kvar. Vilka *värden* ett listfält kan
+ha står i `ARBETSFLODE.md` och kommer från verksamheten — inte ur templaten.
+*Jag skrev in `Avslutad` som ett värde i `Status Fältarbete`. Det är ett
+kryssrutefält (`ft_boolean`). Jimmy kände inte igen det och trodde jag hittat på
+något som inte fanns — vilket jag hade.* `tools/kontroll.js` varnar för fältnamn
+i koden som inte finns i inventeringen. Ändras strukturen i appen: exportera om
+och kör `python tools/mementools.py fields "Raw" memento/FALT.md`.
+
 **I8 — Påstå aldrig en orsak som inte är bevisad.**
 Skriv "detta förklarar symptomet" eller "detta är skydd, inte bevisad
 rättning". *Jag utpekade en gång kalla `create()`-entries som orsaken till att
@@ -104,11 +132,12 @@ lösning.* Se kommentarhuvudet i `mv-db.js` för hur det ska formuleras.
 
 ```
 node tools/stamp.js --check     # stämplar aktuella och hash stämmer
-node tools/kontroll.js          # invarianterna I1, I2, I5 + döda referenser
+node tools/kontroll.js          # invarianterna I1, I2, I5, I9 + döda referenser
 node tools/test.js              # alla tester gröna
+sh /home/claude/sekretess.sh    # inga kundnamn — se I3
 ```
 
-Alla tre. Sedan, och först då:
+Alla fyra. Sedan, och först då:
 
 1. Skriv filerna till Jimmys disk via bryggan (`device_commit_files`). *En fil
    som bara finns i containern finns inte.* Containern töms när sessionen dör.
@@ -168,13 +197,14 @@ tools/
                      AVSIKT = beteendet är beslutat, riv det inte.
   mock.js            Memento-simulator. Flaggorna COLD_CREATE och LAZY_MAP
                      återskapar appens egenheter med flit.
-  kontroll.js        invariantkontroll — I1, I2, I5, döda doc-referenser
+  kontroll.js        invariantkontroll — I1, I2, I5, I9, döda doc-referenser
   stamp.js           byggstämplar; --check verifierar hash mot innehåll
-  mementools.py      extract / inject / diff för .mlt2-filer
+  mementools.py      extract / inject / diff / fields för .mlt2-filer
   push.ps1           git-check -> stämpel -> kontroll -> tester ->
                      sekretess -> visa diff -> commit + push
 
 memento/             det som ska göras i appen, inte kod som körs
+  FALT.md            GENERERAD fältinventering. Facit för vad som finns.
   UPPSATTNING.md     checklista + all scriptkod att klistra in
   TESTPLAN.md        paritetstestet. Facit för när vi är klara.
   KOPIERING.md       länkfält och permissions efter en kopiering
