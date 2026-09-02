@@ -272,6 +272,21 @@ MV.Anteckning.spara();
 ```
 
 
+### Granska  — VALFRI men rekommenderad  
+*Action*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Räknar posterna och letar efter länkar som pekar ut ur uppsättningen — det som inte går att kontrollera för hand med hundratals anläggningar. Läser bara.
+
+Script:
+
+```js
+MV.Faltarbete.granskaMedDialog();
+```
+
+
 ## Import Fältarbete
 
 ### Moduler  

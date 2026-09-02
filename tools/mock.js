@@ -41,9 +41,15 @@ function Entry(library, values) {
     this.links = {};
     this.deleted = false;
     this.lazyMap = {};
+    this.lastModifiedTime = "";
 
     for (var k in values || {}) {
-        if (values.hasOwnProperty(k)) this.write(k, values[k]);
+        if (values.hasOwnProperty(k)) {
+            // __andrad är inget fält utan mockens sätt att sätta
+            // lastModifiedTime, som Memento fyller i av sig självt.
+            if (k === "__andrad") { this.lastModifiedTime = values[k]; continue; }
+            this.write(k, values[k]);
+        }
     }
 }
 
@@ -97,6 +103,9 @@ function handle(row, cold) {
     var api = {
         id: row.id,
         deleted: row.deleted,
+        // Memento ger entries en lastModifiedTime som sträng. Granskningen
+        // använder den för att hitta poster som rörts efter ett visst datum.
+        lastModifiedTime: row.lastModifiedTime || "",
         __row: row,
         __cold: !!cold,
 

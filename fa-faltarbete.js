@@ -742,6 +742,147 @@ MV.Faltarbete.TEXTER = MV.Faltarbete.TEXTER || {
 
 
 /* ================================================================== *
+ * Granska en uppsättning bibliotek
+ *
+ * Två kontroller i TESTPLAN.md avsnitt 5 gick inte att göra för hand: med 670
+ * anläggningar och 740 fältarbeten är det inte rimligt att ögna igenom dem.
+ * Detta gör samma sak på sekunder.
+ *
+ * Funktionen LÄSER BARA. Den ändrar ingenting, någonsin.
+ * ================================================================== */
+
+/**
+ * Granskar den uppsättning bibliotek scriptet körs i.
+ *
+ * @param opts { andradeEfter: "YYYY-MM-DD" }  valfritt
+ * @return {
+ *   antalAnlaggningar, antalFaltarbeten,
+ *   frammande: [{ anlaggning, falt, id }],   länkar ut ur uppsättningen
+ *   andrade:   [{ namn, tid }],              rörda efter angivet datum
+ *   fel: sträng eller null
+ * }
+ */
+MV.Faltarbete.granska = function (opts) {
+    var cfg = MV.config.faltarbete;
+    opts = opts || {};
+
+    var resultat = {
+        antalAnlaggningar: 0, antalFaltarbeten: 0,
+        frammande: [], andrade: [], fel: null
+    };
+
+    var anlLib, faltLib;
+    try {
+        anlLib = MV.db.lib(cfg.libAnlaggning);
+        faltLib = MV.db.lib(cfg.libFaltarbete);
+    } catch (ex) {
+        resultat.fel = String(ex.message || ex);
+        return resultat;
+    }
+
+    var anlaggningar = anlLib.entries();
+    var faltarbeten = faltLib.entries();
+
+    resultat.antalAnlaggningar = anlaggningar.length;
+    resultat.antalFaltarbeten = faltarbeten.length;
+
+    // Vilka fältarbeten hör till DENNA uppsättning? Allt annat som dyker upp i
+    // ett länkfält kommer från ett annat bibliotek — en testkopia, eller det
+    // gamla test-Fältarbete som "Historiska Fältarbeten" pekade på i drift.
+    var egna = {};
+    for (var f = 0; f < faltarbeten.length; f++) egna[faltarbeten[f].id] = true;
+
+    var lankfalt = [cfg.linkAktivt, cfg.linkHistorik];
+
+    for (var a = 0; a < anlaggningar.length; a++) {
+        var anl = anlaggningar[a];
+
+        for (var L = 0; L < lankfalt.length; L++) {
+            var lankade;
+            try {
+                lankade = MV.fmt.toArray(anl.field(lankfalt[L]));
+            } catch (ex2) {
+                continue;                       // fältet finns inte här
+            }
+
+            for (var i = 0; i < lankade.length; i++) {
+                if (lankade[i] && !egna[lankade[i].id]) {
+                    resultat.frammande.push({
+                        anlaggning: anl.name || String(anl.id),
+                        falt: lankfalt[L],
+                        id: lankade[i].id
+                    });
+                }
+            }
+        }
+    }
+
+    // Poster rörda efter ett datum. Svarar på "har testkörningarna tagit i
+    // driften?" utan att man behöver öppna 740 entries.
+    if (opts.andradeEfter) {
+        var gransen = String(opts.andradeEfter);
+        var alla = anlaggningar.concat(faltarbeten);
+
+        for (var m = 0; m < alla.length; m++) {
+            var tid = alla[m].lastModifiedTime;
+            if (!tid) continue;
+
+            var som = MV.util.dateStr(moment(String(tid)).valueOf());
+            if (som >= gransen) {
+                resultat.andrade.push({
+                    namn: alla[m].name || String(alla[m].id), tid: som
+                });
+            }
+        }
+    }
+
+    return resultat;
+};
+
+/** granska() + rapport i en dialog. Detta är vad Granska-actionen anropar. */
+MV.Faltarbete.granskaMedDialog = function (opts) {
+    var res = MV.Faltarbete.granska(opts);
+
+    if (res.fel) {
+        MV.ui.info("Granskning misslyckades", res.fel);
+        return res;
+    }
+
+    var rader = [
+        MV.db.libName(MV.config.faltarbete.libAnlaggning) + ": " +
+            res.antalAnlaggningar + " st",
+        MV.db.libName(MV.config.faltarbete.libFaltarbete) + ": " +
+            res.antalFaltarbeten + " st",
+        ""
+    ];
+
+    if (res.frammande.length === 0) {
+        rader.push("Inga främmande länkar. Alla länkade fältarbeten");
+        rader.push("ligger i den här uppsättningen.");
+    } else {
+        rader.push(res.frammande.length + " FRÄMMANDE LÄNK(AR) — dessa pekar");
+        rader.push("på ett annat bibliotek:");
+        for (var i = 0; i < res.frammande.length && i < 15; i++) {
+            rader.push("  " + res.frammande[i].anlaggning +
+                " (" + res.frammande[i].falt + ")");
+        }
+        if (res.frammande.length > 15) {
+            rader.push("  …och " + (res.frammande.length - 15) + " till");
+        }
+    }
+
+    if (opts && opts.andradeEfter) {
+        rader.push("");
+        rader.push(res.andrade.length + " post(er) ändrade efter " +
+            opts.andradeEfter + ".");
+    }
+
+    MV.ui.summary("Granskning", rader);
+    return res;
+};
+
+
+/* ================================================================== *
  * Knappversioner — gör, och berätta
  *
  * skapa() och avsluta() returnerar ett resultat och visar ingenting. Det gör
@@ -803,4 +944,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 12:53", hash: "8e8e776" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 13:03", hash: "6e40a8d" });

@@ -38,8 +38,14 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
 - **Fältinventering.** `memento/FALT.md` genereras ur templaterna och är facit
   för vilka fält som finns och av vilken typ. `tools/kontroll.js` varnar för
   fältnamn i koden som inte står där.
-- **Historiken visas som text** i fältarbetet: en rad per besök med datum,
-  anledning till avslut och åtgärder, plus kommentaren på egen rad.
+- **Historiken visas som text** i fältarbetet: ett block per order med datum
+  och anledning i rubriken, åtgärder och kommentarer under.
+- **`Granska`-action.** Räknar posterna i en uppsättning och listar varje länk
+  som pekar ut ur den. Kom till för att två kontroller i `TESTPLAN.md` avsnitt
+  5 inte gick att göra för hand med hundratals poster. Läser bara.
+- **Testplanen körd i sin helhet.** Avsnitt 4 klart: hela varvet från telefonen,
+  i alla tre biblioteken, och skapa-på-telefon-avsluta-på-desktop. Offline
+  fungerar i varje bibliotek, med riktiga flöden och inte bara `Version`.
 
 ## Kvar innan det går att köra i drift
 
@@ -52,23 +58,22 @@ Ordningen att göra det i. Den fullständiga listan står i `TESTPLAN.md`
 2. **Ersätt de två stubbar som nyss blev enradare** —
    `Spara ändringar och avsluta Fältarbete` och `Nytt Fältarbete`.
 3. **Radera de fyra gamla scripten** enligt `memento/BORTTAGET.md`.
-4. **Kör hela `TESTPLAN.md`** — importflödet, fältarbetets livscykel,
-   historiken, cache/offline, spridning över enheter och bibliotek. Skriv in
-   resultaten i filen.
-5. **Kontrollera att driftbiblioteken är orörda** — `KOPIERING.md`, avsnittet
-   *Efter omkopplingen*. Gör den kontrollen **först** av allt i punkt 4–5.
+4. ~~**Kör hela `TESTPLAN.md`**~~ — körd. Kvar av den: **A3** (reproducera
+   avslut utan koppling med känt utgångsläge) och **A4** (`Firmware Status` i
+   ändringsloggen).
+5. **Kör `Granska` i drift-Anläggningar.** Ersätter de två kontrollerna i
+   avsnitt 5 som inte gick att göra för hand. Noll främmande länkar är kravet.
 6. **Sätt Library permission** i varje bibliotek, på varje enhet.
-7. ~~**Flygplanslägestest på telefon.**~~ Klart — modulerna finns lokalt, och
-   ett riktigt flöde har körts offline. Kvar: samma sak i **varje** bibliotek,
-   och `Version` en gång **med** täckning på varje ny enhet innan den går ut i
+7. ~~**Flygplanslägestest**~~ — klart, riktiga flöden i varje bibliotek. Kvar:
+   kör `Version` en gång **med** täckning på varje ny enhet innan den går ut i
    fält, så att cachen är fylld.
 8. **Driftsättning** enligt `DRIFTSATTNING.md` — backup först, sedan struktur,
    script, enheter, och ett skarpt ärende hela vägen.
 
-## Avvikelser från testkörningen (31 aug)
+## Avvikelser från testkörningen
 
-Hela `TESTPLAN.md` avsnitt 0–3 är körd. Avsnitt 4 och 5 återstår. Fem fynd,
-rangordnade. **A1 blockerar — den ändrar arkitekturen, inte bara koden.**
+Hela `TESTPLAN.md` är körd. A1 är löst i koden, A2 är gjord synlig, A5 är
+parkerad som önskemål. **Kvar att reda ut: A3 och A4.**
 
 **A1 — LÖST i koden, kvar i appen. `Historiska Fältarbeten` i Fältarbete kan
 inte finnas.**
@@ -99,9 +104,15 @@ Importflödet, där anläggningen ligger i ett annat bibliotek, fungerar.
 
 **A3 — Avslut utan koppling till anläggning stoppas inte.**
 `avsluta()` har kontrollen (`reason: "ingen-koppling"`) och `avslutaMedDialog()`
-har dialogen, men fältarbetet gick ändå att avsluta utan varning. Måste
-reproduceras: trycktes knappen, eller sattes kryssen för hand? Knappfältet kan
-fortfarande innehålla gammal kod — stubbytet är punkt 2 i listan ovan.
+har dialogen, men fältarbetet gick ändå att avsluta utan varning.
+
+*Jimmy 2 sep: knappen trycktes, efter att två rutor kryssats i. Osäkert om
+entryt sparades emellan.* Det är en ledtråd men inte ett svar — `avsluta()`
+läser fältvärdena ur entryt, så osparade kryss kan ge koden ett annat tillstånd
+än det man ser på skärmen. Det förklarar dock inte varför kopplingskontrollen
+inte slog till. **Reproduceras med känt utgångsläge:** ett fältarbete utan
+`Koppling till anläggning`, sparat, sedan knappen. Kontrollera också att
+knappfältet verkligen innehåller enradsstubben och inte gammal kod.
 
 **A4 — `Firmware Status` ändringsloggas inte.**
 Fältet ligger i `TRACK_FIELDS`, så listan är inte problemet. *Hypotes:* både

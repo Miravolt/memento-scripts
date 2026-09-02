@@ -35,8 +35,10 @@ Utan denna finns ingen väg tillbaka.
       efter.
 - [ ] Kontrollera att filerna går att öppna och innehåller script:
       `python tools/mementools.py extract "Raw" "/tmp/kontroll" "/tmp/kontroll"`
-- [ ] Anteckna antalet entries i varje driftbibliotek. Det är måttet på att
-      inget skapats eller försvunnit under vägen.
+- [ ] Kör **`Granska`** i drift-Anläggningar och anteckna siffrorna. Antalet
+      entries ensamt duger inte som mått — driften används ju parallellt, och
+      nya poster tillkommer hela tiden. Främmande länkar däremot ska vara noll
+      både före och efter.
 
 En template-export innehåller **strukturen och scripten, inte datan**. Går
 något sönder i strukturen går den att återställa; ett raderat entry gör det
@@ -51,7 +53,9 @@ Ingen av dessa får vara öppen när driften rörs.
 - [ ] `TESTPLAN.md` avsnitt 0–3 avbockade
 - [ ] `TESTPLAN.md` avsnitt 4 — hela varvet från **telefonen**, och i
       **Anläggningar** och **Import Fältarbete**, inte bara Fältarbete
-- [ ] `TESTPLAN.md` avsnitt 5 — driftbiblioteken orörda av testkörningarna
+- [ ] `TESTPLAN.md` avsnitt 5 — driftbiblioteken orörda av testkörningarna.
+      Kör **`Granska`** i drift-Anläggningar; den gör på sekunder det som inte
+      går för hand med 670 poster. Noll främmande länkar är kravet.
 - [ ] A2 — `Nytt Fältarbete` länkar `Aktivt Fältarbete`, eller varnar synligt
       när den inte gör det
 - [ ] A3 — avslut utan koppling stoppas *(reproduceras först: trycktes knappen,

@@ -239,9 +239,13 @@ slutet.
 
 * [x] Antal entries i driftbiblioteken oförändrat mot noteringen i avsnitt 0 (Inte samma men väntat. Driftbiblioteken har används och nya har tillkommit sedan räkningen)
 
-* [ ] Ingen driftanläggning har fått en ny historikpost (Många poster att gå igenom, svårt och tidskrävande att göra manuellt)
+* [ ] Ingen driftanläggning har fått en ny historikpost *(för många poster för
+  hand — kör i stället `Granska`-actionen i Anläggningar. Den listar varje länk
+  som pekar ut ur uppsättningen, vilket är exakt det symptomet.)*
 
-* [ ] Inget driftfältarbete har ändrad `Logg` (Många poster att gå igenom, svårt och tidskrävande att göra manuellt)
+* [ ] Inget driftfältarbete har ändrad `Logg` *(samma sak: kör
+  `MV.Faltarbete.granskaMedDialog({ andradeEfter: "ÅÅÅÅ-MM-DD" })` med datumet
+  då testkörningarna började. Poster rörda efter det listas.)*
 
 ***
 

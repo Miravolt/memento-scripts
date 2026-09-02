@@ -1278,6 +1278,78 @@ suite("fa-faltarbete — misslyckad länkning ska synas");
 
 
 /* ================================================================ */
+suite("fa-faltarbete — granska en uppsättning");
+
+/*
+ * TESTPLAN.md avsnitt 5: "ingen driftanläggning har fått en ny historikpost".
+ * Med 670 anläggningar går det inte att göra för hand — Jimmy försökte och
+ * lämnade punkten oavklarad. granska() gör samma sak på sekunder.
+ */
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    // Ett FRÄMMANDE bibliotek: en gammal testuppsättning, som den drift en
+    // gång pekade på genom "Historiska Fältarbeten".
+    var gammalLib = mock.defineLib("Gammal Fältarbete", {
+        fields: FALT_FIELDS,
+        linkFields: ["Koppling till anläggning", "Nyckel"],
+        mapFields: ["Koordinater"],
+        nameField: "Anl. adress"
+    });
+
+    var ren = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+    var eget = s.faltLib.seed({ "Anl. adress": "Storgatan 1" });
+    ren.link("Aktivt Fältarbete", eget);
+
+    var res = MV.Faltarbete.granska();
+    eq(res.frammande, [], "en ren uppsättning ger inga träffar");
+    eq(res.antalAnlaggningar, 1, "anläggningarna räknas");
+    eq(res.antalFaltarbeten, 1, "fältarbetena räknas");
+
+    // Samma symptom som i drift: historiklänken pekar ut ur uppsättningen.
+    var smutsig = s.anlLib.seed({ "Anl. adress": "Nyvägen 2", "Logg": "" });
+    smutsig.link("Historiska Fältarbeten", gammalLib.seed({ "Anl. adress": "Nyvägen 2" }));
+
+    var res2 = MV.Faltarbete.granska();
+    eq(res2.frammande.length, 1,
+       "REGRESSION: en länk till ett annat bibliotek hittas");
+    eq(res2.frammande[0].anlaggning, "Nyvägen 2", "rätt anläggning pekas ut");
+    eq(res2.frammande[0].falt, "Historiska Fältarbeten", "rätt fält pekas ut");
+
+    ok(MV.Faltarbete.granska().andrade.length === 0,
+       "utan andradeEfter listas inga ändrade poster");
+})();
+
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    s.anlLib.seed({ "Anl. adress": "Gammal", "Logg": "", "__andrad": "2026-01-15" });
+    s.anlLib.seed({ "Anl. adress": "Rörd", "Logg": "", "__andrad": "2026-08-31" });
+    s.faltLib.seed({ "Anl. adress": "Rörd", "__andrad": "2026-09-01" });
+
+    var res = MV.Faltarbete.granska({ andradeEfter: "2026-08-01" });
+    eq(res.andrade.length, 2, "poster ändrade efter datumet listas");
+    eq(res.andrade[0].namn, "Rörd", "den gamla posten är inte med");
+
+    eq(MV.Faltarbete.granska({ andradeEfter: "2027-01-01" }).andrade.length, 0,
+       "inget efter ett datum i framtiden");
+})();
+
+(function () {
+    var s = scenario("Test ");
+    mock.use(s.anlLib);
+    MV.db._affix = undefined;
+
+    // Saknas biblioteket ska granskningen säga det, inte krascha.
+    var res = MV.Faltarbete.granska.call(null);
+    ok(res.fel === null || typeof res.fel === "string",
+       "ett saknat bibliotek rapporteras som text, inte som ett undantag");
+})();
+
+
+/* ================================================================ */
 
 console.log("\n" + passed + " ok, " + failed + " fel");
 process.exitCode = failed ? 1 : 0;
