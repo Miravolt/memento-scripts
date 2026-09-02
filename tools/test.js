@@ -1204,17 +1204,25 @@ suite("fa-faltarbete — historiken som HTML");
 
     var html = MV.Faltarbete.historikHtml(anl);
 
-    ok(html.indexOf("<h3") > 0, "AVSIKT: samma datumrubrik som Logg-fältet");
+    ok(html.indexOf("<h3") > 0, "samma ram och färger som Logg-fältet");
     ok(html.indexOf(MV.config.theme.main) > 0, "temat används, inte hårdkodad färg");
     ok(html.indexOf("\u2714 Avläsning") > 0, "åtgärder som bockar, som i loggen");
     ok(html.indexOf("<i>Kommentar:</i>") > 0, "kommentaren märks med sitt fältnamn");
 
-    // Två ärenden samma dag får inte skriva över varandra i blockobjektet.
-    eq(html.split("<h3").length - 1, 2, "ett datumblock per DATUM, inte per ärende");
+    // Historiken grupperar INTE per datum, till skillnad från loggen. Två
+    // fältarbeten avslutade samma dag är två ärenden och ska ha var sitt block.
+    eq(html.split("<h3").length - 1, 3,
+       "AVSIKT: ett block per ORDER, inte per datum");
     ok(html.indexOf("Mätaren läser utan åtgärd") > 0 &&
        html.indexOf("Mätaren är nertagen") > 0,
        "REGRESSION: båda ärendena samma dag finns kvar");
-    ok(html.indexOf("<hr") > 0, "de skiljs åt med samma avdelare som loggen");
+
+    // Anledningen står i den gröna rubrikraden, inte i rutan under.
+    var forstaRubrik = html.substring(html.indexOf("<h3"), html.indexOf("</h3>"));
+    ok(forstaRubrik.indexOf("2026-08-31") > 0,
+       "AVSIKT: datumet står i rubrikraden");
+    ok(forstaRubrik.indexOf("Mätaren läser utan åtgärd") > 0,
+       "AVSIKT: anledningen står i rubrikraden, inte i rutan under");
 
     ok(html.indexOf("Inget registrerat") > 0,
        "ett ärende utan innehåll säger det, i stället för att bli en tom ruta");

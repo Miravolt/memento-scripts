@@ -6,7 +6,6 @@
  * sorterade med nyaste datum först.
  *
  * Kräver: mv-core.js, moment.min.js
- * Test rad
  */
 
 var MV = MV || {};
@@ -38,25 +37,37 @@ MV.Logg.parse = function (logHtml) {
 };
 
 /**
+ * Ett block: färgad rubrikrad med en inramad ruta under.
+ *
+ * Utbruten ur render() så att andra vyer kan använda samma utseende utan att
+ * ärva loggens datumgruppering. Historiken i fa-faltarbete.js gör det: den
+ * vill ha ett block per order, med mer än bara datumet i rubriken.
+ *
+ * @param rubrik   text i den färgade raden
+ * @param innehall färdig HTML
+ */
+MV.Logg.block = function (rubrik, innehall) {
+    var theme = MV.config.theme;
+
+    return '<h3 style="background-color: ' + theme.main +
+        '; color: #ffffff; margin: 0; padding: 10px 15px;' +
+        ' border-radius: 8px 8px 0 0; font-size: 16px;">' + rubrik + "</h3>\n" +
+        '<div style="border: 1px solid ' + theme.main +
+        "; border-top: none; border-radius: 0 0 8px 8px; padding: 15px;" +
+        " margin-bottom: 20px; background-color: " + theme.light + ';">\n' +
+        innehall + "\n</div>\n";
+};
+
+/**
  * Bygger komplett logg-HTML från ett blocks-objekt. Nyaste datum först.
  */
 MV.Logg.render = function (blocks) {
-    var theme = MV.config.theme;
     var dates = Object.keys(blocks).sort().reverse();
     var html = "";
 
     for (var i = 0; i < dates.length; i++) {
-        var d = dates[i];
-        if (MV.util.isBlank(blocks[d])) continue;
-
-        html += '<h3 style="background-color: ' + theme.main +
-            '; color: #ffffff; margin: 0; padding: 10px 15px;' +
-            ' border-radius: 8px 8px 0 0; font-size: 16px;">' + d + "</h3>\n";
-        html += '<div style="border: 1px solid ' + theme.main +
-            "; border-top: none; border-radius: 0 0 8px 8px; padding: 15px;" +
-            " margin-bottom: 20px; background-color: " + theme.light + ';">\n';
-        html += blocks[d] + "\n";
-        html += "</div>\n";
+        if (MV.util.isBlank(blocks[dates[i]])) continue;
+        html += MV.Logg.block(dates[i], blocks[dates[i]]);
     }
     return html;
 };
@@ -136,4 +147,4 @@ function appendToLog(entryObj, loggFalt, nyText, appendMode) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-logg", byggd: "2026-09-02 09:49", hash: "797bd8b" });
+MV.build.moduler.push({ namn: "mv-logg", byggd: "2026-09-02 12:27", hash: "fdc30ea" });

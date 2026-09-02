@@ -26,27 +26,32 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 - **Historiken som text i fältarbetet.** `MV.Faltarbete.historikText()` skriver
   en sammanfattning av anläggningens tidigare fältarbeten i fältet
   `Tidigare fältarbeten`, eller i loggen om fältet inte finns. Ersätter
-  historiklänkfältet, som aldrig kunde fungera. Per besök, nyaste först:
+  historiklänkfältet, som aldrig kunde fungera.
 
-  Formaterad som Logg-fältet: en datumrubrik per besök med innehållet i en ram
-  under. Renderingen lånas rakt av från `MV.Logg.render()`, så de två ser
-  likadana ut även om temat ändras. Per besök visas anledningen till avslut,
-  åtgärderna som bockar, och kommentarfälten märkta med sina namn.
+  **Ett block per order**, nyast först: en färgad rubrikrad med datum och
+  anledning till avslut, och under den åtgärderna som bockar plus
+  kommentarfälten märkta med sina namn.
+
+  Ramen och färgerna kommer från `MV.Logg.block()` — utbruten ur
+  `MV.Logg.render()` just för detta — så historiken och loggen ser ut som
+  samma familj. Grupperingen skiljer dem åt: loggen samlar allt som hänt en
+  viss dag, historiken håller isär ordrarna. *Två fältarbeten avslutade samma
+  dag är två ärenden, inte ett.*
 
   Anledningen är `Status Fältarbete` — värden som `Mätaren läser utan åtgärd`
   och `Ström bruten i kabelskåp` är just det man vill veta. Intetsägande
   värden (`Ny`, `Historik finns`, `Klar`) utelämnas, styrt av
   `historikDoljStatus`.
 
-  Två ärenden avslutade samma dag slås ihop under en rubrik med samma avdelare
-  som loggen — annars hade det ena tyst skrivit över det andra. Ett ärende utan
-  innehåll säger det i klartext i stället för att bli en tom ruta. Bär
-  kommentaren sitt eget datum, satt av knappen *Lägg till datum i kommentar*,
-  stryks det när det upprepar rubrikens — annars stod datumet två gånger.
+  Ett ärende utan innehåll säger det i klartext i stället för att bli en tom
+  ruta. Bär kommentaren sitt eget datum, satt av knappen *Lägg till datum i
+  kommentar*, stryks det när det upprepar rubrikens — annars stod datumet två
+  gånger. Ordningen inom ett datum följer länkfältet, inte Rhinos sorterings-
+  implementation, som inte är garanterat stabil.
 
-  `historikAntal` är 0, alltså alla besök: historiken har en egen flik i kortet
-  med inget annat under. Saknas rich text-fältet hamnar samma innehåll som ren
-  text i loggen (`historikText()`).
+  `historikAntal` är 0, alltså alla ärenden: historiken har en egen flik i
+  kortet med inget annat under. Saknas rich text-fältet hamnar samma innehåll
+  som ren text i loggen (`historikText()`).
 - **Utebliven länkning syns.** `skapa()` läser tillbaka `Koppling till
   anläggning` och `Aktivt Fältarbete` efter att ha länkat, och returnerar
   `varningar`. `skapaMedDialog()` visar dem. Tidigare ignorerades returvärdet

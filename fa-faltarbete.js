@@ -280,15 +280,21 @@ MV.Faltarbete.historikPoster = function (anl) {
     var poster = [];
 
     for (var i = 0; i < historik.length; i++) {
-        poster.push(MV.Faltarbete.historikPost(
-            MV.db.reload(historik[i], cfg.libFaltarbete)));
+        var post = MV.Faltarbete.historikPost(
+            MV.db.reload(historik[i], cfg.libFaltarbete));
+        post._i = i;                    // tiebreak, se nedan
+        poster.push(post);
     }
 
+    // Nyast först. Rhinos sort() är inte garanterat stabil, så ordningen inom
+    // ett datum avgörs av läget i länkfältet i stället för av tur.
     poster.sort(function (a, b) {
-        if (a.datum === b.datum) return 0;
-        if (a.datum === "") return 1;
-        if (b.datum === "") return -1;
-        return a.datum < b.datum ? 1 : -1;
+        if (a.datum !== b.datum) {
+            if (a.datum === "") return 1;
+            if (b.datum === "") return -1;
+            return a.datum < b.datum ? 1 : -1;
+        }
+        return a._i - b._i;
     });
 
     // historikAntal 0 = visa allt. Historiken har en egen flik med inget annat
@@ -300,9 +306,15 @@ MV.Faltarbete.historikPoster = function (anl) {
 };
 
 /**
- * Historiken som HTML, formaterad som Logg-fältet: en datumrubrik per besök
- * med innehållet i en ram under. Renderingen lånas rakt av från MV.Logg, så
- * att de två ser likadana ut även om temat ändras.
+ * Historiken som HTML: ett block per order, nyast först.
+ *
+ * Ramen och färgerna kommer från MV.Logg.block(), så historiken och loggen ser
+ * ut som samma familj. Grupperingen gör de däremot INTE lika: loggen samlar
+ * allt som hänt en viss dag, historiken håller isär ordrarna. Två fältarbeten
+ * avslutade samma dag är två ärenden, inte ett.
+ *
+ * Rubrikraden bär datum och anledning till avslut — det man vill kunna läsa
+ * utan att öppna blocket.
  *
  * @return HTML-sträng, tom om ingen historik finns
  */
@@ -311,15 +323,11 @@ MV.Faltarbete.historikHtml = function (anl) {
     if (poster.length === 0) return "";
 
     var theme = MV.config.theme;
-    var block = {};
+    var html = "";
 
     for (var i = 0; i < poster.length; i++) {
         var p = poster[i];
         var delar = [];
-
-        if (p.anledning !== "") {
-            delar.push("<div style='margin: 0;'><b>" + p.anledning + "</b></div>");
-        }
 
         if (p.atgarder.length > 0) {
             delar.push("<div style='margin: 0;'>&nbsp;&nbsp;\u2714 " +
@@ -338,20 +346,20 @@ MV.Faltarbete.historikHtml = function (anl) {
                 "Inget registrerat utöver att ärendet avslutades.</div>");
         }
 
-        // Två ärenden kan ha avslutats samma dag. Då slås de ihop under samma
-        // rubrik i stället för att det ena tyst skriver över det andra.
-        var nyckel = p.datum === "" ? "Utan datum" : p.datum;
-        block[nyckel] = block.hasOwnProperty(nyckel)
-            ? block[nyckel] + MV.util.separatorHtml() + delar.join("\n")
-            : delar.join("\n");
+        var rubrik = p.datum === "" ? "Utan datum" : p.datum;
+        if (p.anledning !== "") {
+            rubrik += " &nbsp;\u00b7&nbsp; " + p.anledning;
+        }
+
+        html += MV.Logg.block(rubrik, delar.join("\n"));
     }
 
-    var rubrik = "<div style='margin: 0 0 12px 0; color: " + theme.main +
+    var inledning = "<div style='margin: 0 0 12px 0; color: " + theme.main +
         ";'><b>" + poster.length + (poster.length === 1
             ? " tidigare fältarbete</b> på denna anläggning.</div>"
             : " tidigare fältarbeten</b> på denna anläggning.</div>");
 
-    return rubrik + MV.Logg.render(block);
+    return inledning + html;
 };
 
 /**
@@ -795,4 +803,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 09:49", hash: "75f4125" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 12:27", hash: "8e8e776" });
