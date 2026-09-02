@@ -1,8 +1,11 @@
-# Testplan — är vi tillbaka där vi var?
+# Testplan — fungerar allt minst lika bra som förr?
 
-Målet med den här listan är **paritet**: allt som fungerade förr fungerar igen,
-nu med all kod i git. Först när den är genomgången börjar vi med förbättringar
-(`ARBETSFLODE.md`, *Planerat*).
+Målet är **minst lika bra som förr**: inget som fungerade får ha blivit sämre,
+nu med all kod i git. Beteendet behöver alltså inte vara identiskt med
+startpunkten — en avvikelse kan vara en förbättring. Är den det, flytta den till
+tabellen *Avsiktliga skillnader* nedan i stället för att rätta tillbaka.
+
+När listan är genomgången: `DRIFTSATTNING.md` för vägen till skarp drift.
 
 **Kör allt i testbiblioteken.** Läs `KOPIERING.md` först om de är kopierade —
 pekar ett länkfält fel skriver testet i driftdata.
@@ -202,10 +205,10 @@ Här prövas två teorier. Skriv in svaret — de står som obesvarade i
 * [x] Flygplansläge på telefon: kör `Version` → 8 moduler, ingen som avviker
   *(gjort — bygge 08:51, alla åtta rapporterade)*
 
-* [ ] Flygplansläge: kör ett **riktigt** flöde, inte bara `Version` — spara en
+* [x] Flygplansläge: kör ett **riktigt** flöde, inte bara `Version` — spara en
   anteckning, ändra fält och spara, avsluta ett fältarbete
 
-* [ ] Flygplansläge i **varje** bibliotek, inte bara Fältarbete
+* [x] Flygplansläge i **varje** bibliotek, inte bara Fältarbete
 
 * [ ] Ny/nollställd enhet: sätt upp och kör `Version` **med** täckning en gång,
   sedan flygplansläge → fungerar det? (Har ingen ny eller nollställd enhet)
@@ -216,12 +219,12 @@ Här prövas två teorier. Skriv in svaret — de står som obesvarade i
 
 Detta är där "det fungerade hos mig" brukar visa sig.
 
-* [ ] Hela varvet i avsnitt 2 en gång **från telefonen**, inte bara desktop
+* [x] Hela varvet i avsnitt 2 en gång **från telefonen**, inte bara desktop
 
-* [ ] Samma varv i biblioteket **Anläggningar** och **Import Fältarbete**, inte
+* [x] Samma varv i biblioteket **Anläggningar** och **Import Fältarbete**, inte
   bara Fältarbete
 
-* [ ] Skapa på telefonen, avsluta på desktop → allt hänger med
+* [x] Skapa på telefonen, avsluta på desktop → allt hänger med
 
 * [ ] Ta bort `Library permission` till Anläggningar i Fältarbete och avsluta ett
   fältarbete. Blir felet begripligt? *(valfritt, men det är bra att veta hur
@@ -234,19 +237,19 @@ Detta är där "det fungerade hos mig" brukar visa sig.
 Görs **först** av allt i punkt 1–4 om något känns osäkert, och en gång till på
 slutet.
 
-* [ ] Antal entries i driftbiblioteken oförändrat mot noteringen i avsnitt 0
+* [x] Antal entries i driftbiblioteken oförändrat mot noteringen i avsnitt 0 (Inte samma men väntat. Driftbiblioteken har används och nya har tillkommit sedan räkningen)
 
-* [ ] Ingen driftanläggning har fått en ny historikpost
+* [ ] Ingen driftanläggning har fått en ny historikpost (Många poster att gå igenom, svårt och tidskrävande att göra manuellt)
 
-* [ ] Inget driftfältarbete har ändrad `Logg`
+* [ ] Inget driftfältarbete har ändrad `Logg` (Många poster att gå igenom, svårt och tidskrävande att göra manuellt)
 
 ***
 
 ## Klar när
 
 Alla rutor ovan är ibockade, eller har en antecknad avvikelse som är
-**medvetet accepterad**. Då — och först då — är paritet nådd, och `ARBETSLAGE.md`
-byter fas från *parity* till *förbättring*.
+**medvetet accepterad** — antingen för att den är ofarlig, eller för att den är
+en förbättring. Då, och först då, går det vidare till `DRIFTSATTNING.md`.
 
 Avvikelser som hittas ska bli:
 

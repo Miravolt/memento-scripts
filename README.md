@@ -38,7 +38,8 @@ memento/             Vad som står i respektive script inne i Memento.
     shared/Config.js valfria avvikelser som gäller hela biblioteket
   FALT.md            genererad fältinventering — vad som finns, och av vilken typ
   UPPSATTNING.md     checklista för uppsättningen i appen
-  TESTPLAN.md        vad som ska provas i appen innan paritet är nådd
+  TESTPLAN.md        vad som ska provas i appen
+  DRIFTSATTNING.md   vad som krävs innan driftbiblioteken rörs, i ordning
   KOPIERING.md       vad som måste pekas om när bibliotek kopieras
   BORTTAGET.md       Script som ska raderas i appen
 

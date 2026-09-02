@@ -4,8 +4,12 @@
 Läses tillsammans med `CLAUDE.md` av den som kommer in i arbetet — eller av en
 chatt som tappat minnet.
 
-Fas: **parity** — samma beteende som förr, men med alla script i git.
-Optimering och utseende kommer efter, se `CLAUDE.md` del 6.
+Fas: **mot drift.** Kravet är **minst lika bra som förr** — inte identiskt
+beteende. Förbättringar får följa med. Se `CLAUDE.md` del 6.
+
+Vad som ska provas: [`memento/TESTPLAN.md`](memento/TESTPLAN.md).
+Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
+[`memento/DRIFTSATTNING.md`](memento/DRIFTSATTNING.md).
 
 ---
 
@@ -37,11 +41,10 @@ Optimering och utseende kommer efter, se `CLAUDE.md` del 6.
 - **Historiken visas som text** i fältarbetet: en rad per besök med datum,
   anledning till avslut och åtgärder, plus kommentaren på egen rad.
 
-## Kvar innan parity kan kallas verifierad
+## Kvar innan det går att köra i drift
 
-Den fullständiga listan står i **[memento/TESTPLAN.md](memento/TESTPLAN.md)** —
-den är facit, och resultaten skrivs in där. Nedan är bara ordningen att göra
-det i. Punkt 4 är den som avgör.
+Ordningen att göra det i. Den fullständiga listan står i `TESTPLAN.md`
+(fungerar det?) och `DRIFTSATTNING.md` (vågar vi?). Punkt 4 är den som avgör.
 
 1. **Uppsättning i appen.** `Fältarbete` är nästan klar. Kvar:
    **Anläggningar** och **Import Fältarbete** — `Moduler` (Shared),
@@ -55,9 +58,12 @@ det i. Punkt 4 är den som avgör.
 5. **Kontrollera att driftbiblioteken är orörda** — `KOPIERING.md`, avsnittet
    *Efter omkopplingen*. Gör den kontrollen **först** av allt i punkt 4–5.
 6. **Sätt Library permission** i varje bibliotek, på varje enhet.
-7. ~~**Flygplanslägestest på telefon.**~~ Klart — modulerna finns lokalt.
-   Kvar av det: kör `Version` en gång **med** täckning på varje ny enhet innan
-   den går ut i fält, så att cachen är fylld.
+7. ~~**Flygplanslägestest på telefon.**~~ Klart — modulerna finns lokalt, och
+   ett riktigt flöde har körts offline. Kvar: samma sak i **varje** bibliotek,
+   och `Version` en gång **med** täckning på varje ny enhet innan den går ut i
+   fält, så att cachen är fylld.
+8. **Driftsättning** enligt `DRIFTSATTNING.md` — backup först, sedan struktur,
+   script, enheter, och ett skarpt ärende hela vägen.
 
 ## Avvikelser från testkörningen (31 aug)
 
@@ -104,13 +110,13 @@ Fältet ligger i `TRACK_FIELDS`, så listan är inte problemet. *Hypotes:* både
 
 **A5 — Importen uppdaterar inte befintliga anläggningar.**
 Kunduppgifter, `Nätstation` och `Leveranspunkt` följer bara med när anläggningen
-är ny. Detta fungerade inte förr heller, så det bryter inte pariteten — men
+är ny. Detta fungerade inte förr heller, så inget har blivit sämre — men
 verksamheten behöver det: nätbolagen kopplar om i nätet och kunduppgifter
 ändras. Önskemål: dialog som visar vad som skulle ändras och när det senast
 ändrades, med möjlighet att avbryta, samt loggning av ändringen. Parkeras som
 punkt 7 under *Planerat*.
 
-## Parkerat till efter parity
+## Parkerat till efter driftsättning
 
 Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
 

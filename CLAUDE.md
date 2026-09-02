@@ -146,12 +146,33 @@ Alla fyra. Sedan, och först då:
    gång något är pushfärdigt. Kort, imperativ svenska, en rad.
 4. Uppdatera `ARBETSLAGE.md` och `CHANGELOG.md` i samma leverans.
 
-### Bryggan har två begränsningar som har bitit oss
+### Bryggan har tre begränsningar som har bitit oss
 
 - **Den kan inte radera filer hos Jimmy.** Döps en fil om måste han köra
   `git rm` själv — säg till uttryckligen, annars pushas den döda filen med.
 - **Containern och hans disk är två olika filsystem.** Redigerar du i
   containern har det inte hänt hos honom förrän du skrivit över bryggan.
+- **`force: true` raderar hans arbete utan att säga något.**
+
+**ANVÄND ALDRIG `force: true` slentrianmässigt.** `device_commit_files` har en
+mtime-spärr just för att upptäcka att filen ändrats sedan du läste den. Med
+`force` stängs den av, och en fil Jimmy just redigerat skrivs över tyst.
+
+*Det hände: han fyllde i `TESTPLAN.md` avsnitt 4 och 5, sparade, och min nästa
+skrivning raderade det. Jag hade satt `force: true` på varenda leverans under
+hela projektet — spärren som fanns för exakt det här var avstängd från början.*
+
+Rätt ordning för en fil som Jimmy också kan ha rört — alla under `memento/`,
+och särskilt `TESTPLAN.md`:
+
+1. `device_stage_files` på filen **direkt innan** du skriver.
+2. `diff` mot din kopia. Skiljer de sig: **hans version gäller**. Slå ihop
+   ändringarna, eller fråga. Skriv inte över.
+3. `device_commit_files` **utan** `force`, med `expectedMtimeMs` från
+   stagingen. Blir den avvisad har han hunnit spara igen — börja om från 1.
+
+`force: true` är motiverat på en fil bara du skriver, när mtime-spärren
+felaktigt stoppar en leverans du vet är korrekt. Skriv då ut varför.
 
 ### Aldrig scriptad sök-och-ersätt utan att först verifiera träffen
 
@@ -205,6 +226,8 @@ tools/
 
 memento/             det som ska göras i appen, inte kod som körs
   FALT.md            GENERERAD fältinventering. Facit för vad som finns.
+  DRIFTSATTNING.md   vad som måste vara gjort innan driften rörs, och i vilken
+                     ordning. Backup och återgång ingår.
   UPPSATTNING.md     checklista + all scriptkod att klistra in
   TESTPLAN.md        paritetstestet. Facit för när vi är klara.
   KOPIERING.md       länkfält och permissions efter en kopiering
@@ -244,13 +267,25 @@ felaktiga ut utan sin motivering.
 
 ---
 
-## Del 6 — Är parity nått?
+## Del 6 — Kravet: minst lika bra som förr
 
-Ordningen är bestämd: **först samma beteende som förr, men med alla script i
-git. Sedan optimering och utseende.** Föreslå inte widgets, dialoger eller
-förfining innan `ARBETSLAGE.md` säger att parity är verifierad. Det som ändå
-är värt att göra sedan står under *Planerat* i `ARBETSFLODE.md` — parkera nya
-idéer där i stället för att bygga dem.
+Ribban är **inte** att beteendet ska vara identiskt med startpunkten. Den är
+att inget som fungerade förr får ha blivit sämre. Förbättringar får följa med
+— de behöver inte vänta på ett godkänt paritetstest.
+
+Två saker gäller fortfarande:
+
+- **Ett beteende som verksamheten är beroende av ändras inte utan att Jimmy
+  sagt ja** (I6). Att kravet mjukats upp betyder inte att koden får ändra sig
+  själv på eget bevåg.
+- **En förbättring som inte är efterfrågad byggs inte i förtid.** Det som är
+  värt att göra står under *Planerat* i `ARBETSFLODE.md` — parkera nya idéer
+  där i stället för att bygga dem.
+
+`memento/TESTPLAN.md` är fortfarande facit för vad som ska provas, och
+`memento/DRIFTSATTNING.md` för vad som måste vara gjort innan driftbiblioteken
+rörs. Skillnaden är bara att en avvikelse i testplanen numera kan vara ett
+medvetet förbättrat beteende, inte automatiskt ett fel.
 
 Facit för när paritet är nådd är `memento/TESTPLAN.md`. Hittas en avvikelse där:
 skriv `REGRESSION`-testet **före** rättningen, och står det sig som avsiktligt
