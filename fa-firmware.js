@@ -51,4 +51,4 @@ function updateFirmwareStatus() {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-firmware", byggd: "2026-09-01 15:50", hash: "adf641c" });
+MV.build.moduler.push({ namn: "fa-firmware", byggd: "2026-09-02 08:53", hash: "adf641c" });

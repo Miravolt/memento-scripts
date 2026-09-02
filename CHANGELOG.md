@@ -16,9 +16,22 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 ### Tillagt
 
 - **Historiken som text i fältarbetet.** `MV.Faltarbete.historikText()` skriver
-  en sammanfattning av anläggningens tidigare fältarbeten — datum, status,
-  åtgärder, nyaste först — i fältet `Tidigare fältarbeten`, eller i loggen om
-  fältet inte finns. Ersätter historiklänkfältet, som aldrig kunde fungera.
+  en sammanfattning av anläggningens tidigare fältarbeten i fältet
+  `Tidigare fältarbeten`, eller i loggen om fältet inte finns. Ersätter
+  historiklänkfältet, som aldrig kunde fungera. Per besök, nyaste först:
+
+  ```
+  • 2026-06-01 · Läser i CM · Mätaren läser utan åtgärd
+     Gjort: Terminal omstartad, RF8 antenn monterad
+     Not: Kunden ej hemma första gången, kom in via nyckelrör.
+  ```
+
+  Rubrikraden bär datum, hur ärendet lämnade listan (`Läser i CM` eller
+  `Åter till nätägare`) och anledningen till avslut. Anledningen är
+  `Status Fältarbete` — värden som `Mätaren läser utan åtgärd` och
+  `Ström bruten i kabelskåp` är just det man vill veta. Intetsägande värden
+  (`Ny`, `Historik finns`, `Klar`, `Avslutad`) utelämnas, styrt av
+  `historikDoljStatus`. Kommentarfälten klipps vid `historikKommentarLangd`.
 - **Utebliven länkning syns.** `skapa()` läser tillbaka `Koppling till
   anläggning` och `Aktivt Fältarbete` efter att ha länkat, och returnerar
   `varningar`. `skapaMedDialog()` visar dem. Tidigare ignorerades returvärdet

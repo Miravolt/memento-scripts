@@ -1087,6 +1087,45 @@ suite("fa-faltarbete — historik som text");
     ok(text.indexOf("Mätare bytt") > 0, "åtgärderna kommer med");
     ok(text.indexOf("Antenn bytt") > 0, "flera åtgärder slås ihop på raden");
 
+    // Avslutssätt och anledning — det man vill veta om ett tidigare besök
+    var g4 = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-06-15"),
+        "Läser i CM": true, "Status Fältarbete": "Mätaren läser utan åtgärd",
+        "Åtgärder": ["Avläsning"], "Kommentar": "Kunden ej hemma\nförsta gången."
+    });
+    anl.link("Historiska Fältarbeten", g4);
+    var medOrsak = MV.Faltarbete.historikText(anl);
+
+    ok(medOrsak.indexOf("Läser i CM") > 0, "avslutssättet syns");
+    ok(medOrsak.indexOf("Mätaren läser utan åtgärd") > 0,
+       "AVSIKT: statusvärdet visas som anledning till avslut");
+    ok(medOrsak.indexOf("Gjort: Avläsning") > 0, "åtgärderna får egen rad");
+    ok(medOrsak.indexOf("Not: Kunden ej hemma första gången.") > 0,
+       "AVSIKT: kommentaren kommer med, radbrytningar blir mellanslag");
+
+    var g5 = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-06-16"),
+        "Åter till nätägare": true, "Status Fältarbete": "Klar"
+    });
+    anl.link("Historiska Fältarbeten", g5);
+    var utanBrus = MV.Faltarbete.historikText(anl);
+
+    ok(utanBrus.indexOf("Åter till nätägare") > 0, "andra avslutssättet syns");
+    ok(utanBrus.indexOf("Klar") === -1,
+       "AVSIKT: intetsägande status utelämnas — 'Klar' är brus i en historikrad");
+    ok(utanBrus.indexOf("2026-06-16 · Åter till nätägare\n") > 0,
+       "utan åtgärder och kommentar blir det bara rubrikraden");
+
+    // Långa kommentarer klipps
+    MV.config.faltarbete.historikKommentarLangd = 20;
+    var langt = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-06-17"),
+        "Kommentar": "En mycket lång utläggning som inte får äta hela rutan"
+    });
+    anl.link("Historiska Fältarbeten", langt);
+    ok(MV.Faltarbete.historikText(anl).indexOf("…") > 0, "lång kommentar klipps");
+    MV.config.faltarbete.historikKommentarLangd = 200;
+
     // Ett ärende utan avslutsdatum ska falla tillbaka på Skapad, inte försvinna
     var g3 = s.faltLib.seed({
         "Anl. adress": "Storgatan 1", "Skapad": Date.parse("2026-07-20"),
@@ -1099,8 +1138,10 @@ suite("fa-faltarbete — historik som text");
     // Taket: bara de senaste sammanfattas, resten räknas
     MV.config.faltarbete.historikAntal = 2;
     var kort = MV.Faltarbete.historikText(anl);
-    eq(kort.split("•").length - 1, 2, "bara historikAntal rader visas");
-    ok(kort.indexOf("…och 1 till") > 0, "resten räknas i stället för att döljas");
+    eq(kort.split("•").length - 1, 2, "bara historikAntal besök visas");
+    var totalt = MV.fmt.toArray(anl.field("Historiska Fältarbeten")).length;
+    ok(kort.indexOf("…och " + (totalt - 2) + " till") > 0,
+       "resten räknas i stället för att döljas");
     MV.config.faltarbete.historikAntal = 5;
 
     eq(MV.Faltarbete.historikText(s.anlLib.seed({ "Anl. adress": "Tom" })), "",
