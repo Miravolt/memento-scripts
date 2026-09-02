@@ -1115,15 +1115,22 @@ suite("fa-faltarbete — historik som text");
     ok(utanBrus.indexOf("• 2026-06-16\n") > 0,
        "utan anledning, åtgärder och kommentar blir det bara datumet");
 
-    // Långa kommentarer klipps
-    MV.config.faltarbete.historikKommentarLangd = 20;
-    var langt = s.faltLib.seed({
+    // Kommentaren bär ofta sitt eget datum, satt av knappen "Lägg till datum i
+    // kommentar". Står det samma datum som blockets rubrik ska det bort.
+    var dubbelt = s.faltLib.seed({
         "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-06-17"),
-        "Kommentar": "En mycket lång utläggning som inte får äta hela rutan"
+        "Kommentar": "2026-06-17: Kunden ringde upp"
     });
-    anl.link("Historiska Fältarbeten", langt);
-    ok(MV.Faltarbete.historikText(anl).indexOf("…") > 0, "lång kommentar klipps");
-    MV.config.faltarbete.historikKommentarLangd = 200;
+    anl.link("Historiska Fältarbeten", dubbelt);
+    var utanDubblett = MV.Faltarbete.historikText(anl);
+    ok(utanDubblett.indexOf("\u201dKunden ringde upp\u201d") > 0,
+       "AVSIKT: kommentarens egna datum stryks när det upprepar rubrikens");
+    ok(utanDubblett.indexOf("2026-06-17: Kunden") === -1,
+       "datumet står inte två gånger");
+
+    // Ett ANNAT datum i kommentaren är information och ska stå kvar.
+    eq(MV.Faltarbete._utanDubbeltDatum("2026-01-01: Något annat", "2026-06-17"),
+       "2026-01-01: Något annat", "avvikande datum i kommentaren behålls");
 
     // Ett ärende utan avslutsdatum ska falla tillbaka på Skapad, inte försvinna
     var g3 = s.faltLib.seed({
@@ -1135,13 +1142,15 @@ suite("fa-faltarbete — historik som text");
        "utan avslutsdatum används Skapad");
 
     // Taket: bara de senaste sammanfattas, resten räknas
-    MV.config.faltarbete.historikAntal = 2;
-    var kort = MV.Faltarbete.historikText(anl);
-    eq(kort.split("•").length - 1, 2, "bara historikAntal besök visas");
+    // 0 = alla. Historiken har en egen flik, så inget behöver döljas.
     var totalt = MV.fmt.toArray(anl.field("Historiska Fältarbeten")).length;
-    ok(kort.indexOf("…och " + (totalt - 2) + " till") > 0,
-       "resten räknas i stället för att döljas");
-    MV.config.faltarbete.historikAntal = 5;
+    eq(MV.Faltarbete.historikPoster(anl).length, totalt,
+       "AVSIKT: historikAntal 0 visar alla besök");
+
+    MV.config.faltarbete.historikAntal = 2;
+    eq(MV.Faltarbete.historikPoster(anl).length, 2,
+       "ett tak går fortfarande att sätta");
+    MV.config.faltarbete.historikAntal = 0;
 
     eq(MV.Faltarbete.historikText(s.anlLib.seed({ "Anl. adress": "Tom" })), "",
        "ingen historik ger tom sträng, inte en rubrik utan innehåll");
@@ -1166,6 +1175,52 @@ suite("fa-faltarbete — historik som text");
     var logg = MV.util.htmlToText(res.entry.field("Logg"));
     ok(logg.indexOf("1 tidigare fältarbete") > 0,
        "AVSIKT: saknas historikfältet hamnar sammanfattningen i loggen");
+})();
+
+/* ---------------------------------------------------------------- */
+suite("fa-faltarbete — historiken som HTML");
+
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    var anl = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+
+    var a = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-08-31"),
+        "Status Fältarbete": "Mätaren läser utan åtgärd",
+        "Åtgärder": ["Avläsning", "Terminal omstartad"], "Kommentar": "Test körning"
+    });
+    var b = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-08-31"),
+        "Status Fältarbete": "Mätaren är nertagen"
+    });
+    var tom = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-08-30")
+    });
+    anl.link("Historiska Fältarbeten", a);
+    anl.link("Historiska Fältarbeten", b);
+    anl.link("Historiska Fältarbeten", tom);
+
+    var html = MV.Faltarbete.historikHtml(anl);
+
+    ok(html.indexOf("<h3") > 0, "AVSIKT: samma datumrubrik som Logg-fältet");
+    ok(html.indexOf(MV.config.theme.main) > 0, "temat används, inte hårdkodad färg");
+    ok(html.indexOf("\u2714 Avläsning") > 0, "åtgärder som bockar, som i loggen");
+    ok(html.indexOf("<i>Kommentar:</i>") > 0, "kommentaren märks med sitt fältnamn");
+
+    // Två ärenden samma dag får inte skriva över varandra i blockobjektet.
+    eq(html.split("<h3").length - 1, 2, "ett datumblock per DATUM, inte per ärende");
+    ok(html.indexOf("Mätaren läser utan åtgärd") > 0 &&
+       html.indexOf("Mätaren är nertagen") > 0,
+       "REGRESSION: båda ärendena samma dag finns kvar");
+    ok(html.indexOf("<hr") > 0, "de skiljs åt med samma avdelare som loggen");
+
+    ok(html.indexOf("Inget registrerat") > 0,
+       "ett ärende utan innehåll säger det, i stället för att bli en tom ruta");
+
+    eq(MV.Faltarbete.historikHtml(s.anlLib.seed({ "Anl. adress": "Tom" })), "",
+       "ingen historik ger tom sträng");
 })();
 
 

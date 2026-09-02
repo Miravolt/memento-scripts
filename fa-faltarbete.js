@@ -40,8 +40,13 @@ MV.config.faltarbete = {
      */
     faltHistorikText: "Tidigare fältarbeten",
 
-    /** Hur många tidigare ärenden som sammanfattas. Resten räknas bara. */
-    historikAntal: 5,
+    /**
+     * Hur många tidigare ärenden som visas. 0 = alla.
+     *
+     * Historiken har en egen flik i kortet med inget annat under, så det finns
+     * ingen anledning att snåla — men taket finns kvar för den som vill.
+     */
+    historikAntal: 0,
 
     /**
      * Statusvärden som INTE säger något om VARFÖR ärendet avslutades, och
@@ -56,14 +61,13 @@ MV.config.faltarbete = {
     historikDoljStatus: ["Ny", "Historik finns", "Klar", ""],
 
     /**
-     * Kommentarfält som tas med i historikraden. Bara "Kommentar" — det som
-     * står under Åtgärder i kortet. De två övriga kommentarfälten hör till
-     * avläsning respektive mätarbyte och skulle göra raden rörig.
+     * Kommentarfält som tas med i historiken, i den ordning de ska visas.
+     * "Kommentar" är den under Åtgärder i kortet. De två andra hör till
+     * avläsning respektive mätarbyte och tas med när de är ifyllda — fliken
+     * har gott om plats, och en tom kommentar visas ändå aldrig.
      */
-    historikKommentarFalt: ["Kommentar"],
-
-    /** Kommentaren klipps här, så att en lång utläggning inte äter hela rutan. */
-    historikKommentarLangd: 200,
+    historikKommentarFalt: ["Kommentar", "Kommentar Avläsning",
+                            "Kommentar Ny mätare"],
 
     faltLast: "Låst för redigering",
     faltAvslutad: "Avslutad",
@@ -216,8 +220,12 @@ MV.Faltarbete._datum = function (entryObj, fieldName) {
     return isNaN(num) ? String(raw) : MV.util.dateStr(num);
 };
 
-/** En rad per tidigare fältarbete: "2026-04-12 · Avslutad · Mätare bytt". */
-MV.Faltarbete.historikRad = function (tidigare) {
+/**
+ * Plockar ut det som ska visas om ett tidigare fältarbete.
+ *
+ * @return { datum, anledning, atgarder[], kommentarer[{falt,text}] }
+ */
+MV.Faltarbete.historikPost = function (tidigare) {
     var cfg = MV.config.faltarbete;
 
     // Datumfält kommer tillbaka som millisekunder, inte som Date. MV.fmt.value
@@ -225,98 +233,157 @@ MV.Faltarbete.historikRad = function (tidigare) {
     var datum = MV.Faltarbete._datum(tidigare, cfg.faltDatumAvslut);
     if (datum === "") datum = MV.Faltarbete._datum(tidigare, cfg.faltSkapad);
 
-    var rubrik = [datum === "" ? "utan datum" : datum];
-
     // Statusvärdet ÄR anledningen till avslut — "Mätaren läser utan åtgärd",
     // "Ström bruten i kabelskåp" — men bara när det säger något. "Klar" och
-    // "Historik finns" är brus i en historikrad.
+    // "Historik finns" är brus.
     var status = MV.fmt.value(tidigare, cfg.faltStatus);
-    var dolj = cfg.historikDoljStatus;
-    var visaStatus = true;
-    for (var d = 0; d < dolj.length; d++) {
-        if (dolj[d] === status) { visaStatus = false; break; }
+    for (var d = 0; d < cfg.historikDoljStatus.length; d++) {
+        if (cfg.historikDoljStatus[d] === status) { status = ""; break; }
     }
-    if (visaStatus) rubrik.push(status);
 
-    var atgarder = MV.fmt.list(tidigare, cfg.faltAtgarder);
-    if (atgarder.length > 0) rubrik.push(atgarder.join(", "));
-
-    var rader = [rubrik.join(" · ")];
-
-    // Kommentaren får en egen rad inom citattecken. Ingen etikett — raden
-    // säger sig själv, och en etikett till hade gjort blocket rörigt.
-    var kommentar = MV.Faltarbete._kommentar(tidigare);
-    if (kommentar !== "") rader.push("\u201d" + kommentar + "\u201d");
-
-    return { datum: datum, text: rader.join("\n") };
-};
-
-/**
- * Kommentaren som en rad, klippt vid historikKommentarLangd. Radbrytningar
- * blir mellanslag: historiken ska gå att överblicka, inte vara fullständig.
- * Vill man ha allt öppnar man ärendet.
- */
-MV.Faltarbete._kommentar = function (tidigare) {
-    var cfg = MV.config.faltarbete;
-    var delar = [];
-
+    var kommentarer = [];
     for (var i = 0; i < cfg.historikKommentarFalt.length; i++) {
-        var text = MV.fmt.value(tidigare, cfg.historikKommentarFalt[i]);
-        text = text.replace(/\s+/g, " ").trim();
-        if (text !== "") delar.push(text);
+        var falt = cfg.historikKommentarFalt[i];
+        var text = MV.fmt.value(tidigare, falt).trim();
+        if (text === "") continue;
+
+        // Kommentaren bär ofta sitt eget datum, satt av knappen "Lägg till
+        // datum i kommentar". Är det samma datum som blockets rubrik stryks
+        // det — annars står datumet två gånger direkt efter varandra.
+        text = MV.Faltarbete._utanDubbeltDatum(text, datum);
+        kommentarer.push({ falt: falt, text: text });
     }
 
-    var allt = delar.join(" | ");
-    var max = cfg.historikKommentarLangd;
-
-    return allt.length > max ? allt.substring(0, max - 1) + "…" : allt;
+    return {
+        datum: datum,
+        anledning: status,
+        atgarder: MV.fmt.list(tidigare, cfg.faltAtgarder),
+        kommentarer: kommentarer
+    };
 };
 
-/**
- * Läsbar sammanfattning av anläggningens tidigare fältarbeten.
- *
- * @param anl  anläggningsentry
- * @return sträng, tom om ingen historik finns
- */
-MV.Faltarbete.historikText = function (anl) {
+/** Stryker ett inledande "YYYY-MM-DD: " som upprepar blockets eget datum. */
+MV.Faltarbete._utanDubbeltDatum = function (text, datum) {
+    if (datum === "") return text;
+
+    var inledning = text.substring(0, datum.length + 2);
+    if (inledning === datum + ": " || inledning === datum + ":") {
+        return text.substring(inledning.length).trim();
+    }
+    return text;
+};
+
+/** Alla poster, nyast först. Ärenden utan datum hamnar sist. */
+MV.Faltarbete.historikPoster = function (anl) {
     var cfg = MV.config.faltarbete;
     var historik = MV.fmt.toArray(anl ? anl.field(cfg.linkHistorik) : null);
+    var poster = [];
 
-    if (historik.length === 0) return "";
-
-    // Nyast först. Länkfältets ordning är inte garanterad, så sortera på den
-    // rad vi faktiskt visar — den inleds med datumet.
-    var rader = [];
     for (var i = 0; i < historik.length; i++) {
-        rader.push(MV.Faltarbete.historikRad(
+        poster.push(MV.Faltarbete.historikPost(
             MV.db.reload(historik[i], cfg.libFaltarbete)));
     }
 
-    // Nyast först. Sorteras på datumet, inte på texten — raden är flerradig och
-    // inleds inte nödvändigtvis med något sorterbart. Ärenden utan datum
-    // hamnar sist i stället för att blandas in bland de daterade.
-    rader.sort(function (a, b) {
+    poster.sort(function (a, b) {
         if (a.datum === b.datum) return 0;
         if (a.datum === "") return 1;
         if (b.datum === "") return -1;
         return a.datum < b.datum ? 1 : -1;
     });
 
-    var visa = rader.length < cfg.historikAntal ? rader.length : cfg.historikAntal;
-    var ut = [historik.length === 1
+    // historikAntal 0 = visa allt. Historiken har en egen flik med inget annat
+    // under, så det finns ingen anledning att snåla.
+    if (cfg.historikAntal > 0 && poster.length > cfg.historikAntal) {
+        poster = poster.slice(0, cfg.historikAntal);
+    }
+    return poster;
+};
+
+/**
+ * Historiken som HTML, formaterad som Logg-fältet: en datumrubrik per besök
+ * med innehållet i en ram under. Renderingen lånas rakt av från MV.Logg, så
+ * att de två ser likadana ut även om temat ändras.
+ *
+ * @return HTML-sträng, tom om ingen historik finns
+ */
+MV.Faltarbete.historikHtml = function (anl) {
+    var poster = MV.Faltarbete.historikPoster(anl);
+    if (poster.length === 0) return "";
+
+    var theme = MV.config.theme;
+    var block = {};
+
+    for (var i = 0; i < poster.length; i++) {
+        var p = poster[i];
+        var delar = [];
+
+        if (p.anledning !== "") {
+            delar.push("<div style='margin: 0;'><b>" + p.anledning + "</b></div>");
+        }
+
+        if (p.atgarder.length > 0) {
+            delar.push("<div style='margin: 0;'>&nbsp;&nbsp;\u2714 " +
+                p.atgarder.join("<br>&nbsp;&nbsp;\u2714 ") + "</div>");
+        }
+
+        for (var k = 0; k < p.kommentarer.length; k++) {
+            var kom = p.kommentarer[k];
+            delar.push("<div style='margin: 0; color: #555555;'><i>" +
+                kom.falt + ":</i> " +
+                kom.text.replace(/\n/g, "<br>") + "</div>");
+        }
+
+        if (delar.length === 0) {
+            delar.push("<div style='margin: 0; color: #888888;'>" +
+                "Inget registrerat utöver att ärendet avslutades.</div>");
+        }
+
+        // Två ärenden kan ha avslutats samma dag. Då slås de ihop under samma
+        // rubrik i stället för att det ena tyst skriver över det andra.
+        var nyckel = p.datum === "" ? "Utan datum" : p.datum;
+        block[nyckel] = block.hasOwnProperty(nyckel)
+            ? block[nyckel] + MV.util.separatorHtml() + delar.join("\n")
+            : delar.join("\n");
+    }
+
+    var rubrik = "<div style='margin: 0 0 12px 0; color: " + theme.main +
+        ";'><b>" + poster.length + (poster.length === 1
+            ? " tidigare fältarbete</b> på denna anläggning.</div>"
+            : " tidigare fältarbeten</b> på denna anläggning.</div>");
+
+    return rubrik + MV.Logg.render(block);
+};
+
+/**
+ * Samma innehåll som ren text. Används när historikfältet saknas i
+ * biblioteket och sammanfattningen får hamna i loggen i stället.
+ *
+ * @return sträng, tom om ingen historik finns
+ */
+MV.Faltarbete.historikText = function (anl) {
+    var poster = MV.Faltarbete.historikPoster(anl);
+    if (poster.length === 0) return "";
+
+    var ut = [poster.length === 1
         ? "1 tidigare fältarbete på denna anläggning:"
-        : historik.length + " tidigare fältarbeten på denna anläggning:"];
+        : poster.length + " tidigare fältarbeten på denna anläggning:"];
 
-    for (var j = 0; j < visa; j++) {
-        // Följdraderna dras in under punkten, så att besöken hålls isär.
-        ut.push("• " + rader[j].text.replace(/\n/g, "\n   "));
+    for (var i = 0; i < poster.length; i++) {
+        var p = poster[i];
+        var rad = [p.datum === "" ? "utan datum" : p.datum];
+
+        if (p.anledning !== "") rad.push(p.anledning);
+        if (p.atgarder.length > 0) rad.push(p.atgarder.join(", "));
+
+        ut.push("\u2022 " + rad.join(" \u00b7 "));
+
+        for (var k = 0; k < p.kommentarer.length; k++) {
+            ut.push("   \u201d" +
+                p.kommentarer[k].text.replace(/\s+/g, " ").trim() + "\u201d");
+        }
     }
 
-    if (rader.length > visa) {
-        ut.push("…och " + (rader.length - visa) + " till.");
-    }
     ut.push("Hela historiken finns på anläggningen.");
-
     return ut.join("\n");
 };
 
@@ -404,13 +471,14 @@ MV.Faltarbete.skapa = function (anlaggning, opts) {
     }
 
     // Historiken kan inte länkas in (se kommentaren vid linkHistorik) — den
-    // sammanfattas i text i stället.
+    // sammanfattas i stället. Rich text-fältet får loggformaterad HTML;
+    // saknas fältet hamnar samma innehåll som ren text i loggen.
     var sammanfattning = MV.Faltarbete.historikText(anl);
 
     if (sammanfattning !== "") {
         var skrevs = false;
         try {
-            nytt.set(cfg.faltHistorikText, MV.util.textToHtml(sammanfattning));
+            nytt.set(cfg.faltHistorikText, MV.Faltarbete.historikHtml(anl));
             skrevs = true;
         } catch (ex) {
             skrevs = false;          // fältet finns inte i biblioteket
@@ -727,4 +795,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 09:15", hash: "704c981" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-02 09:49", hash: "75f4125" });
