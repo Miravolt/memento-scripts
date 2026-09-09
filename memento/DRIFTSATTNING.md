@@ -45,15 +45,50 @@ driftens tillstånd utan rättigheter i den.
       `Aktivt Fältarbete`, `Historiska Fältarbeten`
 - [ ] Kontrollera vad `Historiska Fältarbeten` innehåller
 
-**Är kolumnen tom överallt** har historiklänkningen aldrig fungerat — det
-förklarar symptomet, och ingen data ligger fel. Det är det väntade utfallet.
+**Är kolumnen tom överallt** har historiklänkningen aldrig fungerat — då ligger
+ingen data fel, och det räcker att peka om.
 
 **Innehåller den poster** ligger de i ett annat bibliotek än driftens
-Fältarbete. Då krävs en dataflytt, och den måste planeras separat innan Del B
-påbörjas.
+Fältarbete. Då krävs ett beslut om dataflytt innan Del B påbörjas.
 
 > Mät på en **ny** kopia. Har man redan pekat om länkfälten i en kopia är
 > spåren av vad som var länkat borta där — ompekning kastar länkarna.
+
+### Utfall 9 sep 2026 — fall B
+
+| | |
+|---|---|
+| Anläggningar i driften | 706 |
+| …med en historiklänk | **30** |
+| …vars länk pekar in i det gamla testbiblioteket | **30 av 30** |
+| …med ett aktivt fältarbete | 11 |
+| …vars aktiva länk pekar fel | **0** |
+
+Berörda poster i det gamla biblioteket: **31 stycken**, på 29 adresser. Alla har
+`Logg`, 29 har `Åtgärder`, 29 är avslutade, **2 har bilder**.
+
+Tolkning: `Aktivt Fältarbete` är friskt och pekar in i driftens Fältarbete.
+`Historiska Fältarbeten` gör det inte — och kan inte göra det, eftersom fältet
+är bundet till det gamla biblioteket. Att exakt de 30 äldsta anläggningarna har
+historik tyder på att driftens Anläggningar en gång skapades genom att kopiera
+det gamla testbiblioteket, med länkarna intakta. De 676 anläggningar som
+tillkommit sedan dess har aldrig fått någon historik alls — deras avslutade
+fältarbeten finns i driftens Fältarbete men kunde aldrig länkas.
+
+### Ingen dataflytt behövs
+
+Jämförelse mot en export ur driftens Fältarbete: **alla 36 posterna i det gamla
+biblioteket har en exakt motsvarighet i driften** — samma `Tjänst` och samma
+`Skapad` ned till minuten. Det gamla biblioteket är alltså en **dubblett**, inte
+ett gömställe för data som saknas någon annanstans.
+
+Det betyder att de 30 historiklänkarna pekar på kopior av poster som redan
+finns där de ska. Pekas fältet om försvinner länkarna, men ingenting går
+förlorat — och historiken byggs upp igen på nästa steg, den här gången för
+**alla** 706 anläggningarna och inte bara de 30.
+
+Det gamla biblioteket kan därefter arkiveras eller raderas. Vänta med det tills
+återuppbyggnaden är verifierad.
 
 ## A3. Generalrepetition
 
@@ -118,19 +153,24 @@ Ett bibliotek i taget. Öppna ett entry efteråt och se att kortet ser normalt u
 
 - [ ] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**
 
-      Här skrivs en sammanfattning av anläggningens tidigare ärenden när ett
-      nytt fältarbete skapas. Lägg det gärna på en egen flik.
-      *Hoppas steget över hamnar sammanfattningen i `Logg` i stället — inget
-      går förlorat, men den blir svårare att hitta.*
+      **Detta steg är ett krav, inte en valmöjlighet.** Här skrivs en
+      sammanfattning av anläggningens tidigare ärenden när ett nytt fältarbete
+      skapas — det är så fältpersonalen ser vad som gjorts förut. Lägg det på
+      en egen flik.
+
+      Saknas fältet hamnar texten i `Logg` i stället. Det är en nödutgång så
+      att inget går förlorat, inte ett alternativ: i loggen blandas den med
+      allt annat och fyller inte sitt syfte.
 
 - [ ] Kontrollera fältet **`Koppling till anläggning`** → ska peka på
       **Anläggningar** i samma uppsättning
 - [ ] Kontrollera **`Nyckel`** och **`Lookup`** → ska peka på
       **Nyckelregister** i samma uppsättning
-- [ ] Fältet **`Historiska Fältarbeten`** används inte längre och kan tas bort.
-      *Det kan ändå inte fungera: ett länkfält kan inte peka på sitt eget
-      bibliotek, så ett fältarbete kan aldrig länka till andra fältarbeten.
-      Låt det ligga kvar om du hellre vill — koden rör det inte.*
+- [ ] Fältet **`Historiska Fältarbeten`** kan lämnas som det är.
+      *Koden använder det inte längre, och det kan ändå inte fungera: ett
+      länkfält kan inte peka på sitt eget bibliotek, så ett fältarbete kan
+      aldrig länka till andra fältarbeten. Att den gamla pekaren ligger kvar
+      är ofarligt.*
 
 ### Anläggningar
 
@@ -202,6 +242,32 @@ bibliotekslistan i `Moduler` och kör igen.
 Under tiden fungerar både gammalt och nytt. Men ligger det gamla
 `LoggWriter`-scriptet kvar samtidigt som den nya koden körs kan samma händelse
 loggas två gånger — stanna inte i det läget längre än nödvändigt.
+
+---
+
+## B2b. Återställ historiken — engångskörning
+
+Anläggningarnas `Historiska Fältarbeten` var bundet till ett gammalt bibliotek.
+Följden: av 706 anläggningar har 30 en historik, och den pekar fel. De övriga
+676 har ingen alls — deras avslutade ärenden finns, men kunde aldrig länkas in.
+
+Nu när fältet pekar rätt går historiken att bygga upp igen. Varje fältarbete vet
+själv vilken anläggning det hör till, så inget behöver skrivas in för hand.
+
+**Görs i Anläggningar, efter B1 och B2.**
+
+- [ ] Kör actionen **`Återställ historik`**. Den gör en **torrkörning** och
+      rapporterar vad den *skulle* göra — den skriver ingenting.
+- [ ] Läs rapporten. Rimliga siffror? Ungefär lika många historiklänkar som det
+      finns avslutade fältarbeten, och lika många aktiva som det finns pågående.
+- [ ] Stämmer det: ändra raden i scriptet till
+      `MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });` och kör igen
+- [ ] Öppna några anläggningar och kontrollera att historiken ser rätt ut
+
+Funktionen **lägger bara till** länkar. Den tar aldrig bort någon, och den rör
+inga fältvärden. Kör man den två gånger händer ingenting den andra gången.
+
+Rapporterar den *misslyckade länkningar* — säg till innan du går vidare.
 
 ---
 

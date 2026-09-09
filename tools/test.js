@@ -1350,6 +1350,108 @@ suite("fa-faltarbete — granska en uppsättning");
 
 
 /* ================================================================ */
+suite("fa-faltarbete — återställ historiken");
+
+/*
+ * Uppmätt i driften 9 sep: anläggningarnas historiklänkfält var bundet till ett
+ * gammalt testbibliotek, så avslutade fältarbeten kunde aldrig länkas in. 676
+ * av 706 anläggningar saknade all historik. Den går att räkna fram igen, för
+ * varje fältarbete vet vilken anläggning det hör till.
+ */
+function historikScenario() {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    var a1 = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+    var a2 = s.anlLib.seed({ "Anl. adress": "Nyvägen 2", "Logg": "" });
+
+    // Två avslutade och ett pågående på a1, ett avslutat på a2.
+    var avslutade = [
+        s.faltLib.seed({ "Anl. adress": "Storgatan 1", "Låst för redigering": true }),
+        s.faltLib.seed({ "Anl. adress": "Storgatan 1",
+                         "Datum för avslut": Date.parse("2026-03-02") }),
+        s.faltLib.seed({ "Anl. adress": "Nyvägen 2", "Avslutad": true })
+    ];
+    var oppet = s.faltLib.seed({ "Anl. adress": "Storgatan 1" });
+
+    avslutade[0].link("Koppling till anläggning", a1);
+    avslutade[1].link("Koppling till anläggning", a1);
+    avslutade[2].link("Koppling till anläggning", a2);
+    oppet.link("Koppling till anläggning", a1);
+
+    // Ett fältarbete utan koppling — kan inte placeras någonstans.
+    s.faltLib.seed({ "Anl. adress": "Okänd" });
+
+    return { s: s, a1: a1, a2: a2 };
+}
+
+(function () {
+    var h = historikScenario();
+
+    var torr = MV.Faltarbete.aterstallHistorik();
+    ok(torr.torr, "torrkörning som standard");
+    eq(torr.antalFaltarbeten, 5, "alla fältarbeten gås igenom");
+    eq(torr.historik, 3, "tre avslutade skulle läggas i historiken");
+    eq(torr.aktiva, 1, "ett pågående skulle sättas som aktivt");
+    eq(torr.utanKoppling, 1, "det utan koppling räknas och hoppas över");
+
+    // AVSIKT: en torrkörning får inte skriva någonting.
+    eq(MV.fmt.toArray(h.a1.field("Historiska Fältarbeten")).length, 0,
+       "AVSIKT: torrkörningen skrev ingenting");
+    ok(torr.exempel.length > 0, "några exempelrader att läsa i dialogen");
+})();
+
+(function () {
+    var h = historikScenario();
+
+    var res = MV.Faltarbete.aterstallHistorik({ skarpt: true });
+    ok(!res.torr, "skarp körning markeras som sådan");
+    eq(res.historik, 3, "tre historiklänkar lades till");
+    eq(res.aktiva, 1, "ett aktivt sattes");
+    eq(res.misslyckade, [], "inga misslyckade länkningar");
+
+    eq(MV.fmt.toArray(h.a1.field("Historiska Fältarbeten")).length, 2,
+       "REGRESSION: anläggningen har fått sina två avslutade ärenden");
+    eq(MV.fmt.toArray(h.a2.field("Historiska Fältarbeten")).length, 1,
+       "den andra anläggningen fick sitt");
+    eq(MV.fmt.toArray(h.a1.field("Aktivt Fältarbete")).length, 1,
+       "det pågående blev aktivt, inte historik");
+
+    // Körs den igen ska inget dubbleras.
+    var igen = MV.Faltarbete.aterstallHistorik({ skarpt: true });
+    eq(igen.historik, 0, "AVSIKT: en andra körning lägger inte till något");
+    eq(igen.redanOk, 4, "de fyra som redan är rätt räknas som klara");
+    eq(MV.fmt.toArray(h.a1.field("Historiska Fältarbeten")).length, 2,
+       "REGRESSION: inga dubbletter av en omkörning");
+})();
+
+(function () {
+    var h = historikScenario();
+
+    // AVSIKT: befintliga länkar får aldrig tas bort. Lägg dit en länk som
+    // funktionen inte själv skulle ha skapat och se att den överlever.
+    var frammande = h.s.faltLib.seed({ "Anl. adress": "Storgatan 1" });
+    h.a1.link("Historiska Fältarbeten", frammande);
+
+    MV.Faltarbete.aterstallHistorik({ skarpt: true });
+
+    var ids = MV.fmt.toArray(h.a1.field("Historiska Fältarbeten"))
+        .map(function (x) { return x.id; });
+    ok(ids.indexOf(frammande.id) > -1,
+       "AVSIKT: funktionen lägger bara till, den tar aldrig bort");
+})();
+
+(function () {
+    var s = scenario("Test ");
+    mock.use(s.anlLib);
+    MV.db._affix = undefined;
+    var res = MV.Faltarbete.aterstallHistorik();
+    ok(res.fel === null || typeof res.fel === "string",
+       "ett saknat bibliotek rapporteras som text, inte som ett undantag");
+})();
+
+
+/* ================================================================ */
 
 console.log("\n" + passed + " ok, " + failed + " fel");
 process.exitCode = failed ? 1 : 0;

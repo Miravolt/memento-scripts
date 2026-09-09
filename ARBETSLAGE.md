@@ -40,6 +40,10 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
   fältnamn i koden som inte står där.
 - **Historiken visas som text** i fältarbetet: ett block per order med datum
   och anledning i rubriken, åtgärder och kommentarer under.
+- **`Återställ historik`-action.** Bygger upp `Historiska Fältarbeten` och
+  `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`.
+  Torrkörning som standard; lägger bara till länkar, tar aldrig bort någon.
+  Engångskörning vid driftsättningen, se `DRIFTSATTNING.md` B2b.
 - **`Granska`-action.** Räknar posterna i en uppsättning och listar varje länk
   som pekar ut ur den. Kom till för att två kontroller i `TESTPLAN.md` avsnitt
   5 inte gick att göra för hand med hundratals poster. Läser bara.
@@ -167,8 +171,22 @@ driftposter som hamnat fel. Strukturen är identisk med driftens Fältarbete:
 81 fält i båda, samma namn, samma typer — en dataflytt vore alltså tekniskt
 möjlig, om den visar sig behövas.
 
-**Öppet:** finns samma arbeten även i driftens Fältarbete, eller existerar den
-här veckan bara här? Avgörs genom att jämföra `Tjänst` mellan de 36 och driften.
+**Mätningen 9 sep gav fall B.** Av driftens 706 anläggningar har 30 en
+historiklänk, och **alla 30 pekar in i det gamla biblioteket** — 31 poster på 29
+adresser. `Aktivt Fältarbete` är däremot friskt: 11 anläggningar har ett aktivt
+fältarbete och inget av dem ligger fel.
+
+Sannolik förklaring: driftens Anläggningar skapades genom att kopiera det gamla
+testbiblioteket, med länkarna intakta. De 676 som tillkommit sedan dess har
+aldrig fått historik — deras avslutade fältarbeten finns i driftens Fältarbete
+men kunde aldrig länkas dit, eftersom fältet är bundet till det gamla.
+
+**Löst 9 sep: ingen dataflytt behövs.** Alla 36 posterna i det gamla
+biblioteket har en exakt motsvarighet i driftens Fältarbete — samma `Tjänst` och
+samma `Skapad` ned till minuten. Det gamla biblioteket är en dubblett, inte ett
+gömställe. Historiken byggs i stället upp från `Koppling till anläggning` med
+`MV.Faltarbete.aterstallHistorik()`, och då får **alla 706** anläggningar sin
+historik — inte bara de 30.
 
 ## Rättigheter i driften — förutsättningen som saknades
 
@@ -186,10 +204,11 @@ körschema. Den delen är därför omskriven för en läsare som inte varit med 
 arbetet — explicit, med kontrollpunkter och en stoppregel. Del A är det Jimmy
 förbereder i kopiorna.
 
-Två saker mildrar begränsningen: koden slutade använda historiklänkfältet, så
-det behöver inte tas bort, och saknas `Tidigare fältarbeten` hamnar
-sammanfattningen i `Logg` i stället. Uppsättningen av `Moduler` och stubbarna
-går däremot inte att komma runt.
+En sak mildrar begränsningen: koden slutade använda historiklänkfältet, så det
+behöver varken pekas om eller tas bort — att den gamla pekaren ligger kvar är
+ofarligt (Jimmy 9 sep). Fältet **`Tidigare fältarbeten` är däremot ett krav**;
+att sammanfattningen annars hamnar i `Logg` är en nödutgång, inte ett
+alternativ. Uppsättningen av `Moduler` och stubbarna går inte att komma runt.
 
 Värt att ta med till kunden: **detta är en engångsinsats.** Efter uppsättningen
 sker kodändringar utanför biblioteken och kräver inga rättigheter i dem. Det är

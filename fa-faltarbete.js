@@ -883,6 +883,150 @@ MV.Faltarbete.granskaMedDialog = function (opts) {
 
 
 /* ================================================================== *
+ * Återställ historiken
+ *
+ * Bakgrunden: anläggningarnas "Historiska Fältarbeten" var bundet till ett
+ * gammalt testbibliotek. Följden blev att avslutade fältarbeten aldrig kunde
+ * länkas in — länkningen misslyckades tyst, ärende efter ärende, i månader.
+ *
+ * Informationen är dock inte förlorad. Varje fältarbete vet själv vilken
+ * anläggning det hör till, genom "Koppling till anläggning". Historiken går
+ * därför att räkna fram från andra hållet:
+ *
+ *     avslutat fältarbete  -> anläggningens Historiska Fältarbeten
+ *     öppet fältarbete     -> anläggningens Aktivt Fältarbete
+ *
+ * Körs EFTER att länkfältet pekats om till rätt bibliotek.
+ *
+ * Funktionen LÄGGER BARA TILL. Den tar aldrig bort en länk, och den rör inga
+ * fältvärden. Standardläget är torrkörning: den rapporterar vad den skulle
+ * göra utan att skriva något.
+ * ================================================================== */
+
+/**
+ * @param opts { skarpt: true }  skriv på riktigt. Utelämnas -> torrkörning.
+ * @return {
+ *   torr,                 true om inget skrevs
+ *   antalFaltarbeten,
+ *   historik, aktiva,     antal länkar som lades till (eller skulle läggas till)
+ *   redanOk,              antal som redan var rätt länkade
+ *   utanKoppling,         fältarbeten som saknar anläggning — de kan inte placeras
+ *   misslyckade,          länkningar som inte gick igenom trots försök
+ *   exempel,              några rader att läsa i dialogen
+ *   fel
+ * }
+ */
+MV.Faltarbete.aterstallHistorik = function (opts) {
+    var cfg = MV.config.faltarbete;
+    opts = opts || {};
+    var skarpt = opts.skarpt === true;
+
+    var res = {
+        torr: !skarpt, antalFaltarbeten: 0, historik: 0, aktiva: 0,
+        redanOk: 0, utanKoppling: 0, misslyckade: [], exempel: [], fel: null
+    };
+
+    var faltLib;
+    try {
+        faltLib = MV.db.lib(cfg.libFaltarbete);
+    } catch (ex) {
+        res.fel = String(ex.message || ex);
+        return res;
+    }
+
+    var faltarbeten = faltLib.entries();
+    res.antalFaltarbeten = faltarbeten.length;
+
+    for (var i = 0; i < faltarbeten.length; i++) {
+        var fa = faltarbeten[i];
+
+        var kopplingar = MV.fmt.toArray(fa.field(cfg.linkKoppling));
+        if (kopplingar.length === 0) {
+            res.utanKoppling++;
+            continue;
+        }
+
+        var anl = MV.db.reload(kopplingar[0], cfg.libAnlaggning);
+        if (!anl) { res.utanKoppling++; continue; }
+
+        // Avslutat eller pågående? Tre oberoende tecken — räcker med ett, för
+        // äldre poster är inte alltid ifyllda på samma sätt.
+        var avslutat = !!fa.field(cfg.faltLast) || !!fa.field(cfg.faltAvslutad) ||
+            MV.Faltarbete._datum(fa, cfg.faltDatumAvslut) !== "";
+
+        var falt = avslutat ? cfg.linkHistorik : cfg.linkAktivt;
+
+        if (MV.Faltarbete._arLankat(anl, falt, fa)) {
+            res.redanOk++;
+            continue;
+        }
+
+        if (res.exempel.length < 10) {
+            res.exempel.push((anl.name || String(anl.id)) + " -> " +
+                (avslutat ? "historik" : "aktivt"));
+        }
+
+        if (!skarpt) {
+            if (avslutat) res.historik++; else res.aktiva++;
+            continue;
+        }
+
+        MV.db.linkOnce(anl, falt, fa);
+
+        if (MV.Faltarbete._arLankat(MV.db.reload(anl, cfg.libAnlaggning), falt, fa)) {
+            if (avslutat) res.historik++; else res.aktiva++;
+        } else {
+            res.misslyckade.push((anl.name || String(anl.id)) + " (" + falt + ")");
+        }
+    }
+
+    return res;
+};
+
+/** aterstallHistorik() + rapport. Torrkörning om inget annat anges. */
+MV.Faltarbete.aterstallHistorikMedDialog = function (opts) {
+    var res = MV.Faltarbete.aterstallHistorik(opts);
+
+    if (res.fel) {
+        MV.ui.info("Återställning misslyckades", res.fel);
+        return res;
+    }
+
+    var rader = [
+        res.torr ? "TORRKÖRNING — ingenting har skrivits." : "SKARP KÖRNING.",
+        "",
+        "Genomgångna fältarbeten: " + res.antalFaltarbeten,
+        "Redan rätt länkade:      " + res.redanOk,
+        (res.torr ? "Skulle läggas till" : "Tillagda") + " i historiken: " + res.historik,
+        (res.torr ? "Skulle sättas" : "Satta") + " som aktivt:      " + res.aktiva,
+        "Utan koppling till anläggning: " + res.utanKoppling
+    ];
+
+    if (res.exempel.length > 0) {
+        rader.push("");
+        rader.push("Exempel:");
+        for (var i = 0; i < res.exempel.length; i++) rader.push("  " + res.exempel[i]);
+    }
+
+    if (res.misslyckade.length > 0) {
+        rader.push("");
+        rader.push(res.misslyckade.length + " LÄNKNING(AR) MISSLYCKADES:");
+        for (var m = 0; m < res.misslyckade.length && m < 10; m++) {
+            rader.push("  " + res.misslyckade[m]);
+        }
+    }
+
+    if (res.torr) {
+        rader.push("");
+        rader.push("Stämmer detta? Kör om med { skarpt: true }.");
+    }
+
+    MV.ui.summary("Återställ historik", rader);
+    return res;
+};
+
+
+/* ================================================================== *
  * Knappversioner — gör, och berätta
  *
  * skapa() och avsluta() returnerar ett resultat och visar ingenting. Det gör
@@ -944,4 +1088,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-09 15:07", hash: "6e40a8d" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-09 15:49", hash: "edb18cd" });

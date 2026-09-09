@@ -272,6 +272,26 @@ MV.Anteckning.spara();
 ```
 
 
+### Aterstall historik  — ENGÅNGSKÖRNING vid driftsättning  
+*Action*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
+*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Bygger upp `Historiska Fältarbeten` och `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`. Körs **efter** att länkfältet pekats om. Lägger bara till länkar — tar aldrig bort någon. Standardläget är torrkörning.
+
+Script:
+
+```js
+MV.Faltarbete.aterstallHistorikMedDialog();
+```
+
+Skarp körning, när torrkörningens rapport stämmer:
+
+```js
+MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });
+```
+
 ### Granska  — VALFRI men rekommenderad  
 *Action*
 
