@@ -61,12 +61,11 @@ Ordningen att göra det i. Den fullständiga listan står i `TESTPLAN.md`
 4. ~~**Kör hela `TESTPLAN.md`**~~ — körd. Kvar av den: **A3** (reproducera
    avslut utan koppling med känt utgångsläge) och **A4** (`Firmware Status` i
    ändringsloggen).
-5. **Reda ut länkfälten i drift.** De pekar på gamla testbibliotek. Exportera
-   alla åtta bibliotek och kör `python tools/mementools.py links "Raw"`, sedan
-   `Granska` i drift. Se `DRIFTSATTNING.md` steg 1b — det avgör om det räcker
-   att peka om, eller om data ligger i fel bibliotek.
-6. **Kör `Granska` i drift-Anläggningar.** Ersätter de två kontrollerna i
-   avsnitt 5 som inte gick att göra för hand. Noll främmande länkar är kravet.
+5. **Mät driftens tillstånd via en ny, orörd kopia.** `DRIFTSATTNING.md` A2 —
+   CSV-export av kopians Anläggningar, kolumnen `Historiska Fältarbeten`.
+   Tom kolumn = ingen data ligger fel. `Granska` går **inte** att köra i
+   driften; en action är en strukturändring.
+6. **Generalrepetition**: kör hela Del B mot kopiorna.
 7. **Sätt Library permission** i varje bibliotek, på varje enhet.
 8. ~~**Flygplanslägestest**~~ — klart, riktiga flöden i varje bibliotek. Kvar:
    kör `Version` en gång **med** täckning på varje ny enhet innan den går ut i
@@ -131,6 +130,71 @@ verksamheten behöver det: nätbolagen kopplar om i nätet och kunduppgifter
 ändrades, med möjlighet att avbryta, samt loggning av ändringen. Parkeras som
 punkt 7 under *Planerat*.
 
+## Länkkartan 9 sep — uppmätt, inte gissat
+
+`mementools.py links` på kopiorna av driften plus det gamla testbiblioteket:
+
+| Bibliotek | Fält | Pekar på |
+|---|---|---|
+| Anläggningar Copy | `Aktivt Fältarbete` | Fältarbete Copy — rätt |
+| Anläggningar Copy | `Nyckel` | Nyckelregister Copy — rätt |
+| Anläggningar Copy | **`Historiska Fältarbeten`** | **Gammal test Fältarbete** |
+| Fältarbete Copy | `Koppling till anläggning` | Anläggningar Copy — rätt |
+| Fältarbete Copy | **`Nyckel`** och **`Lookup`** | **ett Nyckelregister utanför uppsättningen** |
+| Fältarbete Copy | **`Historiska Fältarbeten`** | **Gammal test Fältarbete** |
+| Import Fältarbete Copy | `Befintlig` | Anläggningar Copy — rätt |
+
+**Tre fält missades vid ompekningen.** Kopiorna ärvde dem från driften, så
+driften har med all sannolikhet exakt samma tre fel. `Nyckel`/`Lookup` i
+Fältarbete pekar dessutom på samma id som testuppsättningen gjorde i augusti —
+alltså ett delat eller skarpt Nyckelregister, inte kopians.
+
+Det gamla testbibliotekets id är `TJiQ*(5HBQhuny:HEhw]`, exakt det id båda
+`Historiska Fältarbeten` pekade på redan i augustiexporten. Att driften pekar
+dit är därmed bevisat, inte antaget. Sannolik förklaring: driftbiblioteken
+skapades genom att kopiera det gamla testparet, och ärvde pekaren.
+
+### De 36 posterna i det gamla biblioteket
+
+Ur CSV-exporten: **inte skräpdata.** `Tjänst`, `Anl. adress`, `Kund`,
+`Mätarnummer`, `Status Fältarbete`, `Skapad` och `Logg` är ifyllda i alla 36.
+30 av 36 är avslutade. Två namngivna tekniker. Allt utfört mellan **24 februari
+och 2 mars 2026** — en dryg vecka av riktigt fältarbete.
+
+Alla 36 har `Koppling till anläggning` satt, och den pekar på *Gammal test
+Anläggningar*. De hör alltså ihop med ett gammalt test**par**, och är inte
+driftposter som hamnat fel. Strukturen är identisk med driftens Fältarbete:
+81 fält i båda, samma namn, samma typer — en dataflytt vore alltså tekniskt
+möjlig, om den visar sig behövas.
+
+**Öppet:** finns samma arbeten även i driftens Fältarbete, eller existerar den
+här veckan bara här? Avgörs genom att jämföra `Tjänst` mellan de 36 och driften.
+
+## Rättigheter i driften — förutsättningen som saknades
+
+**Jimmy äger inte driftbiblioteken.** Han har rättighet att kopiera dem, men
+inte att ändra struktur, inte att lägga till script, och inte ens att se
+strukturen utan att först ta en kopia.
+
+Det gör att stora delar av driftsättningen inte kan utföras av honom:
+fältet `Tidigare fältarbeten`, ompekning av länkfält, `Moduler`, enradsstubbarna
+och `Version` är alla strukturändringar. `Granska` likaså — en action *är* en
+strukturändring, så den kan inte köras i driften.
+
+**Beslut 9 sep: ägaren utför ändringarna**, med `DRIFTSATTNING.md` Del B som
+körschema. Den delen är därför omskriven för en läsare som inte varit med i
+arbetet — explicit, med kontrollpunkter och en stoppregel. Del A är det Jimmy
+förbereder i kopiorna.
+
+Två saker mildrar begränsningen: koden slutade använda historiklänkfältet, så
+det behöver inte tas bort, och saknas `Tidigare fältarbeten` hamnar
+sammanfattningen i `Logg` i stället. Uppsättningen av `Moduler` och stubbarna
+går däremot inte att komma runt.
+
+Värt att ta med till kunden: **detta är en engångsinsats.** Efter uppsättningen
+sker kodändringar utanför biblioteken och kräver inga rättigheter i dem. Det är
+just därför arkitekturen ser ut som den gör.
+
 ## Parkerat till efter driftsättning
 
 Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
@@ -182,3 +246,5 @@ Bara det som ändrat riktning. Fastslagna beslut med motivering står i
 | 2026-08 | Testerna laddar alfabetiskt | Efter `TypeError: Cannot find function stamp` — appens laddningsordning måste vara testets. |
 | 2026-08 | Diagnosen av historikbuggen korrigerad | Länkfält pekade på ett gammalt testbibliotek. Omhämtningen behålls som skydd, inte som bevisad rättning. |
 | 2026-08 | Dialoger ur knappscripten | Jimmys invändning; texterna hör i git. |
+| 2026-09 | Kravet: minst lika bra som förr, inte identiskt beteende | Förbättringar ska kunna följa med i stället för att vänta. |
+| 2026-09 | Ägaren utför driftsättningen | Jimmy saknar rättigheter i driftbiblioteken. `DRIFTSATTNING.md` Del B skriven för någon utan förkunskap. |

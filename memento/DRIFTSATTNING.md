@@ -1,234 +1,264 @@
-# Driftsättning — vad som måste vara gjort innan driften rörs
+# Driftsättning
 
-`TESTPLAN.md` svarar på *fungerar det?*. Den här filen svarar på *vad krävs för
-att våga göra det skarpt?* — och i vilken ordning, så att man kan backa.
+Det här dokumentet är i två delar, för att arbetet delas mellan två personer:
 
-**Kravet är inte längre paritet med startpunkten.** Det är att inget som
-fungerade förr har blivit sämre. Förbättringar får följa med.
+- **Del A — förberedelserna.** Görs av den som byggt scripten, i egna kopior av
+  biblioteken. Inget av detta rör driften.
+- **Del B — körschemat.** Görs av den som **äger** driftbiblioteken. Del B är
+  skriven för att kunna följas av någon som inte varit med i arbetet.
 
----
-
-## Läget just nu
-
-| | Test | Drift |
-|---|---|---|
-| Fältarbete — script bytta mot enradsstubbar | nästan klart | inte påbörjat |
-| Anläggningar — `Moduler`, stubbar, `Version` | kvar | inte påbörjat |
-| Import Fältarbete — samma | kvar | inte påbörjat |
-| Fältet `Tidigare fältarbeten` | kvar | inte påbörjat |
-| `Historiska Fältarbeten` borttaget ur Fältarbete | kvar | inte påbörjat |
-| Library permission per enhet | delvis | inte påbörjat |
-| Gamla script raderade (`BORTTAGET.md`) | kvar | inte påbörjat |
-
-Driftbiblioteken är alltså **orörda**, vilket är precis som det ska vara.
+Del B kan inte påbörjas förrän Del A är avbockad.
 
 ---
 
-## Steg 0 — Backup. Görs först, varje gång
+# Del A — förberedelser i kopiorna
 
-Utan denna finns ingen väg tillbaka.
+## A1. En sluten kopieuppsättning
 
-- [ ] Exportera **alla fyra driftbibliotek** som `.mlt2` (*Library menu →
-      Export → Template*). Lägg dem i `Raw/` — mappen är gitignorerad, så
-      riktig data kan inte råka pushas.
-- [ ] Datera filnamnen. Du vill kunna se vilken export som är före respektive
-      efter.
-- [ ] Kontrollera att filerna går att öppna och innehåller script:
-      `python tools/mementools.py extract "Raw" "/tmp/kontroll" "/tmp/kontroll"`
-- [ ] Kör **`Granska`** i drift-Anläggningar och anteckna siffrorna. Antalet
-      entries ensamt duger inte som mått — driften används ju parallellt, och
-      nya poster tillkommer hela tiden. Främmande länkar däremot ska vara noll
-      både före och efter.
+Kopiera alla bibliotek som ingår: **Anläggningar, Fältarbete, Import
+Fältarbete, Nyckelregister**. Ge dem alla **exakt samma suffix**, t.ex.
+`Anläggningar <Kund> Copy 2026-09-09`.
 
-En template-export innehåller **strukturen och scripten, inte datan**. Går
-något sönder i strukturen går den att återställa; ett raderat entry gör det
-inte. Rör därför aldrig entries under driftsättningen.
+Suffixet är inte kosmetik. Koden härleder vilken uppsättning den arbetar i ur
+namnet på det bibliotek den körs i, så lika suffix håller kopiorna för sig
+själva. Blandade suffix gör att en körning i kopian kan nå driften.
 
----
-
-## Steg 1 — Klart i test först
-
-Ingen av dessa får vara öppen när driften rörs.
-
-- [ ] `TESTPLAN.md` avsnitt 0–3 avbockade
-- [ ] `TESTPLAN.md` avsnitt 4 — hela varvet från **telefonen**, och i
-      **Anläggningar** och **Import Fältarbete**, inte bara Fältarbete
-- [ ] `TESTPLAN.md` avsnitt 5 — driftbiblioteken orörda av testkörningarna.
-      Kör **`Granska`** i drift-Anläggningar; den gör på sekunder det som inte
-      går för hand med 670 poster. Noll främmande länkar är kravet.
-- [ ] A2 — `Nytt Fältarbete` länkar `Aktivt Fältarbete`, eller varnar synligt
-      när den inte gör det
-- [ ] A3 — avslut utan koppling stoppas *(reproduceras först: trycktes knappen,
-      eller sattes kryssen för hand?)*
-- [ ] A4 — `Firmware Status` hamnar i ändringsloggen
-- [ ] Ett fältarbete skapat, ändrat och avslutat **i flygplansläge**, i varje
-      bibliotek
-
----
-
-## Steg 1b — Länkfält som pekar på fel bibliotek
-
-Driften har länkfält som pekar på gamla **test**bibliotek. Det måste redas ut
-före allt annat, för det avgör om det bara är en inställning som ska ändras
-eller om data ligger på fel ställe.
-
-### Kartlägg först — gissa inte
-
-- [ ] Exportera **alla åtta** bibliotek som `.mlt2` till `Raw/` — fyra i drift,
-      fyra i test. Även gamla testbibliotek som fortfarande finns kvar.
-- [ ] Kör:
+- [ ] Alla fyra kopior har samma suffix
+- [ ] Exportera dem som `.mlt2` och kör:
 
       python tools/mementools.py links "Raw"
 
-Rapporten visar varje länkfält och vilket bibliotek det pekar på, med namn.
-Pekar ett driftfält på ett testbibliotek syns det direkt. Ett mål som inte
-finns bland de exporterade skrivs ut som `OKÄNT id …` — då saknas det
-biblioteket i exporten, eller så är det raderat.
+- [ ] **Varje länkfält pekar på en kopia**, inte på ett driftbibliotek
 
-Rapporten skrivs **bara till skärmen**, aldrig till fil: den innehåller
-biblioteksnamnen, alltså kundnamnet, och repot är publikt.
+> En kopia ärver länkfältens mål från originalet, alltså driften. De måste
+> pekas om för hand — och kontrolleras med verktyget, inte med minnet. Att gå
+> igenom dem för hand och tro att man tagit alla är precis så det blev fel från
+> början.
 
-### Avgör sedan vilket fall det är
+## A2. Mät hur driften ser ut — utan att röra den
 
-- [ ] Kör `Granska` i **drift**-Anläggningar.
+En kopia bevarar länkarna som de var i driften. Det är enda sättet att se
+driftens tillstånd utan rättigheter i den.
 
-**Fall A — inga främmande länkar.** Fältet pekar fel, men ingenting är länkat
-genom det. Länkningarna har misslyckats tyst hela tiden, vilket är precis det
-symptom som gjorde att historiken aldrig följde med. **Ingen data behöver
-flyttas.** Peka om fältet och bygg upp länkarna igen (nedan).
+- [ ] Gör en **ny, orörd** kopia av driftens Anläggningar. Peka inte om något.
+- [ ] Exportera dess entries till CSV med fälten `Anl. adress`, `Tjänst`,
+      `Aktivt Fältarbete`, `Historiska Fältarbeten`
+- [ ] Kontrollera vad `Historiska Fältarbeten` innehåller
 
-**Fall B — främmande länkar finns.** Då ligger poster i ett testbibliotek som
-driften pekar på. Först då blir det en dataflytt, med bilder och allt — det som
-inte gick förra gången. Säg till innan du gör något; den vägen behöver planeras
-för sig.
+**Är kolumnen tom överallt** har historiklänkningen aldrig fungerat — det
+förklarar symptomet, och ingen data ligger fel. Det är det väntade utfallet.
 
-*Fall A är det troliga.* Fältarbeten skapas alltid av koden i det bibliotek
-namnuppslaget ger, alltså rätt ett. Det är bara **länken** från anläggningen som
-gått fel, inte var posterna hamnat.
+**Innehåller den poster** ligger de i ett annat bibliotek än driftens
+Fältarbete. Då krävs en dataflytt, och den måste planeras separat innan Del B
+påbörjas.
 
-### Bygg upp länkarna igen — utan att flytta något
+> Mät på en **ny** kopia. Har man redan pekat om länkfälten i en kopia är
+> spåren av vad som var länkat borta där — ompekning kastar länkarna.
 
-Nyckeln är att informationen finns kvar på andra hållet: **varje fältarbete vet
-själv vilken anläggning det hör till**, genom `Koppling till anläggning`.
-`Historiska Fältarbeten` och `Aktivt Fältarbete` går därför att räkna fram:
+## A3. Generalrepetition
 
-- ett avslutat fältarbete hör hemma i anläggningens `Historiska Fältarbeten`
-- ett öppet är dess `Aktivt Fältarbete`
+Kör hela **Del B mot kopiorna**. Samma datamängd, samma historik, samma
+egenheter som skarpt läge. Går det igenom där är driftsättningen mekanik.
 
-Ordning:
+- [ ] Del B genomförd i kopiorna, från början till slut
+- [ ] Ett helt ärende: skapa → ändra → avsluta → nytt ärende med historik
+- [ ] `TESTPLAN.md` genomgången, avvikelser antingen rättade eller medvetet
+      accepterade
 
-- [ ] Peka om fältet till rätt bibliotek *(befintliga länkar genom fältet
-      försvinner — men i fall A fanns inga)*
-- [ ] Kör återuppbyggnaden, **först som torrkörning** som bara rapporterar vad
-      den skulle göra
-- [ ] Läs igenom rapporten. Stämmer den: kör skarpt
-- [ ] Kör `Granska` igen — noll främmande länkar
+## A4. Underlag till ägaren
 
-> Funktionen för återuppbyggnaden är **inte byggd än**. Den ska byggas när
-> kartläggningen ovan visat vilket fall det är, inte innan — den skriver i
-> skarp data och ska inte skrivas på gissningar om vad den möter.
+- [ ] Den här filen, `memento/UPPSATTNING.md` (all scriptkod att klistra in)
+      och `memento/KOPIERING.md` (rättigheter per bibliotek)
+- [ ] En tid avtalad, och en person som är anträffbar under körningen
 
 ---
 
-## Steg 2 — Strukturändringar i drift
+# Del B — körschema för den som äger biblioteken
 
-Gör ett bibliotek i taget. Efter varje bibliotek: öppna ett entry och se att
-kortet ser normalt ut.
+## Vad detta är, och varför
+
+All logik i biblioteken ligger idag som kod inklistrad i varje script, i varje
+bibliotek, på varje enhet. Den koden flyttas till ett gemensamt ställe, och
+scripten i appen krymper till en rad som anropar den.
+
+Vinsten: en rättelse behöver därefter göras på **ett** ställe i stället för i
+varje bibliotek, och den når alla enheter utan att någon rör appen.
+
+**Detta är en engångsinsats.** Efter den här körningen sker kodändringar
+utanför biblioteken och kräver inga rättigheter i dem. Det är bara själva
+uppsättningen som kräver dig.
+
+**Datan rörs inte.** Inga entries skapas, ändras eller raderas i något steg
+nedan. Allt handlar om struktur och script.
+
+Räkna med **30–60 minuter**. Avbryt hellre mitt i än gissa — se *Om något ser
+fel ut* sist.
+
+---
+
+## B0. Säkerhetskopia
+
+**Görs först. Utan den finns ingen väg tillbaka.**
+
+- [ ] För vart och ett av de fyra biblioteken: *Library menu → Export →
+      Template*. Spara filen med dagens datum i namnet.
+- [ ] Kontrollera att alla fyra filer finns och är större än noll byte
+
+En template-export innehåller **struktur och script, inte data**. Går något
+sönder i strukturen går den att lägga tillbaka. Det är också därför inget steg
+nedan får röra entries.
+
+---
+
+## B1. Strukturändringar
+
+Ett bibliotek i taget. Öppna ett entry efteråt och se att kortet ser normalt ut.
 
 ### Fältarbete
 
-- [ ] Lägg till fältet **`Tidigare fältarbeten`** (Rich text)
-- [ ] Ta bort fältet **`Historiska Fältarbeten`** — det kan inte fungera, se
-      `KOPIERING.md`. Anläggningens motsvarighet ska vara kvar.
-- [ ] Kontrollera `Koppling till anläggning` → pekar på **drift**-Anläggningar
-- [ ] Kontrollera `Nyckel` och `Lookup` → drift-Nyckelregister
+- [ ] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**
+
+      Här skrivs en sammanfattning av anläggningens tidigare ärenden när ett
+      nytt fältarbete skapas. Lägg det gärna på en egen flik.
+      *Hoppas steget över hamnar sammanfattningen i `Logg` i stället — inget
+      går förlorat, men den blir svårare att hitta.*
+
+- [ ] Kontrollera fältet **`Koppling till anläggning`** → ska peka på
+      **Anläggningar** i samma uppsättning
+- [ ] Kontrollera **`Nyckel`** och **`Lookup`** → ska peka på
+      **Nyckelregister** i samma uppsättning
+- [ ] Fältet **`Historiska Fältarbeten`** används inte längre och kan tas bort.
+      *Det kan ändå inte fungera: ett länkfält kan inte peka på sitt eget
+      bibliotek, så ett fältarbete kan aldrig länka till andra fältarbeten.
+      Låt det ligga kvar om du hellre vill — koden rör det inte.*
 
 ### Anläggningar
 
-- [ ] `Aktivt Fältarbete` och `Historiska Fältarbeten` → drift-Fältarbete
-- [ ] `Nyckel` → drift-Nyckelregister
+- [ ] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → ska peka på
+      **Fältarbete** i samma uppsättning
+- [ ] **`Nyckel`** → **Nyckelregister** i samma uppsättning
 
 ### Import Fältarbete
 
-- [ ] `Befintlig` → drift-Anläggningar
+- [ ] **`Befintlig`** → **Anläggningar** i samma uppsättning
 
-> **Länkfälten är den farligaste punkten i hela dokumentet.** Pekar ett av dem
-> på ett testbibliotek skriver driften i testdata, eller tvärtom. Att de såg
-> rätt ut i test säger ingenting — bindningen går på bibliotekets ID.
+### Nyckelregister
 
----
+Inget att göra.
 
-## Steg 3 — Script i drift
-
-Ordningen spelar roll: `Moduler` först, annars finns inga moduler när stubbarna
-körs.
-
-För varje bibliotek — **Fältarbete, Anläggningar, Import Fältarbete**:
-
-- [ ] Skapa `Moduler` (Shared) och bocka i modulerna enligt `UPPSATTNING.md`
-- [ ] Sätt **Library permission** enligt `KOPIERING.md`
-- [ ] Byt varje script mot sin enradsstub
-- [ ] Lägg till `Version`-actionen
-- [ ] Kör `Version` → 8 moduler, ingen som avviker, rätt byggtid
-
-Nyckelregister har inga script och behöver ingenting.
-
-**Radera de gamla scripten sist**, enligt `BORTTAGET.md`. Shimarna
-(`appendToLog`, `updateFirmwareStatus`) gör att både gammalt och nytt fungerar
-under tiden — men ligger `LoggWriter` kvar när modulen redan körs kan samma
-händelse loggas två gånger. Bli inte stående i det läget längre än nödvändigt.
+> **Länkfälten är det farligaste i hela dokumentet.** De binder mot
+> bibliotekets *id*, inte dess namn — ett fält kan alltså peka på ett helt
+> annat bibliotek än det som står i fältets namn. Pekar ett av dem fel skrivs
+> data på fel ställe, utan felmeddelande. Kontrollera vart och ett.
 
 ---
 
-## Steg 4 — Enheterna
+## B2. Script
 
-Två saker synkroniseras **inte** av Memento och måste göras på varje enhet:
+Ordningen spelar roll: `Moduler` måste finnas innan de andra scripten byts.
 
-- [ ] **Library permission** — per bibliotek, per telefon, per dator
-- [ ] **Hämta om modulerna** i `Moduler` → uppdateringsknappen
-- [ ] Kör `Version` på varje enhet och jämför byggtiden
+Gör detta i **Fältarbete**, **Anläggningar** och **Import Fältarbete**.
+Nyckelregister har inga script.
 
-En enhet som missas kraschar tyst medan de andra fungerar. Det är den svåraste
-felkällan i hela upplägget, eftersom `Version` ser identisk ut på alla enheter
-tills man faktiskt kört den där.
+### a) Moduler-scriptet
+
+- [ ] **Automation → Script → nytt Shared-script**, döp det **`Moduler`**
+- [ ] I panelen **JavaScript Libraries**: penn-ikonen → **+ Add URL** →
+      **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
+- [ ] Bocka i de moduler som `memento/UPPSATTNING.md` anger för just det
+      biblioteket
+- [ ] Koden i scriptet ska vara **tom**. Spara.
+
+Ordningen man bockar i dem spelar ingen roll — appen laddar dem alfabetiskt
+oavsett, och koden är byggd för det.
+
+### b) Rättigheter
+
+- [ ] **Permissions → Library permission**: bocka i de bibliotek som
+      `memento/KOPIERING.md` anger för just det biblioteket
+
+Utan detta får scripten inte läsa i de andra biblioteken, och felen som uppstår
+ser inte ut som rättighetsfel — de ser ut som att biblioteket inte finns.
+
+### c) Byt scripten mot enradarna
+
+- [ ] Ersätt innehållet i varje script med raden som står i
+      `memento/UPPSATTNING.md` för det scriptet
+- [ ] Lägg till en action som heter **`Version`** med raden som står där
+
+### d) Kontroll innan du går vidare
+
+- [ ] Kör **`Version`**. Den ska visa **8 moduler** och ingen rad märkt
+      `AVVIKER`
+
+Visar den färre moduler är något inte ibockat i `Moduler`. Visar den `AVVIKER`
+har appen en gammal kopia av en modul — klicka uppdateringsknappen vid
+bibliotekslistan i `Moduler` och kör igen.
+
+### e) Radera de gamla scripten
+
+**Sist.** De står listade i `memento/BORTTAGET.md`.
+
+Under tiden fungerar både gammalt och nytt. Men ligger det gamla
+`LoggWriter`-scriptet kvar samtidigt som den nya koden körs kan samma händelse
+loggas två gånger — stanna inte i det läget längre än nödvändigt.
 
 ---
 
-## Steg 5 — Första skarpa ärendet
+## B3. Varje enhet
 
-Välj **en** anläggning med känd historik och följ den hela vägen.
+Två saker synkroniseras **inte** mellan enheter och måste göras på varje
+telefon och varje dator som används:
 
-- [ ] `Nytt Fältarbete` → skapas och länkas som `Aktivt Fältarbete`
-- [ ] `Tidigare fältarbeten` visar historiken, med rätt datum och åtgärder
-- [ ] Ändra ett fält, spara → ändringsloggen skrivs
-- [ ] Avsluta → anläggningen uppdateras, ärendet hamnar i historiken, låses
-- [ ] Jämför med hur det såg ut före bytet. **Har något blivit sämre?**
+- [ ] **Library permission** enligt B2b
+- [ ] I `Moduler`: klicka **uppdateringsknappen** vid bibliotekslistan
+      *(desktop: den runda pilen ovanför listan. Android: längst ner till höger
+      under listan.)*
+- [ ] Kör **`Version`** och kontrollera att byggtiden stämmer med de andra
+      enheterna
 
-Är svaret nej på den sista frågan är driftsättningen godkänd.
+En enhet som missas slutar fungera tyst medan de andra fungerar. Det är den
+svåraste felkällan i hela upplägget, eftersom allt ser rätt ut tills någon
+faktiskt kör något just där.
 
 ---
 
-## Om något går fel
+## B4. Ett riktigt ärende
+
+Välj **en** anläggning som har tidigare ärenden och följ den hela vägen.
+
+- [ ] Kör `Nytt Fältarbete` → ett fältarbete skapas, och anläggningens
+      `Aktivt Fältarbete` pekar på det
+- [ ] `Tidigare fältarbeten` visar de gamla ärendena
+- [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
+- [ ] Avsluta ärendet → anläggningen uppdateras, ärendet låses och hamnar i
+      anläggningens historik
+
+**Sista frågan, och den enda som avgör: har något blivit sämre än förut?**
+
+Är svaret nej är driftsättningen godkänd.
+
+---
+
+## Om något ser fel ut
 
 1. **Sluta.** Rör inga fler bibliotek.
-2. Ett trasigt script gör sällan skada — det kastar ett fel och avbryter.
-   Kontrollera i stället om **data** ändrats: fältarbeten som skapats fel,
-   anläggningar som fått fel värden.
-3. Är strukturen trasig: importera `.mlt2`-filen från steg 0 igen.
-4. Är ett script trasigt: klistra tillbaka den gamla koden. Den finns i
-   `Startpunkt/Extraherade scripts/` och i git.
-5. Skriv ner vad som hände i `ARBETSLAGE.md` innan du glömmer det.
+2. Ett script som går fel kastar ett felmeddelande och avbryter — det brukar
+   inte hinna göra skada. Kontrollera i stället **datan**: har något entry
+   fått fel värden, eller skapats där det inte hör hemma?
+3. Är strukturen trasig: importera template-filen från **B0** igen.
+4. Är ett script trasigt: klistra tillbaka den gamla koden. Den finns sparad.
+5. Vill du snabbt stänga av allt: ta bort modulerna ur `Moduler`. Då slutar
+   enradsscripten fungera med ett tydligt fel i stället för att göra fel sak.
 
-Modulerna i git kan **inte** göra skada i sig — de kör inget förrän ett script
-anropar dem. Vill man snabbt neutralisera allt: ta bort modulerna ur `Moduler`,
-så slutar stubbarna fungera med ett tydligt fel i stället för att göra fel sak.
+Koden som hämtas utifrån kan inte göra något i sig — den kör ingenting förrän
+ett script i biblioteket anropar den.
 
 ---
 
-## Efter driftsättningen
+## Efteråt
 
-- [ ] Ny `.mlt2`-export av alla fyra bibliotek, som "efter"-läge
-- [ ] `python tools/mementools.py fields "Raw" memento/FALT.md` — inventeringen
-      ska spegla driftens struktur, inte augustis testexport
-- [ ] `ARBETSLAGE.md` uppdaterad: fas, vad som är kvar, beslutslogg
-- [ ] Kör `push.cmd`
+- [ ] Ny template-export av alla fyra bibliotek, sparad som "efter"-läge
+- [ ] Bestäm **vem som får ändra strukturen framöver**. Kodändringar sker
+      utanför biblioteken och kräver ingen behörighet — men ett nytt fält
+      eller ett nytt script gör det, och då behövs den här rundan igen.
