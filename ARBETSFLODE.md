@@ -346,6 +346,52 @@ delas till alla som ska läsa det, vilket lägger till steg i driftsättningen. 
 entry i ett befintligt bibliotek kräver inget nytt men syns i listor och kan
 råka redigeras. Avgörs när funktionen byggs, inte nu.
 
+#### Var kan versionen bo? Hela listan
+
+Frågan har två halvor som är lätta att blanda ihop:
+
+- **Spridning** — hur kommer "senaste publicerade bygge" ut till en enhet?
+- **Lagring** — var ligger värdet på enheten mellan körningarna?
+
+Det finns exakt **två** kanaler för spridning, eftersom modulcachen är det som
+ska kringgås: Mementos egen datasynk (ett entry) eller nätet (`http()`).
+Ingenting annat lämnar Jimmys dator.
+
+För lagring finns tre kandidater, och listan är uttömmande — Java-åtkomsten är
+blockerad, så det dokumenterade API:t är hela API:t:
+
+| Bärare | Sprider? | Omdöme |
+|---|---|---|
+| `lib().notes` | ja, via synk | **Död.** `undefined` i appen, och Notes är dessutom struktur — Jimmy får inte skriva den i drift. Uppmätt 11 sep. |
+| Ett entry | ja, via synk | Fungerar, men bär hela bibliotekets fältuppsättning. Obligatoriska fält kan stoppa en manuell redigering, och posten blandas med riktig data. Kräver manuell stämpling efter varje push. |
+| En fil på enheten (`file()`) | **nej** | Filen är lokal. Den kan aldrig bära ett värde från Jimmys dator till en telefon. Däremot en utmärkt **cache** för ett värde man hämtat på annat sätt. |
+
+**Filen är alltså inget alternativ till entryt — den löser den andra halvan.**
+Kombinationen som blir intressant är därför `http()` + fil:
+
+1. Ett **användartryckt** anrop — `Version`, eller nästa gång någon trycker
+   *Skapa* eller *Avsluta* — hämtar `senaste.json` från repot, i `try`/`catch`,
+   som mest en gång per dygn.
+2. Resultatet skrivs till en lokal fil, tillsammans med tidpunkten.
+3. Alla andra körningar läser bara filen. Ingen väntan, fungerar offline, och
+   raden visas bara när det publicerade bygget skiljer sig från det som körs.
+
+Det tar bort entryt helt, och det tar bort den manuella stämplingen — kontrollen
+blir automatisk. Priset är två nya permissions (`Network` och fil) per
+bibliotek och per enhet, plus att Android kräver att användaren pekar ut en
+mapp i behörighetsdialogen. Rättigheter per enhet är redan det svåraste i hela
+upplägget, så det priset är inte litet.
+
+**Tre saker måste mätas innan det går att välja:**
+
+- **M4.** Hur länge hänger `http().get()` i flygplansläge? Den gamla mätning 1,
+  fortfarande obesvarad. Är det trettio sekunder duger idén bara i `Version`.
+- **M5.** Fungerar `file()` på både desktop och Android med våra rättigheter,
+  och överlever filen en omstart av appen?
+- **M6.** Kan en vanlig användare sätta script-permissions, eller sitter även
+  de bakom ägarskapet? Går de inte att sätta faller `http()`+fil helt, och
+  entryt är det enda kvar.
+
 **Detta är nu den enda vägen framåt, inte ett tillägg.** Åldersvarningen som
 byggdes först är avstängd som standard (11 sep), eftersom den mäter fel sak:
 under en lugn period kör alla enheter rätt kod och alla varnar ändå. En markör
