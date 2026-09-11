@@ -538,6 +538,21 @@ MV.Faltarbete.loggaAndringar = function (entryObj) {
     var sparad = lib().findById(e.id);
     if (!sparad) return false;
 
+    /*
+     * "Firmware Status" härleds ur "Firmware" av en EGEN trigger, och Memento
+     * ger ingen garanti för vilken av triggrarna som kör först. Kör den efter
+     * den här ser diffen det gamla värdet, och eftersom det nya värdet ändå
+     * hinner sparas ser NÄSTA diff ingen skillnad alls — ändringen blir
+     * permanent osynlig i loggen. Det var avvikelse A4.
+     *
+     * Genom att synka här blir resultatet detsamma oavsett triggerordning:
+     * har den andra triggern redan kört returnerar syncStatus false och
+     * ingenting händer.
+     */
+    if (MV.Firmware && typeof MV.Firmware.syncStatus === "function") {
+        MV.Firmware.syncStatus(e);
+    }
+
     var changes = MV.fmt.diffFields(sparad, e, MV.Faltarbete.TRACK_FIELDS);
     var atgarder = MV.Faltarbete.byggAtgardsblock(e, sparad);
 
@@ -1096,4 +1111,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-11 10:54", hash: "da662a2" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-11 13:18", hash: "4b3e7be" });

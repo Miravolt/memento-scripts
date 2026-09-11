@@ -129,6 +129,15 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Ändrat
 
+- **En modullista i stället för tre.** Alla åtta modulerna bockas nu i på
+  `Moduler` i samtliga bibliotek, i stället för en anpassad delmängd per
+  bibliotek. En modul för mycket kostar ingenting — allt på toppnivå bara
+  definierar (I1) — medan tre listor att hålla isär kostar varje gång något
+  ändras. `Version` ska nu rapportera **8 moduler** i alla bibliotek, vilket
+  också gör siffran användbar som kontroll. `moment.min.js` är dessutom
+  utmärkt i listan som Mementos egen: den ligger inte i vårt repo, och det var
+  lätt att missa.
+
 - **Commit-meddelanden kan vara flera rader.** `push.cmd` frågar fortfarande
   efter en rad i fönstret, men trycker man bara Enter öppnas Anteckningar med
   en mall — rubrik, tom rad, brödtext, och de ändrade filerna listade som
@@ -162,6 +171,20 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Rättat
 
+- **`Firmware Status` hamnade aldrig i ändringsloggen (avvikelse A4).**
+  Fältet härleds ur `Firmware` av en egen trigger, och Memento garanterar ingen
+  ordning mellan triggrar. Kör den efter `loggaAndringar()` ser diffen det
+  gamla värdet — och eftersom det nya värdet ändå hinner sparas ser *nästa*
+  diff ingen skillnad alls. Ändringen blev därmed permanent osynlig, inte bara
+  försenad ett varv; det förklarar varför den aldrig dök upp hur många gånger
+  man än sparade.
+
+  `loggaAndringar()` anropar nu `MV.Firmware.syncStatus(e)` innan diffen tas.
+  Har den andra triggern redan kört returnerar den `false` och ingenting
+  händer, så resultatet är detsamma oavsett ordning. Tre `REGRESSION`-tester
+  fallerar om anropet tas bort.
+
+  *Reproducerad i appen 11 sep, i två bibliotek oberoende av varandra.*
 - **Historiklänken i Fältarbete togs bort — den kunde aldrig fungera.**
   Ett `Link to entry`-fält kan inte peka på sitt eget bibliotek, så ett
   fältarbete kan inte länka till andra fältarbeten. Fältet i drift pekade på

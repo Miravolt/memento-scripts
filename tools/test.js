@@ -418,6 +418,39 @@ suite("fa-faltarbete — ändringslogg vid spara");
 
 
 /* ================================================================ */
+suite("fa-faltarbete — A4: Firmware Status ska hinna med i loggen");
+
+(function () {
+    var s = scenario();
+    var e = s.faltLib.seed({
+        "Firmware": "Uppgraderad", "Firmware Status": "", "Logg": "",
+        "Åtgärder": [], "Kommentar": ""
+    });
+    mock.use(s.faltLib, e);
+
+    // Utgångsläget: användaren har just valt Firmware, men den egna triggern
+    // som härleder Firmware Status har ännu inte kört.
+    eq(e.field("Firmware Status"), "", "innan: statusen är inte satt");
+
+    MV.Faltarbete.loggaAndringar(e);
+
+    eq(e.field("Firmware Status"), "Uppgraderad",
+       "REGRESSION: loggaAndringar synkar Firmware Status innan diffen tas");
+
+    // Och då syns den i diffen mot det sparade tillståndet.
+    var sparad = s.faltLib.seed({ "Firmware": "Välj", "Firmware Status": "" });
+    var changes = MV.fmt.diffFields(sparad, e, MV.Faltarbete.TRACK_FIELDS);
+    ok(changes.join(" ").indexOf("Firmware Status") > -1,
+       "REGRESSION: ändringen hamnar i ändringsloggen");
+
+    // Kör den andra triggern efteråt: ska vara en tom operation, inte en
+    // dubbelskrivning. Ordningen mellan triggrarna får inte spela roll.
+    eq(MV.Firmware.syncStatus(e), false,
+       "AVSIKT: syncStatus efteråt gör ingenting — ordningen spelar ingen roll");
+})();
+
+
+/* ================================================================ */
 suite("fa-faltarbete — avsluta och arkivera");
 
 (function () {

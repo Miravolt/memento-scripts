@@ -15,29 +15,42 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
 
 ## HÄRNÄST — läs det här först
 
-Sex saker återstår. Ungefär en halvdags arbete plus ägarens timme.
+Fem saker återstår. Ungefär en halvdags arbete plus ägarens timme.
+
+**A3 och A4 är avklarade** (11 sep). A3 var inget fel — kontrollen fungerar.
+A4 var ett riktigt fel och är rättat i koden; det behöver bara verifieras i
+appen efter nästa push, som en del av punkt 2.
 
 **1. Radera `Historiska Fältarbeten` i Fältarbete Copy.** Enda länkfältet som
-fortfarande pekar utanför kopieuppsättningen. *Två minuter.*
+fortfarande pekar utanför kopieuppsättningen. Det är städning inför
+repetitionen, inte en rättning — i drift får fältet ligga kvar, och Del B säger
+uttryckligen det. Poängen är bara att kopiorna ska vara en sluten uppsättning så
+att en länkkontroll under repetitionen inte ger falskt utslag. *Två minuter.*
 
-**2. Reproducera A3 och A4.** Se *Avvikelser* längre ner — de är de enda öppna
-felen. A3: ett fältarbete utan koppling, **sparat**, sedan knappen. A4: dyker
-`Firmware Status` upp i loggen vid nästa sparning? *En kvart.*
-
-**3. Generalrepetition.** Kör hela `DRIFTSATTNING.md` **Del B** mot kopiorna,
+**2. Generalrepetition.** Kör hela `DRIFTSATTNING.md` **Del B** mot kopiorna,
 från B0 till B4. Det är den enda repetition som betyder något, och den avslöjar
 vad som är otydligt i körschemat innan ägaren läser det. Glöm inte **B2b**,
 torrkörningen av `Återställ historik` — se att siffrorna ser rimliga ut mot 706
 anläggningar. *En till två timmar.*
 
-**4. Rätta körschemat** utifrån allt du snubblade på i punkt 3. Det ägaren
+**Del B är ordningen; `UPPSATTNING.md` är uppslagsverket.** All uppsättning i
+appen — `Moduler`, enradsstubbarna, `Version`-actionen, rättigheterna,
+raderingen av de gamla scripten — ingår i Del B, som hänvisar till
+`UPPSATTNING.md` för koden att klistra in. Gör alltså inte uppsättningen som en
+egen omgång först och repetitionen sedan; då testas aldrig körschemat, vilket är
+hela poängen med repetitionen.
+
+**3. Verifiera A4-rättningen** i den nyss uppsatta kopian: ändra `Firmware`
+till `Uppgraderad`, spara, och se att `Firmware Status` nu dyker upp i loggen.
+Kräver att modulerna hämtats om efter pushen. *Två minuter.*
+
+**4. Rätta körschemat** utifrån allt du snubblade på i punkt 2. Det ägaren
 snubblar på i skarpt läge är det du snubblade på i kopian.
 
 **5. Skicka underlaget till ägaren och boka tiden.** `DRIFTSATTNING.md` Del B,
 `memento/UPPSATTNING.md` och `memento/KOPIERING.md`. Säg att det tar 30–60
-minuter, att datan inte rörs, och att det är en engångsinsats.
-
-**6. Ägaren kör Del B.** Du är anträffbar under tiden.
+minuter, att datan inte rörs, och att det är en engångsinsats. Sedan kör ägaren
+Del B, med dig anträffbar.
 
 Efter det är det driftsatt. `TESTPLAN.md` är genomgången, länkkartan är utredd,
 och ingen dataflytt behövs.
@@ -89,34 +102,27 @@ och ingen dataflytt behövs.
 
 ## Kvar innan det går att köra i drift
 
-Ordningen att göra det i. Den fullständiga listan står i `TESTPLAN.md`
-(fungerar det?) och `DRIFTSATTNING.md` (vågar vi?). Punkt 4 är den som avgör.
+**Den ordnade listan står i `HÄRNÄST` högst upp. Det här avsnittet finns bara
+för att visa vad som redan är avklarat, så att det inte görs om.**
 
-1. **Uppsättning i appen.** `Fältarbete` är nästan klar. Kvar:
-   **Anläggningar** och **Import Fältarbete** — `Moduler` (Shared),
-   enradsstubbar, `Version`-action. Se `memento/UPPSATTNING.md`.
-2. **Ersätt de två stubbar som nyss blev enradare** —
-   `Spara ändringar och avsluta Fältarbete` och `Nytt Fältarbete`.
-3. **Radera de fyra gamla scripten** enligt `memento/BORTTAGET.md`.
-4. ~~**Kör hela `TESTPLAN.md`**~~ — körd. Kvar av den: **A3** (reproducera
-   avslut utan koppling med känt utgångsläge) och **A4** (`Firmware Status` i
-   ändringsloggen).
-5. **Mät driftens tillstånd via en ny, orörd kopia.** `DRIFTSATTNING.md` A2 —
-   CSV-export av kopians Anläggningar, kolumnen `Historiska Fältarbeten`.
-   Tom kolumn = ingen data ligger fel. `Granska` går **inte** att köra i
-   driften; en action är en strukturändring.
-6. **Generalrepetition**: kör hela Del B mot kopiorna.
-7. **Sätt Library permission** i varje bibliotek, på varje enhet.
-8. ~~**Flygplanslägestest**~~ — klart, riktiga flöden i varje bibliotek. Kvar:
-   kör `Version` en gång **med** täckning på varje ny enhet innan den går ut i
-   fält, så att cachen är fylld.
-9. **Driftsättning** enligt `DRIFTSATTNING.md` — backup först, sedan struktur,
-   script, enheter, och ett skarpt ärende hela vägen.
+Två listor som inte höll ihop var det som gjorde det svårt att se var arbetet
+stod. Nu är `HÄRNÄST` den enda.
+
+| Vad | Läge |
+|---|---|
+| Kör hela `TESTPLAN.md` | **Klart.** Kvar ur den: A3 och A4, se *Avvikelser*. |
+| Mät driftens tillstånd via en orörd kopia | **Klart** 9 sep. Se *Länkkartan*. Ingen dataflytt behövs. |
+| Flygplanslägestest | **Klart** — riktiga flöden i varje bibliotek, 8 moduler i cachen. |
+| Uppsättning i appen: `Moduler`, enradsstubbar, `Version` i Anläggningar och Import Fältarbete | Ingår i **Del B**, alltså i generalrepetitionen. Inget separat steg. |
+| Radera de gamla scripten (`BORTTAGET.md`) | Ingår i **Del B**, steg B2 e). |
+| Library permission per bibliotek och enhet | Ingår i **Del B**, steg B2 b) och B3. |
+| Kör `Version` med täckning på varje ny enhet innan den går ut i fält | Ingår i **Del B**, steg B3. Fyller cachen. |
 
 ## Avvikelser från testkörningen
 
 Hela `TESTPLAN.md` är körd. A1 är löst i koden, A2 är gjord synlig, A5 är
-parkerad som önskemål. **Kvar att reda ut: A3 och A4.**
+parkerad som önskemål. **A3 och A4 stängdes 11 sep** — A3 var inget fel, A4 var
+det och är rättat.
 
 **A1 — LÖST i koden, kvar i appen. `Historiska Fältarbeten` i Fältarbete kan
 inte finnas.**
@@ -145,22 +151,33 @@ på ett omhämtat entry (`MV.db.reload`), och när målet är det bibliotek scri
 självt körs i kan det öppna kortets kopia skriva över länken vid spara.
 Importflödet, där anläggningen ligger i ett annat bibliotek, fungerar.
 
-**A3 — Avslut utan koppling till anläggning stoppas inte.**
-`avsluta()` har kontrollen (`reason: "ingen-koppling"`) och `avslutaMedDialog()`
-har dialogen, men fältarbetet gick ändå att avsluta utan varning.
+**A3 — INGET FEL. Kontrollen fungerar.**
+*Reproducerad 11 sep med känt utgångsläge, i två bibliotek oberoende av
+varandra, med samma resultat:* nytt fältarbete utan `Koppling till anläggning`,
+sparat, `Läser i CM` och `Avslutad` ikryssade, sedan knappen → meddelande om att
+anläggning saknas, och **ingenting sparades**. Det är precis det avsedda
+beteendet.
 
-*Jimmy 2 sep: knappen trycktes, efter att två rutor kryssats i. Osäkert om
-entryt sparades emellan.* Det är en ledtråd men inte ett svar — `avsluta()`
-läser fältvärdena ur entryt, så osparade kryss kan ge koden ett annat tillstånd
-än det man ser på skärmen. Det förklarar dock inte varför kopplingskontrollen
-inte slog till. **Reproduceras med känt utgångsläge:** ett fältarbete utan
-`Koppling till anläggning`, sparat, sedan knappen. Kontrollera också att
-knappfältet verkligen innehåller enradsstubben och inte gammal kod.
+Den ursprungliga observationen 2 sep kom med all sannolikhet av att entryt inte
+var sparat när knappen trycktes. `avsluta()` läser fältvärdena ur entryt, så
+osparade kryss ger koden ett annat tillstånd än det som syns på skärmen. Ingen
+kodändring gjord — det fanns inget att rätta.
 
-**A4 — `Firmware Status` ändringsloggas inte.**
-Fältet ligger i `TRACK_FIELDS`, så listan är inte problemet. *Hypotes:* både
-`MV.Firmware.syncStatus()` och `MV.Faltarbete.loggaAndringar()` körs på
-`MODIFY_ENTRY`, och diffen tas innan firmwarestatus hunnit skrivas.
+**A4 — RÄTTAT 11 sep. `Firmware Status` ändringsloggades inte.**
+*Reproducerad i två bibliotek: `Firmware` ändrad från `Välj` till `Uppgraderad`,
+sparat, ingen rad i loggen.*
+
+**Orsak, nu bevisad av testet.** `Firmware Status` sätts av en egen trigger, och
+Memento garanterar ingen ordning mellan triggrar. Kör den efter
+`loggaAndringar()` ser diffen det gamla värdet — och eftersom det nya värdet
+ändå hinner sparas ser *nästa* diff ingen skillnad alls. Ändringen blir därmed
+permanent osynlig, inte bara försenad ett varv. Det förklarar varför den aldrig
+dök upp, hur många gånger man än sparade.
+
+**Rättning.** `loggaAndringar()` anropar `MV.Firmware.syncStatus(e)` innan
+diffen tas. Har den andra triggern redan kört returnerar den `false` och
+ingenting händer, så resultatet blir detsamma oavsett ordning. Låst med tre
+`REGRESSION`-tester som fallerar om anropet tas bort.
 
 **A5 — Importen uppdaterar inte befintliga anläggningar.**
 Kunduppgifter, `Nätstation` och `Leveranspunkt` följer bara med när anläggningen

@@ -36,6 +36,15 @@ på ett **Shared script** blir tillgängliga för alla script i biblioteket
 3. Bocka i modulerna enligt `shared/Moduler.js` för det biblioteket.
 4. Koden i scriptet kan vara tom. Spara.
 
+> **`moment.min.js` kommer inte från vårt repo.** Den är Mementos egen
+> inbyggda modul och ligger i standardlistan, inte under
+> `Miravolt/memento-scripts`. Den ska bockas i här precis som de andra — den
+> står först i varje modullista nedan — men leta inte efter den bland våra
+> filer. Alla våra moduler heter `mv-*` eller `fa-*`.
+>
+> Det räcker att bocka i den i `Moduler`; inget enskilt script behöver den
+> ibockad separat. Samma regel som för resten av listan.
+
 **Ordningen spelar ingen roll.** Memento laddar biblioteken alfabetiskt oavsett
 i vilken ordning man bockar i dem — modulerna är byggda för att tåla det.
 
@@ -65,9 +74,22 @@ inte för något script. `Version` räknar modulerna, så avvikelsen upptäcks d
 ### Moduler  
 *Shared script*
 
-**Bocka i dessa moduler här** — det är detta scripts enda syfte:
+**Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
+alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-`moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-firmware.js`, `fa-faltarbete.js`
+- [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+      standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
+- [ ] `mv-core.js`
+- [ ] `mv-db.js`
+- [ ] `mv-format.js`
+- [ ] `mv-logg.js`
+- [ ] `fa-anteckning.js`
+- [ ] `fa-faltarbete.js`
+- [ ] `fa-firmware.js`
+- [ ] `fa-import.js`
+
+Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
+räknas inte, den är inte vår och stämplar sig inte.
 
 Script:
 
@@ -119,7 +141,7 @@ MV.Firmware.syncStatus();
 ### Updating an entry - Before saving the entry  
 *Trigger: MODIFY_ENTRY*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-firmware.js`  
 *(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
@@ -194,9 +216,22 @@ MV.Anteckning.spara();
 ### Moduler  
 *Shared script*
 
-**Bocka i dessa moduler här** — det är detta scripts enda syfte:
+**Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
+alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-`moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-faltarbete.js`
+- [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+      standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
+- [ ] `mv-core.js`
+- [ ] `mv-db.js`
+- [ ] `mv-format.js`
+- [ ] `mv-logg.js`
+- [ ] `fa-anteckning.js`
+- [ ] `fa-faltarbete.js`
+- [ ] `fa-firmware.js`
+- [ ] `fa-import.js`
+
+Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
+räknas inte, den är inte vår och stämplar sig inte.
 
 Script:
 
@@ -312,9 +347,22 @@ MV.Faltarbete.granskaMedDialog();
 ### Moduler  
 *Shared script*
 
-**Bocka i dessa moduler här** — det är detta scripts enda syfte:
+**Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
+alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-`moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`
+- [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+      standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
+- [ ] `mv-core.js`
+- [ ] `mv-db.js`
+- [ ] `mv-format.js`
+- [ ] `mv-logg.js`
+- [ ] `fa-anteckning.js`
+- [ ] `fa-faltarbete.js`
+- [ ] `fa-firmware.js`
+- [ ] `fa-import.js`
+
+Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
+räknas inte, den är inte vår och stämplar sig inte.
 
 Script:
 
