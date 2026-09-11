@@ -76,6 +76,21 @@ if (MV.config.dateFormat === undefined) MV.config.dateFormat = "YYYY-MM-DD";
  */
 if (MV.config.byggVarningDagar === undefined) MV.config.byggVarningDagar = 30;
 
+/*
+ * Vad varningen UPPMANAR till är en egen inställning, för mottagaren kan
+ * sällan åtgärda det själv: uppdateringsknappen sitter på script-sidan, och
+ * den når bara den som äger biblioteket. Att säga åt en fälttekniker att
+ * "uppdatera modullistan" är därför att be om något som inte går.
+ *
+ * Standardtexten säger vad som gäller och lämnar åtgärden öppen. Sätt
+ * MV.config.byggVarningAtgard i Config-scriptet till något konkret när det
+ * är känt vem man ska höra av sig till.
+ */
+if (MV.config.byggVarningAtgard === undefined) {
+    MV.config.byggVarningAtgard = "Hör av dig till den som ansvarar för " +
+        "biblioteket innan du litar på nya funktioner.";
+}
+
 /* -------------------------------------------------------------- *
  * Biblioteksnamn
  *
@@ -188,8 +203,9 @@ MV.byggVarning = function (idag) {
     var dagar = MV.byggAlderDagar(idag);
     if (dagar < 0 || dagar < grans) return "";
 
-    return "OBS: koden i den här enheten är " + dagar + " dagar gammal. " +
-        "Uppdatera modullistan i Moduler-scriptet.";
+    var atgard = MV.config.byggVarningAtgard;
+    return "OBS: koden i den här enheten är " + dagar + " dagar gammal." +
+        (atgard ? " " + atgard : "");
 };
 
 /**
@@ -360,4 +376,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 13:18", hash: "68d2aba" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 13:28", hash: "696b547" });

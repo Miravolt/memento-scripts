@@ -287,6 +287,15 @@ En enhet som missas slutar fungera tyst medan de andra fungerar. Det är den
 svåraste felkällan i hela upplägget, eftersom allt ser rätt ut tills någon
 faktiskt kör något just där.
 
+> **Uppdateringsknappen sitter på script-sidan, och den når bara den som äger
+> biblioteket.** En vanlig användare kan alltså inte hämta in nya moduler
+> själv, och ingen enhet gör det av sig själv heller. Vid den här
+> uppsättningen är det inget problem — det är du som äger biblioteken och gör
+> det här steget. Men det betyder att **varje framtida kodändring kan kräva
+> att du gör om B3 på de berörda enheterna**. Räkna med det när ni planerar
+> rättningar, och säg till användarna att höra av sig om `Version` visar att
+> bygget är gammalt.
+
 ---
 
 ## B4. Ett riktigt ärende

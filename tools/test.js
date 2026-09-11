@@ -1508,8 +1508,24 @@ suite("mv-core — varna för gammalt bygge");
     eq(MV.byggVarning("2026-06-20 10:00"), "", "inom gränsen: ingen varning");
     ok(MV.byggVarning("2026-08-01 10:00").indexOf("61 dagar") > 0,
        "över gränsen: varning med antal dagar");
-    ok(MV.byggVarning("2026-08-01 10:00").indexOf("Moduler") > 0,
+    ok(MV.byggVarning("2026-08-01 10:00").indexOf("ansvarar för") > 0,
        "varningen säger vad man ska göra åt saken");
+
+    /*
+     * AVSIKT: uppmaningen ska gå att byta ut. Uppdateringsknappen når bara
+     * den som äger biblioteket, så en text som säger åt en fälttekniker att
+     * uppdatera modullistan ber om något som inte går. Varje bibliotek ska
+     * kunna sätta sin egen.
+     */
+    var sparadAtgard = MV.config.byggVarningAtgard;
+    MV.config.byggVarningAtgard = "Ring Kalle.";
+    ok(MV.byggVarning("2026-08-01 10:00").indexOf("Ring Kalle.") > 0,
+       "AVSIKT: uppmaningen går att sätta per bibliotek");
+    MV.config.byggVarningAtgard = "";
+    eq(MV.byggVarning("2026-08-01 10:00"),
+       "OBS: koden i den här enheten är 61 dagar gammal.",
+       "AVSIKT: tom uppmaning ger bara konstaterandet, utan hängande mellanslag");
+    MV.config.byggVarningAtgard = sparadAtgard;
 
     MV.config.byggVarningDagar = 0;
     eq(MV.byggVarning("2027-01-01 10:00"), "",

@@ -30,6 +30,7 @@ härleda — de är uppmätta i appen.
 | **Rhino 1.7.15 = ES5** | Ingen `let`/`const`, inga arrow functions, inga template literals, inget `Object.assign`, inget `Array.includes`, inget `for...of`. Invariant I2. |
 | **Bibliotek ibockade på ett *Shared*-script blir tillgängliga för alla script i biblioteket** | Därför finns `Moduler` som Shared script — ett ställe per bibliotek. Verifierat på både Android och desktop. |
 | **Ingen enhet hämtar om moduler av sig själv — varken desktop eller Android** | En push slår igenom först när man klickar uppdateringsknappen i `Moduler`-scriptet, per bibliotek och per enhet. Skriv aldrig att en push "når enheterna" av sig själv; det gör den inte. *Detta har två gånger sett ut som en Android/desktop-skillnad — det är det inte.* |
+| **Bara bibliotekets ägare kommer åt script-sidan — och därmed uppdateringsknappen** | Jimmys observation 11 sep. En vanlig användare har alltså inget känt sätt att tvinga fram nya moduler på sin egen enhet. Kombinerat med raden ovan betyder det att en fälttekniker varken uppdaterar automatiskt *eller* manuellt. Skriv aldrig en text som säger åt användaren att "uppdatera modullistan" — se `MV.config.byggVarningAtgard`. Vad som *händer* när ägaren uppdaterar på sin enhet, och om det når andras, är omätt. |
 | **Mementos strukturuppdatering rör inte JavaScript-biblioteken** | En telefon har tagit emot och tillämpat en strukturuppdatering och ändå fortsatt köra ett flera timmar gammalt bygge. Notisen "strukturen har uppdaterats" säger ingenting om vilken kod som körs. |
 | **Modulerna finns lokalt och fungerar offline** | `Version` har körts i flygplansläge på telefon och rapporterade alla **8** moduler, ingen avvikande — hela uppsättningen fanns alltså i cachen. Detta var den enda risken som kunde ha sänkt hela arkitekturen. Obesvarat: om cachen fylls vid nedladdningen eller vid **första körningen** av modulen. Se `memento/TESTPLAN.md` avsnitt 3. |
 | **Ett `Link to entry`-fält kan inte peka på sitt eget bibliotek** | Ett entry kan alltså inte länka till andra entries i samma bibliotek — Memento erbjuder inte det egna biblioteket i mållistan, och wikin skriver "a link to an entry or to entries in **another** library". Observerat i appen 31 aug. Detta förklarar varför `Historiska Fältarbeten` i drift pekade på ett gammalt test-Fältarbete: det var det enda målet fältet kunde få. |
@@ -218,7 +219,7 @@ fa-*.js              projektet fältarbete
   fa-firmware.js     firmwarestatus
 
 tools/
-  test.js            279 tester. REGRESSION = buggen får inte tillbaka.
+  test.js            285 tester. REGRESSION = buggen får inte tillbaka.
                      AVSIKT = beteendet är beslutat, riv det inte.
   mock.js            Memento-simulator. Flaggorna COLD_CREATE och LAZY_MAP
                      återskapar appens egenheter med flit.

@@ -15,6 +15,9 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
 
 ## HÄRNÄST — läs det här först
 
+*Avsnitt i `ARBETSLAGE.md`, inte en egen fil. Det är här arbetet börjar varje
+gång, och det som hänvisas till som "HÄRNÄST".*
+
 Fem saker återstår. Ungefär en halvdags arbete plus ägarens timme.
 
 **A3 och A4 är avklarade** (11 sep). A3 var inget fel — kontrollen fungerar.
@@ -65,7 +68,7 @@ och ingen dataflytt behövs.
   sekretesskontroll före push och `push.cmd` för hela kedjan.
 - Byggstämpel + `Version`-action, så man ser i appen vilket bygge som körs och
   om en enskild modul är cachad.
-- 279 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
+- 285 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
 - Åtta buggar rättade, var och en med `REGRESSION`-test. Historiken, `Nyckel`
   som länkfält, den döda `actionText`/`cleanLog`-koden, halvtomma fältarbeten
   från importen, tappade `Mobilnummer 2` / `Lev.punkt`, koordinatstatus,
@@ -102,11 +105,12 @@ och ingen dataflytt behövs.
 
 ## Kvar innan det går att köra i drift
 
-**Den ordnade listan står i `HÄRNÄST` högst upp. Det här avsnittet finns bara
-för att visa vad som redan är avklarat, så att det inte görs om.**
+**Den ordnade listan står i avsnittet *HÄRNÄST* högst upp i den här filen. Det
+här avsnittet finns bara för att visa vad som redan är avklarat, så att det
+inte görs om.**
 
 Två listor som inte höll ihop var det som gjorde det svårt att se var arbetet
-stod. Nu är `HÄRNÄST` den enda.
+stod. Nu är *HÄRNÄST* den enda.
 
 | Vad | Läge |
 |---|---|
@@ -298,6 +302,22 @@ Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
   Lita aldrig på den: uppdatera för hand. I övrigt är cachefrågan besvarad, se
   `TESTPLAN.md` avsnitt 3 — och bekräftad en gång till 11 sep: en ändrad modul
   med ny hash hämtades inte om av sig själv inom testets tidsrymd.
+- **Hur får en vanlig användare in ny kod?** Uppdateringsknappen sitter på
+  script-sidan, som bara ägaren kommer åt (Jimmy 11 sep). En fälttekniker
+  uppdaterar alltså varken automatiskt eller manuellt. Tre saker behöver mätas,
+  men **inget av dem hindrar driftsättningen** — vid uppsättningen är det
+  ägaren som kör, och en ny enhet hämtar modulerna när biblioteket läggs till:
+  1. Får en enhet modulerna automatiskt första gången biblioteket läggs till?
+     (Troligt — så har varje ny enhet hittills fått dem — men inte prövat med
+     ett icke-ägarkonto.)
+  2. Når ägarens uppdatering de andra enheterna, eller bara den egen?
+     Cachen är uppmätt som per enhet, vilket talar emot. Men desktop hämtade
+     om en gång av sig själv, och den mekanismen är fortfarande okänd.
+  3. Finns det en rättighetsnivå under ägare som ändå ser script-sidan?
+  Faller allt detta blir konsekvensen att varje kodändring efter driftsättning
+  kräver att ägaren gör en runda på enheterna. Det gör byggåldersvarningen mer
+  värd, inte mindre: användaren kan då åtminstone *se* att koden är gammal och
+  säga till.
 - **Var ska versionsmarkören bo?** M1 och M2 är besvarade och båda föll — ingen
   schemaläggning på desktop, och `lib().notes` finns inte. Kvar står ett vanligt
   entry som bärare; öppet är vilket bibliotek det ska ligga i. Se
