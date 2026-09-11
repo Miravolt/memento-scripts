@@ -7,7 +7,6 @@
  * skriver över i stället för att lägga till.
  *
  * Kräver: mv-core.js, mv-logg.js, moment.min.js
- * Test rad
  */
 
 var MV = MV || {};
@@ -111,4 +110,4 @@ MV.Anteckning.laggTillDatumIKommentar = function (entryObj, faltnamn) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-anteckning", byggd: "2026-09-11 09:54", hash: "2bffdc9" });
+MV.build.moduler.push({ namn: "fa-anteckning", byggd: "2026-09-11 10:21", hash: "b3b30fa" });

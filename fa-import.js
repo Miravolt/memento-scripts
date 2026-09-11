@@ -10,7 +10,6 @@
  * skapa-logiken, fältlistan och logg-formateringen i två separata kopior.
  *
  * Kräver: mv-core.js, mv-db.js, mv-format.js, mv-logg.js, fa-faltarbete.js, moment.min.js
- * Test rad
  */
 
 var MV = MV || {};
@@ -334,4 +333,4 @@ MV.Import._forklara = function (reason) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-import", byggd: "2026-09-11 09:54", hash: "ada7dc4" });
+MV.build.moduler.push({ namn: "fa-import", byggd: "2026-09-11 10:21", hash: "57837e5" });

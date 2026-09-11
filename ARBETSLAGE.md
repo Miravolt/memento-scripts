@@ -279,7 +279,12 @@ Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
   `Version` den nya byggtiden på desktop utan att modullistan uppdaterats — men
   vid en senare omstart hände det inte. Mekanismen är okänd (periodisk kontroll?).
   Lita aldrig på den: uppdatera för hand. I övrigt är cachefrågan besvarad, se
-  `TESTPLAN.md` avsnitt 3.
+  `TESTPLAN.md` avsnitt 3 — och bekräftad en gång till 11 sep: en ändrad modul
+  med ny hash hämtades inte om av sig själv inom testets tidsrymd.
+- **Tre mätningar för den nätverksbaserade versionskontrollen** — M1 schemalagd
+  trigger på desktop, M2 är `lib().notes` skrivbar, M3 kör schemat med
+  `http()` inuti. Står utskrivna i `ARBETSFLODE.md` punkt 6. Ingen av dem
+  behövs före driftsättning.
 - Nollställer `Mätare bytt` omstartsräknaren? (punkt 2 ovan)
 - Behöver `Config`-scriptet finnas i alla bibliotek, eller bara där något
   faktiskt avviker? Står som *VALFRI* i `UPPSATTNING.md` tills det avgjorts.

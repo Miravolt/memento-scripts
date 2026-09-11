@@ -232,11 +232,12 @@ hämtas med `http()`, med en cache-brytande parameter (`?t=` plus millisekunder)
 
 **Reglerna som gör det ofarligt:**
 
-- **Aldrig i en trigger.** `http().get()` används synkront —
-  `var result = http().get(url)` — så scriptet står still tills svaret kommer
-  eller tiden går ut. En trigger på `MODIFY_ENTRY` skulle alltså blockera
-  *varje sparning* i flygplansläge. Det är hela skillnaden mellan ofarligt och
-  oanvändbart.
+- **Aldrig i en trigger som användaren väntar på.** `http().get()` används
+  synkront — `var result = http().get(url)` — så scriptet står still tills
+  svaret kommer eller tiden går ut. En trigger på `MODIFY_ENTRY` skulle alltså
+  blockera *varje sparning* i flygplansläge. Det är hela skillnaden mellan
+  ofarligt och oanvändbart. Undantaget är den schemalagda triggern, som kör
+  asynkront — se nedan.
 - **Bara i användarstartade actions**, där en paus är begriplig: alltid i
   `Version`, och möjligen i `Lägg upp` (som körs inomhus och redan tar tid).
 - **`message()`, aldrig `dialog()`.** En rad, ingen knapp att trycka på:
@@ -256,7 +257,57 @@ hämtas med `http()`, med en cache-brytande parameter (`?t=` plus millisekunder)
    per app-session, gratis. Gör det inte behöver kontrollen antingen ske vid
    varje explicit anrop, eller så måste senaste kontrolltid sparas i ett fält.
 
+#### Bättre väg: schemalagd trigger + delad lagring
+
+Jimmys förslag, 11 sep. Det löser den invändning som annars sänker hela idén.
+
+Memento har en triggertyp **"At scheduled time"**, och dokumentationen säger att
+den — till skillnad från alla andra triggers — **alltid kör asynkront**. Då
+finns ingen användare som väntar, och blockeringsfrågan i punkt 1 ovan slutar
+vara avgörande: en http-timeout i flygplansläge kostar ingenting eftersom ingen
+sparning hänger på den.
+
+Det ger en tvådelad konstruktion, och det är uppdelningen som är poängen:
+
+1. **Hämtningen** sker i den schemalagda triggern, i **ett** bibliotek, en gång
+   om dygnet. Bara det biblioteket behöver `Network`-permission — inte alla
+   fyra, och inte på varje telefon som råkar trycka på en knapp.
+2. **Resultatet skrivs till ett delat ställe** som synkas via Memento. Alla
+   andra script *läser bara lokalt* och jämför mot sin egen byggstämpel. Ingen
+   annan kodväg rör nätet någonsin.
+
+Delningen betyder också att det räcker att **en** enhet har täckning för att
+alla enheter ska veta vad som är senaste bygge.
+
+**Var resultatet ska bo.** `lib().notes` är dokumenterad som en `string` på
+Library-objektet — "Library notes (as specified in the library structure)".
+Formuleringen antyder att den speglar strukturen, alltså kanske bara läsbar.
+**Skrivbarheten är omätt.** Går den att skriva är den det snyggaste stället:
+inget extra fält, inget entry som en användare kan råka redigera. Går den inte
+är alternativet ett eget entry i ett litet bibliotek med två textfält
+(`senaste_bygge`, `kontrollerad`) — garanterat skrivbart, garanterat synkat,
+men synligt i appen.
+
+**Mätningar innan något byggs:**
+
+- **M1.** Finns "At scheduled time" i triggerlistan på **desktop**, eller bara
+  på Android? Dokumentationen nämner bara Androids batterioptimering och säger
+  ingenting om desktop. Trettio sekunder i triggerdialogen svarar på det.
+  Saknas den på desktop får desktop bara åldersvarningen — acceptabelt.
+- **M2.** Är `lib().notes` skrivbar? En rad i ett testscript: skriv, läs
+  tillbaka i en *ny* körning, och se om det överlevde. Överlever det: synkas
+  det till en annan enhet?
+- **M3.** Kör den schemalagda triggern överhuvudtaget på telefonen, och kör ett
+  `http().get()` inuti den? Androids batterioptimering får försena den hur
+  mycket den vill — en kontroll om dygnet tål att bli sex timmar sen.
+
+**Om schemat inte fungerar** är återfallet detsamma som förut: kontrollen ligger
+i `Version`-actionen, där användaren tryckt på en knapp och en paus är
+begriplig.
+
 **Värdet är begränsat men verkligt.** `push.cmd` säger redan vad byggtiden ska
 vara, och `Version` visar vad den är — den som följer rutinen behöver inte
 detta. Det här är ett skyddsnät för den som glömmer, och för telefoner som
-ingen rört på en månad.
+ingen rört på en månad. Åldersvarningen täcker redan den telefon som ingen rört;
+det här täcker fallet där en bugfix är två dagar gammal och enheten inte vet om
+det.

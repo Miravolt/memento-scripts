@@ -9,7 +9,6 @@
  *
  * OBS: Rhino (Mementos JS-motor) är ES5. Ingen let/const, inga arrow functions,
  * ingen template literal, inget Object.assign.
- * Test rad
  */
 
 var MV = MV || {};
@@ -361,4 +360,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 09:54", hash: "1ec5e12" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 10:21", hash: "68d2aba" });
