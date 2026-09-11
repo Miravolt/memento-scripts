@@ -39,6 +39,8 @@ härleda — de är uppmätta i appen.
 | **Ett kartfält som just skrivits läses tillbaka som null i samma körning** | Därför sätts koordinatstatus från källvärdet, inte från fältet. Reproduceras i mocken av flaggan `LAZY_MAP`. |
 | **`lib()` returnerar samma objekt vid varje anrop i en körning** | Uppmätt 11 sep: `lib() === lib()` är `true`. Följden är en fälla — sätter man en egenskap på det (`lib().notes = x`) skapas en vanlig JS-egenskap i minnet, och nästa `lib().notes` läser tillbaka den. Det *ser* ut som att skrivningen nådde databasen. Den gjorde det inte. Läs alltid tillbaka i en **ny körning** innan du tror på en skrivning. |
 | **`for (var k in lib())` ger noll nycklar** | Bibliotek och entries är Java-objekt bakom en Rhino-brygga, inte JS-objekt. Egenskaper går att läsa men inte räkna upp. En tom nyckellista är alltså *inget bevis* för att en egenskap saknas — man måste fråga efter den vid namn. |
+| **Java-åtkomsten är blockerad** | `lib().getClass()` kastar. Ingen reflektion, inga `Packages.*`, inget `java.io`. Följden är att **det dokumenterade API:t är hela API:t** — det finns inget sätt att ta reda på vad som egentligen finns. Står en egenskap inte i dokumentationen och svarar `undefined` är frågan avgjord; leta inte vidare. |
+| **`message()` försvinner efter några sekunder** | Duger för en kvittens, inte för något man ska läsa. Allt med mer än en rad ska visas med `MV.ui.info()` / `dialog()`, som står kvar tills man trycker OK. Gäller i synnerhet mätscript. |
 | **Entries direkt från `create()`, `find()` eller ett länkfält är inte fullt skrivbara** | Hämta om med `findById()`. Det är hela poängen med `mv-db.js`. Mockens flagga `COLD_CREATE`. |
 
 Hittar du en ny sådan sanning: **skriv in den i tabellen i samma veva som du
