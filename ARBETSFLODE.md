@@ -290,20 +290,63 @@ men synligt i appen.
 
 **Mätningar innan något byggs:**
 
-- **M1.** Finns "At scheduled time" i triggerlistan på **desktop**, eller bara
-  på Android? Dokumentationen nämner bara Androids batterioptimering och säger
-  ingenting om desktop. Trettio sekunder i triggerdialogen svarar på det.
-  Saknas den på desktop får desktop bara åldersvarningen — acceptabelt.
-- **M2.** Är `lib().notes` skrivbar? En rad i ett testscript: skriv, läs
-  tillbaka i en *ny* körning, och se om det överlevde. Överlever det: synkas
-  det till en annan enhet?
-- **M3.** Kör den schemalagda triggern överhuvudtaget på telefonen, och kör ett
-  `http().get()` inuti den? Androids batterioptimering får försena den hur
-  mycket den vill — en kontroll om dygnet tål att bli sex timmar sen.
+- **M1. BESVARAD 11 sep: schemaläggning finns inte på desktop.** På Android
+  finns den, men den kräver extra app-permissions. Därmed faller den
+  schemalagda hämtningen som *generell* lösning — den kan i bästa fall köras på
+  en telefon.
+- **M2. BESVARAD 11 sep: `lib().notes` går inte att använda.** `typeof` ger
+  `undefined` trots att biblioteket har text i Notes. Skrivningen *såg* ut att
+  fungera, men `lib()` returnerar samma objekt vid varje anrop i en körning, så
+  `lib().notes = x` skapade bara en JS-egenskap i minnet som lästes tillbaka i
+  samma körning. Se fällan i `CLAUDE.md` del 1. Och även om egenskapen hade
+  funnits: Notes redigeras via strukturen, och Jimmy har inte
+  strukturrättigheter i drift — en stämpling som måste ske efter varje push
+  hade han alltså inte kunnat göra själv.
+- ~~**M3.** Kör den schemalagda triggern med `http().get()` inuti?~~ Utgår
+  tillsvidare, följer av M1.
 
-**Om schemat inte fungerar** är återfallet detsamma som förut: kontrollen ligger
-i `Version`-actionen, där användaren tryckt på en knapp och en paus är
-begriplig.
+#### Enklare ändå: manuell stämpling efter push
+
+Jimmys förslag, 11 sep, efter att M1 föll. **Den som pushar vet redan vilken
+version som är den senaste** — ingen behöver fråga GitHub om det. Då behövs
+inget nätverksanrop alls:
+
+1. Efter en push kör Jimmy en **action** i appen, en gång, som skriver
+   byggtiden till bibliotekets `notes`.
+2. Memento synkar `notes` till alla enheter, som vanlig biblioteksdata.
+3. Varje script läser `lib().notes` vid körning — **lokalt** — och jämför mot
+   sin egen byggstämpel. Skiljer de sig kör enheten gammal kod.
+
+Det tar bort hela nätverksgrenen: inget `http()`, ingen `Network`-permission,
+ingen timeout, ingenting att mäta om synkron blockering. Kvar blir "skriv en
+sträng, läs en sträng". Det är den billigaste versionen av funktionen som
+fortfarande gör nytta, och den gör *mer* nytta än åldersvarningen eftersom den
+upptäcker en två dagar gammal bugfix.
+
+**Format i `notes`.** En markörrad, så att mänskliga anteckningar i fältet
+överlever:
+
+```
+[bygge] 2026-09-11 08:02
+```
+
+Skrivningen ersätter raden om den finns, annars lägger den den först. Läsningen
+plockar ut den med `/^\[bygge\]\s*(.+)$/m`. Jämförelsen är ren
+strängjämförelse mot `MV.byggd()` — samma stämpelformat i båda ändar, så
+likhet räcker: *är mitt bygge det publicerade?*
+
+**Bäraren blir ett entry, inte `notes`.** Efter M2 återstår ett vanligt entry
+som markör. Det är **data, inte struktur** — och det är hela poängen, för Jimmy
+får lägga till entries i drift men inte röra strukturen. Ett entry synkas
+dessutom som all annan data, och scripten läser det lokalt med `find()` eller
+`lastEntry()`.
+
+Öppet: **var det entryt ska bo.** Ett eget litet bibliotek är renast men måste
+delas till alla som ska läsa det, vilket lägger till steg i driftsättningen. Ett
+entry i ett befintligt bibliotek kräver inget nytt men syns i listor och kan
+råka redigeras. Avgörs när funktionen byggs, inte nu.
+
+Faller även det kvarstår åldersvarningen, som redan är byggd.
 
 **Värdet är begränsat men verkligt.** `push.cmd` säger redan vad byggtiden ska
 vara, och `Version` visar vad den är — den som följer rutinen behöver inte

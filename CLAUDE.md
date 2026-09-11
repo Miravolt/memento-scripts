@@ -37,6 +37,8 @@ härleda — de är uppmätta i appen.
 | **Script-permissions synkroniseras inte mellan enheter** | Måste sättas per bibliotek *och* per telefon/dator. Ser identiskt ut i `Version` på båda. |
 | **`http().get()` används synkront** — `var r = http().get(url)` — och kräver `Network`-permission | Scriptet står still tills svaret kommer. Aldrig i en trigger: det blockerar varje sparning när täckningen saknas. Dokumentationen säger dessutom "must be executed asynchronously in the last Phase of an Event" utan att förklara vad det betyder. |
 | **Ett kartfält som just skrivits läses tillbaka som null i samma körning** | Därför sätts koordinatstatus från källvärdet, inte från fältet. Reproduceras i mocken av flaggan `LAZY_MAP`. |
+| **`lib()` returnerar samma objekt vid varje anrop i en körning** | Uppmätt 11 sep: `lib() === lib()` är `true`. Följden är en fälla — sätter man en egenskap på det (`lib().notes = x`) skapas en vanlig JS-egenskap i minnet, och nästa `lib().notes` läser tillbaka den. Det *ser* ut som att skrivningen nådde databasen. Den gjorde det inte. Läs alltid tillbaka i en **ny körning** innan du tror på en skrivning. |
+| **`for (var k in lib())` ger noll nycklar** | Bibliotek och entries är Java-objekt bakom en Rhino-brygga, inte JS-objekt. Egenskaper går att läsa men inte räkna upp. En tom nyckellista är alltså *inget bevis* för att en egenskap saknas — man måste fråga efter den vid namn. |
 | **Entries direkt från `create()`, `find()` eller ett länkfält är inte fullt skrivbara** | Hämta om med `findById()`. Det är hela poängen med `mv-db.js`. Mockens flagga `COLD_CREATE`. |
 
 Hittar du en ny sådan sanning: **skriv in den i tabellen i samma veva som du

@@ -281,10 +281,10 @@ Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
   Lita aldrig på den: uppdatera för hand. I övrigt är cachefrågan besvarad, se
   `TESTPLAN.md` avsnitt 3 — och bekräftad en gång till 11 sep: en ändrad modul
   med ny hash hämtades inte om av sig själv inom testets tidsrymd.
-- **Tre mätningar för den nätverksbaserade versionskontrollen** — M1 schemalagd
-  trigger på desktop, M2 är `lib().notes` skrivbar, M3 kör schemat med
-  `http()` inuti. Står utskrivna i `ARBETSFLODE.md` punkt 6. Ingen av dem
-  behövs före driftsättning.
+- **Var ska versionsmarkören bo?** M1 och M2 är besvarade och båda föll — ingen
+  schemaläggning på desktop, och `lib().notes` finns inte. Kvar står ett vanligt
+  entry som bärare; öppet är vilket bibliotek det ska ligga i. Se
+  `ARBETSFLODE.md` punkt 6. Behövs inte före driftsättning.
 - Nollställer `Mätare bytt` omstartsräknaren? (punkt 2 ovan)
 - Behöver `Config`-scriptet finnas i alla bibliotek, eller bara där något
   faktiskt avviker? Står som *VALFRI* i `UPPSATTNING.md` tills det avgjorts.
