@@ -365,6 +365,7 @@ blockerad, så det dokumenterade API:t är hela API:t:
 | `lib().notes` | ja, via synk | **Död.** `undefined` i appen, och Notes är dessutom struktur — Jimmy får inte skriva den i drift. Uppmätt 11 sep. |
 | Ett entry | ja, via synk | Fungerar, men bär hela bibliotekets fältuppsättning. Obligatoriska fält kan stoppa en manuell redigering, och posten blandas med riktig data. Kräver manuell stämpling efter varje push. |
 | En fil på enheten (`file()`) | **nej** | Filen är lokal. Den kan aldrig bära ett värde från Jimmys dator till en telefon. Däremot en utmärkt **cache** för ett värde man hämtat på annat sätt. |
+| **REST API-connector** | ja, direkt från nätet | **Mest lovande, minst utrett.** Memento har en inbyggd connector som hämtar JSON från en extern tjänst och mappar in i biblioteket. Vårt repo är publikt, så `No Auth` räcker. Då gör *appen* hämtningen — inget `http()` i vår kod, ingen `Network`-permission, ingen manuell stämpling. Se nedan. |
 
 **Filen är alltså inget alternativ till entryt — den löser den andra halvan.**
 Kombinationen som blir intressant är därför `http()` + fil:
@@ -382,15 +383,51 @@ bibliotek och per enhet, plus att Android kräver att användaren pekar ut en
 mapp i behörighetsdialogen. Rättigheter per enhet är redan det svåraste i hela
 upplägget, så det priset är inte litet.
 
-**Tre saker måste mätas innan det går att välja:**
+#### Connectorn — utred den först
 
-- **M4.** Hur länge hänger `http().get()` i flygplansläge? Den gamla mätning 1,
-  fortfarande obesvarad. Är det trettio sekunder duger idén bara i `Version`.
-- **M5.** Fungerar `file()` på både desktop och Android med våra rättigheter,
-  och överlever filen en omstart av appen?
-- **M6.** Kan en vanlig användare sätta script-permissions, eller sitter även
-  de bakom ägarskapet? Går de inte att sätta faller `http()`+fil helt, och
-  entryt är det enda kvar.
+Upptäckt 11 sep i strukturvyn: **Structure → Connectors → Add connector → REST
+API**. Den hämtar JSON från en extern tjänst och mappar in i biblioteket. Vårt
+`senaste.json` ligger i ett publikt repo, så `No Auth` räcker.
+
+Om den gör vad namnet antyder försvinner nästan hela konstruktionen: appen
+sköter hämtningen, vår kod läser bara ett värde, ingen `Network`-permission,
+ingen fil, ingen manuell stämpling efter push. Connectorn konfigureras i
+strukturen — alltså av ägaren, men **en gång vid driftsättningen**, inte per
+push. Och den kan mata ett eget litet bibliotek med ett enda fält, vilket
+undanröjer invändningen mot entryt: inga obligatoriska fält, ingen
+sammanblandning med riktig data.
+
+**Men det avgörande står inte i dokumentationen.** Hjälpsidan beskriver bara
+uppsättningen. Det enda som antyder körtiden är inställningen *Cache TTL
+(minutes)* — "hur länge den hämtade API-datan lagras lokalt innan Memento
+begär färsk data". Det låter mer som en **live-uppslagning per enhet** än som
+en bakgrundssynk som skapar entries. Skillnaden är hela skillnaden: en
+live-uppslagning når inte en enhet utan täckning, och i värsta fall *väntar*
+den.
+
+**Vad som måste mätas:**
+
+- **M4.** Vad händer i flygplansläge när connectorns data behövs? Tomt värde
+  och vidare, eller en väntan? En väntan som kan blockera en sparning gör
+  connectorn oanvändbar på samma sätt som `http()` i en trigger.
+- **M5.** Finns connectorn på Android, eller bara på desktop? Hjälpsidans
+  rubrik nämner Desktop app, vilket är oroande men inte ett besked.
+- **M6.** Blir hämtad data ett vanligt entry som **synkas** till andra enheter,
+  eller hämtar varje enhet för sig? Synkas det är frågan i praktiken löst.
+
+Provas billigast med en connector mot vilken publik JSON som helst, i en kopia,
+på desktop och telefon, med och utan täckning.
+
+**Faller connectorn** återstår `http()` + fil, och de mätningarna är:
+
+- **M7.** Hur länge hänger `http().get()` i flygplansläge? Är det trettio
+  sekunder duger idén bara i `Version`.
+- **M8.** Fungerar `file()` på både desktop och Android, och överlever filen en
+  omstart av appen?
+
+Rättighetsfrågan är däremot **besvarad**: script-permissions deklareras i
+strukturen och godkänns av användaren själv vid första körningen. `Network`
+och fil kostar alltså en dialogruta per enhet, inte en ägarinsats.
 
 **Detta är nu den enda vägen framåt, inte ett tillägg.** Åldersvarningen som
 byggdes först är avstängd som standard (11 sep), eftersom den mäter fel sak:
