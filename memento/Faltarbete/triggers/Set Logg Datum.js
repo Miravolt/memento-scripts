@@ -1,5 +1,7 @@
 // Set Logg Datum
-// Bibliotek: Fältarbete  |  Trigger: MODIFY_ENTRY
+// Bibliotek: Fältarbete  |  Trigger
+// Namn i appen: Set Logg Datum
+// Event: Updating an entry -> Opening an Entry Edit card
 //
 // JS-bibliotek (ordningen spelar ingen roll — Memento laddar
 // dem alfabetiskt oavsett vad man bockar i):

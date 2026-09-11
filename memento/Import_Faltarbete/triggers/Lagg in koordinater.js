@@ -1,5 +1,7 @@
 // Lägg in koordinater
-// Bibliotek: Import Fältarbete  |  Trigger: MODIFY_ENTRY
+// Bibliotek: Import Fältarbete  |  Trigger
+// Namn i appen: Lägg in koordinater
+// Event: Updating an entry -> Before saving the entry
 //
 // JS-bibliotek (ordningen spelar ingen roll — Memento laddar
 // dem alfabetiskt oavsett vad man bockar i):

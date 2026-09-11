@@ -9,12 +9,12 @@ Ordnad lista över vad som ska göras i appen. Gör ett bibliotek färdigt i tag
 > varje bibliotek behöver — de synkroniseras inte mellan enheter och måste
 > sättas om på varje telefon och dator.
 
-> **Nytt fält i Fältarbete: `Tidigare fältarbeten`** (Rich text, skrivskyddat
+> **Nytt fält i Fältarbete:** **`Tidigare fältarbeten`** (Rich text, skrivskyddat
 > för användaren om det går). Här skrivs sammanfattningen av anläggningens
 > tidigare ärenden när ett fältarbete skapas. Saknas fältet hamnar texten i
 > `Logg` i stället, så inget går förlorat — men då syns den inte lika tydligt.
 >
-> **Fältet `Historiska Fältarbeten` i Fältarbete ska tas bort.** Det kan inte
+> **Fältet** **`Historiska Fältarbeten`** **i Fältarbete ska tas bort.** Det kan inte
 > fungera: ett länkfält kan inte peka på sitt eget bibliotek. Anläggningens
 > `Historiska Fältarbeten` är facit och ska vara kvar.
 
@@ -22,7 +22,38 @@ Ordnad lista över vad som ska göras i appen. Gör ett bibliotek färdigt i tag
 `appendToLog()` och `updateFirmwareStatus()` finns kvar som shims i modulerna,
 så script som ännu inte migrerats fortsätter fungera.
 
----
+***
+
+## Läs detta först: skapa inga nya triggrar
+
+**Varje trigger nedan finns redan i biblioteket.** Uppgiften är att öppna den
+och **byta ut scriptets innehåll** mot enradaren — inte att skapa en ny. Skapas
+en ny ligger den gamla koden kvar och körs parallellt, och då gör två script
+samma sak med olika versioner.
+
+Triggrarna listas här under **sitt namn i appen**, som du hittar dem i vänstra
+listan under *Triggers*. Namnen är Mementos egna och beskriver händelsen, inte
+vad scriptet gör — därför ser de inte ut som man väntar sig.
+
+**`Event`-panelen har två val, inte ett.** Först händelsen, sedan när i
+förloppet den ska köra:
+
+| Övre listan — händelsen | Nedre listan — när |
+| --- | --- |
+| `Creating an entry` | `Opening an Entry Edit card` |
+| `Updating an entry` | `Before saving the entry` |
+| `Updating a field` | `After saving the entry` |
+| `Opening an Entry View card` | |
+| *m.fl.* | |
+
+Varje trigger nedan anger båda, skrivna som `Händelse` → `Fas`. Stämmer de med
+det som redan står i panelen ska ingenting ändras där — bara scriptet.
+
+Står Event och fas utskrivna går det förstås att skapa en trigger från grunden
+om den mot förmodan saknas. Men leta först i listan efter ett annat namn än du
+väntade dig; det är precis så en dubblett uppstår.
+
+***
 
 ## 0. En gång per bibliotek — Moduler-scriptet
 
@@ -36,7 +67,7 @@ på ett **Shared script** blir tillgängliga för alla script i biblioteket
 3. Bocka i modulerna enligt `shared/Moduler.js` för det biblioteket.
 4. Koden i scriptet kan vara tom. Spara.
 
-> **`moment.min.js` kommer inte från vårt repo.** Den är Mementos egen
+> **`moment.min.js`** **kommer inte från vårt repo.** Den är Mementos egen
 > inbyggda modul och ligger i standardlistan, inte under
 > `Miravolt/memento-scripts`. Den ska bockas i här precis som de andra — den
 > står först i varje modullista nedan — men leta inte efter den bland våra
@@ -61,32 +92,35 @@ listan visar varför en modul inte får plockas bort ur `Moduler`.
 Lägger du till en ny modul i repot: bocka i den i `Moduler`, annars syns den
 inte för något script. `Version` räknar modulerna, så avvikelsen upptäcks där.
 
----
-
-
-
-
-
-
+***
 
 ## Fältarbete
 
-### Moduler  
+### Moduler
+
 *Shared script*
 
 **Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
 alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-- [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
-      standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
-- [ ] `mv-core.js`
-- [ ] `mv-db.js`
-- [ ] `mv-format.js`
-- [ ] `mv-logg.js`
-- [ ] `fa-anteckning.js`
-- [ ] `fa-faltarbete.js`
-- [ ] `fa-firmware.js`
-- [ ] `fa-import.js`
+* [x] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+  standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
+
+* [x] `mv-core.js`
+
+* [x] `mv-db.js`
+
+* [x] `mv-format.js`
+
+* [x] `mv-logg.js`
+
+* [x] `fa-anteckning.js`
+
+* [x] `fa-faltarbete.js`
+
+* [x] `fa-firmware.js`
+
+* [x] `fa-import.js`
 
 Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
 räknas inte, den är inte vår och stämplar sig inte.
@@ -94,19 +128,21 @@ räknas inte, den är inte vår och stämplar sig inte.
 Script:
 
 ```js
-
 ```
 
-### Config  — VALFRI, hoppa över  
+### Config  — VALFRI, hoppa över
+
 *Shared script*
 
 Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliotek avviker — se filen för vad som går att sätta.
 
-### Set Logg Datum  
-*Trigger: MODIFY_ENTRY*
+### Set Logg Datum
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Trigger — **finns redan**, byt bara ut scriptet.*\
+**Event:** `Updating an entry` → `Opening an Entry Edit card`
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -114,23 +150,13 @@ Script:
 MV.Logg.setDatum();
 ```
 
-### Update Firmware Status (MODIFY_ENTRY)  
-*Trigger: MODIFY_ENTRY*
+### Updating an entry - Before saving the entry - Update Firmware Status
 
-Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Trigger — **finns redan**, byt bara ut scriptet.*\
+**Event:** `Updating an entry` → `Before saving the entry`
 
-Script:
-
-```js
-MV.Firmware.syncStatus();
-```
-
-### Update Firmware Status (MODIFY_FIELD)  
-*Trigger: MODIFY_FIELD*
-
-Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -138,11 +164,31 @@ Script:
 MV.Firmware.syncStatus();
 ```
 
-### Updating an entry - Before saving the entry  
-*Trigger: MODIFY_ENTRY*
+### Updating a field - Before saving the entry - Update Firmware Status
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-firmware.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Trigger — **finns redan**, byt bara ut scriptet.*\
+**Event:** `Updating a field` → `Before saving the entry`
+
+Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
+
+Script:
+
+```js
+MV.Firmware.syncStatus();
+```
+
+### Updating an entry - Before saving the entry
+
+*Trigger — **finns redan**, byt bara ut scriptet.*\
+**Event:** `Updating an entry` → `Before saving the entry`
+
+*Två triggrar i Fältarbete har samma Event och samma fas. Skilj dem åt på
+namnet: den här heter bara `Updating an entry - Before saving the entry`, den
+andra slutar med `- Update Firmware Status`.*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-firmware.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -150,11 +196,12 @@ Script:
 MV.Faltarbete.loggaAndringar();
 ```
 
-### Version  
+### Version
+
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-firmware.js`, `fa-faltarbete.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-firmware.js`, `fa-faltarbete.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -162,11 +209,12 @@ Script:
 MV.ui.info("Version", MV.about());
 ```
 
-### Hamta anteckning for valt datum  
-*Knappfält (ft_button)*
+### Hamta anteckning for valt datum
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Knappfält (ft\_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -174,11 +222,12 @@ Script:
 MV.Anteckning.hamta();
 ```
 
-### Lagg till datum i kommentar  
-*Knappfält (ft_button)*
+### Lagg till datum i kommentar
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Knappfält (ft\_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -186,11 +235,12 @@ Script:
 MV.Anteckning.laggTillDatumIKommentar();
 ```
 
-### Spara andringar och avsluta Faltarbete  
-*Knappfält (ft_button)*
+### Spara andringar och avsluta Faltarbete
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Knappfält (ft\_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -198,11 +248,12 @@ Script:
 MV.Faltarbete.avslutaMedDialog();
 ```
 
-### Spara anteckning  
-*Knappfält (ft_button)*
+### Spara anteckning
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Knappfält (ft\_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -210,25 +261,33 @@ Script:
 MV.Anteckning.spara();
 ```
 
-
 ## Anläggningar
 
-### Moduler  
+### Moduler
+
 *Shared script*
 
 **Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
 alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-- [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
-      standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
-- [ ] `mv-core.js`
-- [ ] `mv-db.js`
-- [ ] `mv-format.js`
-- [ ] `mv-logg.js`
-- [ ] `fa-anteckning.js`
-- [ ] `fa-faltarbete.js`
-- [ ] `fa-firmware.js`
-- [ ] `fa-import.js`
+* [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+  standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
+
+* [ ] `mv-core.js`
+
+* [ ] `mv-db.js`
+
+* [ ] `mv-format.js`
+
+* [ ] `mv-logg.js`
+
+* [ ] `fa-anteckning.js`
+
+* [ ] `fa-faltarbete.js`
+
+* [ ] `fa-firmware.js`
+
+* [ ] `fa-import.js`
 
 Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
 räknas inte, den är inte vår och stämplar sig inte.
@@ -236,19 +295,24 @@ räknas inte, den är inte vår och stämplar sig inte.
 Script:
 
 ```js
-
 ```
 
-### Config  — VALFRI, hoppa över  
+### Config  — VALFRI, hoppa över
+
 *Shared script*
 
 Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliotek avviker — se filen för vad som går att sätta.
 
-### Set Logg Datum  
-*Trigger: OPEN_ENTRY_CARD*
+### Set Logg Datum
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Trigger — **finns redan**, byt bara ut scriptet.*\
+**Event:** `Opening an Entry View card`, i fasen **före** kortet visas
+
+*Anläggningars `Set Logg Datum` har ett annat Event än Fältarbetes med samma
+namn. Det är avsiktligt.*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -256,11 +320,12 @@ Script:
 MV.Logg.setDatum();
 ```
 
-### Nytt Faltarbete  
+### Nytt Faltarbete
+
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -270,11 +335,12 @@ MV.Faltarbete.skapaMedDialog(entry(), {
 });
 ```
 
-### Version  
+### Version
+
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-faltarbete.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-anteckning.js`, `fa-faltarbete.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -282,11 +348,12 @@ Script:
 MV.ui.info("Version", MV.about());
 ```
 
-### Hamta anteckning for valt datum  
-*Knappfält (ft_button)*
+### Hamta anteckning for valt datum
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Knappfält (ft\_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -294,11 +361,12 @@ Script:
 MV.Anteckning.hamta();
 ```
 
-### Spara anteckning  
-*Knappfält (ft_button)*
+### Spara anteckning
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Knappfält (ft\_button)*
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -306,12 +374,12 @@ Script:
 MV.Anteckning.spara();
 ```
 
+### Aterstall historik  — ENGÅNGSKÖRNING vid driftsättning
 
-### Aterstall historik  — ENGÅNGSKÖRNING vid driftsättning  
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Bygger upp `Historiska Fältarbeten` och `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`. Körs **efter** att länkfältet pekats om. Lägger bara till länkar — tar aldrig bort någon. Standardläget är torrkörning.
 
@@ -327,11 +395,12 @@ Skarp körning, när torrkörningens rapport stämmer:
 MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });
 ```
 
-### Granska  — VALFRI men rekommenderad  
+### Granska  — VALFRI men rekommenderad
+
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Räknar posterna och letar efter länkar som pekar ut ur uppsättningen — det som inte går att kontrollera för hand med hundratals anläggningar. Läser bara.
 
@@ -341,25 +410,33 @@ Script:
 MV.Faltarbete.granskaMedDialog();
 ```
 
-
 ## Import Fältarbete
 
-### Moduler  
+### Moduler
+
 *Shared script*
 
 **Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
 alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-- [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
-      standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
-- [ ] `mv-core.js`
-- [ ] `mv-db.js`
-- [ ] `mv-format.js`
-- [ ] `mv-logg.js`
-- [ ] `fa-anteckning.js`
-- [ ] `fa-faltarbete.js`
-- [ ] `fa-firmware.js`
-- [ ] `fa-import.js`
+* [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+  standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
+
+* [ ] `mv-core.js`
+
+* [ ] `mv-db.js`
+
+* [ ] `mv-format.js`
+
+* [ ] `mv-logg.js`
+
+* [ ] `fa-anteckning.js`
+
+* [ ] `fa-faltarbete.js`
+
+* [ ] `fa-firmware.js`
+
+* [ ] `fa-import.js`
 
 Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
 räknas inte, den är inte vår och stämplar sig inte.
@@ -367,19 +444,21 @@ räknas inte, den är inte vår och stämplar sig inte.
 Script:
 
 ```js
-
 ```
 
-### Config  — VALFRI, hoppa över  
+### Config  — VALFRI, hoppa över
+
 *Shared script*
 
 Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliotek avviker — se filen för vad som går att sätta.
 
-### Lagg in koordinater  
-*Trigger: MODIFY_ENTRY*
+### Lägg in koordinater
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+*Trigger — **finns redan**, byt bara ut scriptet.*\
+**Event:** `Updating an entry` → `Before saving the entry`
+
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -387,11 +466,12 @@ Script:
 MV.Import.satKoordinatStatus();
 ```
 
-### Hitta befintliga  
+### Hitta befintliga
+
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -399,11 +479,12 @@ Script:
 MV.Import.hittaBefintliga();
 ```
 
-### Lagg upp  
+### Lagg upp
+
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -411,11 +492,12 @@ Script:
 MV.Import.laggUpp();
 ```
 
-### Version  
+### Version
+
 *Action*
 
-Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`  
-*(bockas inte i här — `Moduler` bär listan. Står med som dokumentation av vad scriptet behöver.)*
+Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`\
+*(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
 
 Script:
 
@@ -423,8 +505,7 @@ Script:
 MV.ui.info("Version", MV.about());
 ```
 
-
----
+***
 
 ## Valfritt: Config som Shared script
 
@@ -435,7 +516,7 @@ stället för i varje script.
 
 Hoppa över detta om inget avviker, vilket är normalfallet.
 
----
+***
 
 ## Sista steget: ta bort de gamla
 
@@ -443,7 +524,7 @@ Först när allt ovan är på plats och testat:
 
 Se [BORTTAGET.md](BORTTAGET.md) — fyra script ska raderas i appen.
 
----
+***
 
 ## Verifiera
 
@@ -458,3 +539,4 @@ Se [BORTTAGET.md](BORTTAGET.md) — fyra script ska raderas i appen.
 3. **Flygplansläge på en telefon.** Fungerar scripten utan täckning? Det är det
    enda som kan sänka hela arkitekturen, och det måste vara klart innan detta
    går ut på en fältenhet.
+

@@ -1,5 +1,7 @@
 // Updating an entry - Before saving the entry
-// Bibliotek: Fältarbete  |  Trigger: MODIFY_ENTRY
+// Bibliotek: Fältarbete  |  Trigger
+// Namn i appen: Updating an entry - Before saving the entry
+// Event: Updating an entry -> Before saving the entry
 //
 // JS-bibliotek (ordningen spelar ingen roll — Memento laddar
 // dem alfabetiskt oavsett vad man bockar i):

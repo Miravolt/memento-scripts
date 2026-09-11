@@ -1,5 +1,7 @@
 // Update Firmware Status
-// Bibliotek: Fältarbete  |  Trigger: MODIFY_FIELD
+// Bibliotek: Fältarbete  |  Trigger
+// Namn i appen: Updating a field - Before saving the entry - Update Firmware Status
+// Event: Updating a field -> Before saving the entry
 //
 // JS-bibliotek (ordningen spelar ingen roll — Memento laddar
 // dem alfabetiskt oavsett vad man bockar i):

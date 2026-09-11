@@ -152,8 +152,13 @@ varje bibliotek, och den når alla enheter utan att någon rör appen.
 utanför biblioteken och kräver inga rättigheter i dem. Det är bara själva
 uppsättningen som kräver dig.
 
-**Datan rörs inte.** Inga entries skapas, ändras eller raderas i något steg
-nedan. Allt handlar om struktur och script.
+**Nästan ingenting rör datan.** Inga entries skapas eller raderas i något steg,
+och inga fältvärden skrivs om. Allt handlar om struktur och script — **med ett
+undantag: B2b**, som lägger tillbaka länkarna mellan anläggningar och deras
+avslutade fältarbeten. Den körs som torrkörning först och visar vad den skulle
+göra innan något skrivs, och den *lägger bara till* länkar — den tar aldrig
+bort någon. Det är också därför B0 kräver en kopia med data, inte bara en
+template.
 
 Räkna med **30–60 minuter**. Avbryt hellre mitt i än gissa — se *Om något ser
 fel ut* sist.
@@ -164,14 +169,30 @@ fel ut* sist.
 
 **Görs först. Utan den finns ingen väg tillbaka.**
 
+Två kopior, som skyddar mot olika saker. Ta båda.
+
+**a) En full kopia med data — görs i Android-appen.**
+
+* [ ] Långtryck på biblioteket → *Kopiera* → **struktur med data**. Gör det för
+  vart och ett av de fyra biblioteken, med dagens datum i namnet.
+
+* [ ] Kontrollera att kopiorna har lika många poster som originalen
+
+Detta är den kopia som faktiskt räddar dig. Ett steg nedan — **B2b, återställ
+historiken** — skriver länkar mellan entries, och en strukturkopia hade inte
+kunnat lägga tillbaka dem. Kopiering går bara att göra från Android; desktop
+kan det inte.
+
+**b) En template-export — görs på desktop eller telefon.**
+
 * [ ] För vart och ett av de fyra biblioteken: *Library menu → Export →
   Template*. Spara filen med dagens datum i namnet.
 
 * [ ] Kontrollera att alla fyra filer finns och är större än noll byte
 
-En template-export innehåller **struktur och script, inte data**. Går något
-sönder i strukturen går den att lägga tillbaka. Det är också därför inget steg
-nedan får röra entries.
+Template-exporten är **struktur och script, ingen data**. Den är den snabba
+vägen tillbaka om en strukturändring blir fel, och den går att skicka vidare
+som en fil. Den ersätter inte a).
 
 ***
 
