@@ -346,7 +346,15 @@ delas till alla som ska läsa det, vilket lägger till steg i driftsättningen. 
 entry i ett befintligt bibliotek kräver inget nytt men syns i listor och kan
 råka redigeras. Avgörs när funktionen byggs, inte nu.
 
-Faller även det kvarstår åldersvarningen, som redan är byggd.
+**Detta är nu den enda vägen framåt, inte ett tillägg.** Åldersvarningen som
+byggdes först är avstängd som standard (11 sep), eftersom den mäter fel sak:
+under en lugn period kör alla enheter rätt kod och alla varnar ändå. En markör
+att jämföra mot har ingen sådan falsklarmsfrekvens — den säger till bara när
+det faktiskt skiljer, och är tyst resten av tiden. Det är hela skillnaden
+mellan ett larm som blir kvar och ett som blir avstängt.
+
+Faller även markören kvarstår åldern i `Version`, som man ser när man går och
+letar.
 
 **Värdet är begränsat men verkligt.** `push.cmd` säger redan vad byggtiden ska
 vara, och `Version` visar vad den är — den som följer rutinen behöver inte

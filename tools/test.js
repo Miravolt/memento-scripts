@@ -1499,6 +1499,16 @@ suite("mv-core — varna för gammalt bygge");
     var sparad = MV.build.moduler;
     MV.build.moduler = [{ namn: "mv-core", byggd: "2026-06-01 10:00", hash: "x" }];
 
+    /*
+     * AVSIKT: avstängd som standard. Ålder är inte samma sak som inaktuell —
+     * har ingen pushat på två månader kör alla enheter rätt kod och alla
+     * varnar ändå. Ett larm som nästan alltid har fel blir avstängt, och då är
+     * även det riktiga larmet borta. Sätt inte tillbaka den utan att först
+     * läsa kommentaren i mv-core.js.
+     */
+    eq(MV.config.byggVarningDagar, 0,
+       "AVSIKT: byggvarningen är avstängd som standard");
+
     eq(MV.byggAlderDagar("2026-06-01 10:00"), 0, "samma dag = noll dagar");
     eq(MV.byggAlderDagar("2026-06-11 10:00"), 10, "tio dagar räknas rätt");
     eq(MV.byggAlderDagar("2026-05-01 10:00"), 0,
@@ -1546,6 +1556,7 @@ suite("mv-core — varna för gammalt bygge");
     eq(MV.byggVarning("2026-06-11 10:00"), "", "och då ingen varning");
 
     MV.build.moduler = sparad;
+    MV.config.byggVarningDagar = 0;   // tillbaka till standard för resten
 })();
 
 

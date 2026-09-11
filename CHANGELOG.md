@@ -129,6 +129,22 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Ändrat
 
+- **Byggåldersvarningen är avstängd som standard** (`byggVarningDagar = 0`),
+  och dess uppmaning är en egen inställning (`byggVarningAtgard`).
+
+  Två skäl, båda Jimmys. Det första: uppmaningen *"uppdatera modullistan"* går
+  inte att följa — knappen sitter på script-sidan, som bara ägaren kommer åt.
+  Det andra, och viktigare: **ålder är inte samma sak som inaktuell.** Har
+  ingen pushat på två månader kör varenda enhet rätt kod, och varenda enhet
+  varnar ändå. Under en lugn period är i stort sett varje larm falskt, och ett
+  larm som nästan alltid har fel blir avstängt — varefter även det riktiga
+  larmet är borta den dagen en rättning inte når fram. Sämre än inget larm,
+  eftersom man då tror sig ha ett.
+
+  Åldern visas fortfarande i `Version`, vilket är rätt ställe: den syns när man
+  går och letar, i stället för att avbryta ett fältarbete. Koden står kvar och
+  kan sättas på per bibliotek när det finns skäl. Låst med ett `AVSIKT`-test så
+  att standarden inte glider tillbaka.
 - **En modullista i stället för tre.** Alla åtta modulerna bockas nu i på
   `Moduler` i samtliga bibliotek, i stället för en anpassad delmängd per
   bibliotek. En modul för mycket kostar ingenting — allt på toppnivå bara

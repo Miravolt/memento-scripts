@@ -91,11 +91,14 @@ och ingen dataflytt behövs.
   `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`.
   Torrkörning som standard; lägger bara till länkar, tar aldrig bort någon.
   Engångskörning vid driftsättningen, se `DRIFTSATTNING.md` B2b.
-- **Varning för gammalt bygge.** `MV.byggVarning()` räknar byggets ålder ur
-  byggstämpeln — **utan nätverk** — och hakar på en rad i kvittensen efter
-  skapa och avsluta när den passerat `byggVarningDagar` (30 som standard, 0 =
-  av). Åldern syns också i `Version`. Fungerar i flygplansläge och kan aldrig
-  blockera något.
+- **Byggets ålder syns i `Version`.** `MV.byggAlderDagar()` räknar den ur
+  byggstämpeln, utan nätverk. Den *varning* som kan hakas på kvittensen efter
+  skapa och avsluta finns kvar i koden men är **avstängd som standard**
+  (`byggVarningDagar = 0`) — ålder är inte samma sak som inaktuell, och ett
+  larm som nästan alltid har fel blir avstängt av användaren, varefter även
+  det riktiga larmet är borta. Låst med ett `AVSIKT`-test. Sätts på per
+  bibliotek när det finns skäl, t.ex. en period efter en rättning man vet ska
+  ut.
 - **`Granska`-action.** Räknar posterna i en uppsättning och listar varje länk
   som pekar ut ur den. Kom till för att två kontroller i `TESTPLAN.md` avsnitt
   5 inte gick att göra för hand med hundratals poster. Läser bara.

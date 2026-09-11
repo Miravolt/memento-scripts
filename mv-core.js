@@ -66,15 +66,29 @@ if (MV.config.dateFormat === undefined) MV.config.dateFormat = "YYYY-MM-DD";
 /**
  * Efter hur många dagar ska ett bygge anses gammalt? 0 = varna aldrig.
  *
- * Enheten hämtar inte moduler av sig själv, så en enhet som ingen rört kan
- * mala vidare på månadsgammal kod utan att någon märker det. Åldern räknas ur
- * byggstämpeln och kräver därför INGEN nätverkskontakt — varningen fungerar
- * lika bra i flygplansläge, och kan aldrig blockera något.
+ * STANDARD ÄR 0 — AVSTÄNGD. Läs varför innan du sätter på den.
  *
- * Den säger inte att en nyare version finns. Den säger att den här är gammal,
- * vilket är den fråga man faktiskt kan besvara offline.
+ * Åldern räknas ur byggstämpeln och kräver ingen nätverkskontakt, så
+ * varningen fungerar i flygplansläge och kan aldrig blockera något. Problemet
+ * är inte tekniskt utan att den mäter fel sak: **ålder är inte samma sak som
+ * inaktuell.** Har ingen pushat på två månader kör varenda enhet rätt kod, och
+ * varenda enhet varnar ändå. Under en lugn period är alltså i stort sett varje
+ * larm falskt.
+ *
+ * Ett larm som nästan alltid har fel blir avstängt — och då är även det
+ * riktiga larmet borta den dagen en rättning inte når fram. Sämre än inget
+ * larm alls, eftersom man då tror sig ha ett.
+ *
+ * Åldern visas fortfarande i `Version`. Det är rätt ställe: den syns när man
+ * går och letar, vilket är precis när den betyder något, i stället för att
+ * avbryta ett fältarbete.
+ *
+ * Koden står kvar för att den kan sättas på per bibliotek när det finns skäl —
+ * t.ex. en period efter en rättning man vet ska ut. Den riktiga lösningen är
+ * en publicerad byggmarkör att jämföra mot, som bara säger till när det
+ * faktiskt skiljer. Se ARBETSFLODE.md punkt 6.
  */
-if (MV.config.byggVarningDagar === undefined) MV.config.byggVarningDagar = 30;
+if (MV.config.byggVarningDagar === undefined) MV.config.byggVarningDagar = 0;
 
 /*
  * Vad varningen UPPMANAR till är en egen inställning, för mottagaren kan
@@ -376,4 +390,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 13:28", hash: "696b547" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 13:37", hash: "b612ab6" });
