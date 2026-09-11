@@ -2,48 +2,74 @@
 
 Det här dokumentet är i två delar, för att arbetet delas mellan två personer:
 
-- **Del A — förberedelserna.** Görs av den som byggt scripten, i egna kopior av
+* **Del A — förberedelserna.** Görs av den som byggt scripten, i egna kopior av
   biblioteken. Inget av detta rör driften.
-- **Del B — körschemat.** Görs av den som **äger** driftbiblioteken. Del B är
+
+* **Del B — körschemat.** Görs av den som **äger** driftbiblioteken. Del B är
   skriven för att kunna följas av någon som inte varit med i arbetet.
 
 Del B kan inte påbörjas förrän Del A är avbockad.
 
----
+***
 
 # Del A — förberedelser i kopiorna
 
-## A1. En sluten kopieuppsättning
+> **Ägaren ska aldrig läsa Del A.** Den görs av den som byggt scripten, i egna
+> kopior, och är den enda del där verktyg utanför Memento förekommer —
+> `.mlt2`-export och ett Python-script. **Del B innehåller ingenting sådant:**
+> allt där görs i appen, inklusive säkerhetskopian, som är en vanlig
+> template-export ur biblioteksmenyn. Skicka bara Del B vidare.
+>
+> **A1 och A2 är dessutom redan gjorda** (9 sep 2026) — kopiorna finns,
+> länkarna är ompekade och driftens tillstånd är uppmätt. Kvar av Del A är
+> **A3, generalrepetitionen.** Börja där.
+
+## A1. En sluten kopieuppsättning — KLAR 9 sep 2026
 
 Kopiera alla bibliotek som ingår: **Anläggningar, Fältarbete, Import
 Fältarbete, Nyckelregister**. Ge dem alla **exakt samma suffix**, t.ex.
 `Anläggningar <Kund> Copy 2026-09-09`.
 
+**Kopieringen görs i Android-appen** — långtryck på biblioteket, *Kopiera*, och
+välj struktur eller struktur med data. Det är enda sättet; desktop kan inte
+kopiera ett bibliotek.
+
 Suffixet är inte kosmetik. Koden härleder vilken uppsättning den arbetar i ur
 namnet på det bibliotek den körs i, så lika suffix håller kopiorna för sig
 själva. Blandade suffix gör att en körning i kopian kan nå driften.
 
-- [ ] Alla fyra kopior har samma suffix
-- [ ] Exportera dem som `.mlt2` och kör:
+* [ ] Alla fyra kopior har samma suffix
 
-      python tools/mementools.py links "Raw"
+* [x] Exportera dem som `.mlt2` och kontrollera länkmålen med:
 
-- [ ] **Varje länkfält pekar på en kopia**, inte på ett driftbibliotek
+  ```
+  python tools/mementools.py links "Raw"
+  ```
+
+* [x] **Varje länkfält pekar på en kopia**, inte på ett driftbibliotek
 
 > En kopia ärver länkfältens mål från originalet, alltså driften. De måste
 > pekas om för hand — och kontrolleras med verktyget, inte med minnet. Att gå
 > igenom dem för hand och tro att man tagit alla är precis så det blev fel från
 > början.
+>
+> **Verktyget är en genväg, inte ett krav.** Det läser åtta länkfält på en
+> sekund i stället för att man klickar sig igenom strukturen åtta gånger. Går
+> det inte att köra — och det gör det inte hos ägaren — så gör Del B steg **B1**
+> exakt samma kontroll för hand, fält för fält. Ingenting i Del B kräver
+> `.mlt2`, Python eller något annat utanför appen.
 
-## A2. Mät hur driften ser ut — utan att röra den
+## A2. Mät hur driften ser ut — utan att röra den — KLAR 9 sep 2026
 
 En kopia bevarar länkarna som de var i driften. Det är enda sättet att se
 driftens tillstånd utan rättigheter i den.
 
-- [ ] Gör en **ny, orörd** kopia av driftens Anläggningar. Peka inte om något.
-- [ ] Exportera dess entries till CSV med fälten `Anl. adress`, `Tjänst`,
-      `Aktivt Fältarbete`, `Historiska Fältarbeten`
-- [ ] Kontrollera vad `Historiska Fältarbeten` innehåller
+* [ ] Gör en **ny, orörd** kopia av driftens Anläggningar. Peka inte om något.
+
+* [ ] Exportera dess entries till CSV med fälten `Anl. adress`, `Tjänst`,
+  `Aktivt Fältarbete`, `Historiska Fältarbeten`
+
+* [ ] Kontrollera vad `Historiska Fältarbeten` innehåller
 
 **Är kolumnen tom överallt** har historiklänkningen aldrig fungerat — då ligger
 ingen data fel, och det räcker att peka om.
@@ -56,13 +82,13 @@ Fältarbete. Då krävs ett beslut om dataflytt innan Del B påbörjas.
 
 ### Utfall 9 sep 2026 — fall B
 
-| | |
-|---|---|
-| Anläggningar i driften | 706 |
-| …med en historiklänk | **30** |
+| <br />                                          | <br />       |
+| ----------------------------------------------- | ------------ |
+| Anläggningar i driften                          | 706          |
+| …med en historiklänk                            | **30**       |
 | …vars länk pekar in i det gamla testbiblioteket | **30 av 30** |
-| …med ett aktivt fältarbete | 11 |
-| …vars aktiva länk pekar fel | **0** |
+| …med ett aktivt fältarbete                      | 11           |
+| …vars aktiva länk pekar fel                     | **0**        |
 
 Berörda poster i det gamla biblioteket: **31 stycken**, på 29 adresser. Alla har
 `Logg`, 29 har `Åtgärder`, 29 är avslutade, **2 har bilder**.
@@ -95,18 +121,21 @@ Det gamla biblioteket kan därefter arkiveras eller raderas. Vänta med det till
 Kör hela **Del B mot kopiorna**. Samma datamängd, samma historik, samma
 egenheter som skarpt läge. Går det igenom där är driftsättningen mekanik.
 
-- [ ] Del B genomförd i kopiorna, från början till slut
-- [ ] Ett helt ärende: skapa → ändra → avsluta → nytt ärende med historik
-- [ ] `TESTPLAN.md` genomgången, avvikelser antingen rättade eller medvetet
-      accepterade
+* [ ] Del B genomförd i kopiorna, från början till slut
+
+* [ ] Ett helt ärende: skapa → ändra → avsluta → nytt ärende med historik
+
+* [ ] `TESTPLAN.md` genomgången, avvikelser antingen rättade eller medvetet
+  accepterade
 
 ## A4. Underlag till ägaren
 
-- [ ] Den här filen, `memento/UPPSATTNING.md` (all scriptkod att klistra in)
-      och `memento/KOPIERING.md` (rättigheter per bibliotek)
-- [ ] En tid avtalad, och en person som är anträffbar under körningen
+* [ ] Den här filen, `memento/UPPSATTNING.md` (all scriptkod att klistra in)
+  och `memento/KOPIERING.md` (rättigheter per bibliotek)
 
----
+* [ ] En tid avtalad, och en person som är anträffbar under körningen
+
+***
 
 # Del B — körschema för den som äger biblioteken
 
@@ -129,21 +158,22 @@ nedan. Allt handlar om struktur och script.
 Räkna med **30–60 minuter**. Avbryt hellre mitt i än gissa — se *Om något ser
 fel ut* sist.
 
----
+***
 
 ## B0. Säkerhetskopia
 
 **Görs först. Utan den finns ingen väg tillbaka.**
 
-- [ ] För vart och ett av de fyra biblioteken: *Library menu → Export →
-      Template*. Spara filen med dagens datum i namnet.
-- [ ] Kontrollera att alla fyra filer finns och är större än noll byte
+* [ ] För vart och ett av de fyra biblioteken: *Library menu → Export →
+  Template*. Spara filen med dagens datum i namnet.
+
+* [ ] Kontrollera att alla fyra filer finns och är större än noll byte
 
 En template-export innehåller **struktur och script, inte data**. Går något
 sönder i strukturen går den att lägga tillbaka. Det är också därför inget steg
 nedan får röra entries.
 
----
+***
 
 ## B1. Strukturändringar
 
@@ -151,36 +181,39 @@ Ett bibliotek i taget. Öppna ett entry efteråt och se att kortet ser normalt u
 
 ### Fältarbete
 
-- [ ] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**
+* [ ] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**
 
-      **Detta steg är ett krav, inte en valmöjlighet.** Här skrivs en
-      sammanfattning av anläggningens tidigare ärenden när ett nytt fältarbete
-      skapas — det är så fältpersonalen ser vad som gjorts förut. Lägg det på
-      en egen flik.
+  **Detta steg är ett krav, inte en valmöjlighet.** Här skrivs en
+  sammanfattning av anläggningens tidigare ärenden när ett nytt fältarbete
+  skapas — det är så fältpersonalen ser vad som gjorts förut. Lägg det på
+  en egen flik.
 
-      Saknas fältet hamnar texten i `Logg` i stället. Det är en nödutgång så
-      att inget går förlorat, inte ett alternativ: i loggen blandas den med
-      allt annat och fyller inte sitt syfte.
+  Saknas fältet hamnar texten i `Logg` i stället. Det är en nödutgång så
+  att inget går förlorat, inte ett alternativ: i loggen blandas den med
+  allt annat och fyller inte sitt syfte.
 
-- [ ] Kontrollera fältet **`Koppling till anläggning`** → ska peka på
-      **Anläggningar** i samma uppsättning
-- [ ] Kontrollera **`Nyckel`** och **`Lookup`** → ska peka på
-      **Nyckelregister** i samma uppsättning
-- [ ] Fältet **`Historiska Fältarbeten`** kan lämnas som det är.
-      *Koden använder det inte längre, och det kan ändå inte fungera: ett
-      länkfält kan inte peka på sitt eget bibliotek, så ett fältarbete kan
-      aldrig länka till andra fältarbeten. Att den gamla pekaren ligger kvar
-      är ofarligt.*
+* [ ] Kontrollera fältet **`Koppling till anläggning`** → ska peka på
+  **Anläggningar** i samma uppsättning
+
+* [ ] Kontrollera **`Nyckel`** och **`Lookup`** → ska peka på
+  **Nyckelregister** i samma uppsättning
+
+* [ ] Fältet **`Historiska Fältarbeten`** kan lämnas som det är.
+  *Koden använder det inte längre, och det kan ändå inte fungera: ett
+  länkfält kan inte peka på sitt eget bibliotek, så ett fältarbete kan
+  aldrig länka till andra fältarbeten. Att den gamla pekaren ligger kvar
+  är ofarligt.*
 
 ### Anläggningar
 
-- [ ] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → ska peka på
-      **Fältarbete** i samma uppsättning
-- [ ] **`Nyckel`** → **Nyckelregister** i samma uppsättning
+* [ ] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → ska peka på
+  **Fältarbete** i samma uppsättning
+
+* [ ] **`Nyckel`** → **Nyckelregister** i samma uppsättning
 
 ### Import Fältarbete
 
-- [ ] **`Befintlig`** → **Anläggningar** i samma uppsättning
+* [ ] **`Befintlig`** → **Anläggningar** i samma uppsättning
 
 ### Nyckelregister
 
@@ -191,7 +224,7 @@ Inget att göra.
 > annat bibliotek än det som står i fältets namn. Pekar ett av dem fel skrivs
 > data på fel ställe, utan felmeddelande. Kontrollera vart och ett.
 
----
+***
 
 ## B2. Script
 
@@ -202,34 +235,38 @@ Nyckelregister har inga script.
 
 ### a) Moduler-scriptet
 
-- [ ] **Automation → Script → nytt Shared-script**, döp det **`Moduler`**
-- [ ] I panelen **JavaScript Libraries**: penn-ikonen → **+ Add URL** →
-      **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
-- [ ] Bocka i de moduler som `memento/UPPSATTNING.md` anger för just det
-      biblioteket
-- [ ] Koden i scriptet ska vara **tom**. Spara.
+* [ ] **Automation → Script → nytt Shared-script**, döp det **`Moduler`**
+
+* [ ] I panelen **JavaScript Libraries**: penn-ikonen → **+ Add URL** →
+  **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
+
+* [ ] Bocka i de moduler som `memento/UPPSATTNING.md` anger för just det
+  biblioteket
+
+* [ ] Koden i scriptet ska vara **tom**. Spara.
 
 Ordningen man bockar i dem spelar ingen roll — appen laddar dem alfabetiskt
 oavsett, och koden är byggd för det.
 
 ### b) Rättigheter
 
-- [ ] **Permissions → Library permission**: bocka i de bibliotek som
-      `memento/KOPIERING.md` anger för just det biblioteket
+* [ ] **Permissions → Library permission**: bocka i de bibliotek som
+  `memento/KOPIERING.md` anger för just det biblioteket
 
 Utan detta får scripten inte läsa i de andra biblioteken, och felen som uppstår
 ser inte ut som rättighetsfel — de ser ut som att biblioteket inte finns.
 
 ### c) Byt scripten mot enradarna
 
-- [ ] Ersätt innehållet i varje script med raden som står i
-      `memento/UPPSATTNING.md` för det scriptet
-- [ ] Lägg till en action som heter **`Version`** med raden som står där
+* [ ] Ersätt innehållet i varje script med raden som står i
+  `memento/UPPSATTNING.md` för det scriptet
+
+* [ ] Lägg till en action som heter **`Version`** med raden som står där
 
 ### d) Kontroll innan du går vidare
 
-- [ ] Kör **`Version`**. Den ska visa **8 moduler** och ingen rad märkt
-      `AVVIKER`
+* [ ] Kör **`Version`**. Den ska visa **8 moduler** och ingen rad märkt
+  `AVVIKER`
 
 Visar den färre moduler är något inte ibockat i `Moduler`. Visar den `AVVIKER`
 har appen en gammal kopia av en modul — klicka uppdateringsknappen vid
@@ -243,7 +280,7 @@ Under tiden fungerar både gammalt och nytt. Men ligger det gamla
 `LoggWriter`-scriptet kvar samtidigt som den nya koden körs kan samma händelse
 loggas två gånger — stanna inte i det läget längre än nödvändigt.
 
----
+***
 
 ## B2b. Återställ historiken — engångskörning
 
@@ -256,32 +293,37 @@ själv vilken anläggning det hör till, så inget behöver skrivas in för hand
 
 **Görs i Anläggningar, efter B1 och B2.**
 
-- [ ] Kör actionen **`Återställ historik`**. Den gör en **torrkörning** och
-      rapporterar vad den *skulle* göra — den skriver ingenting.
-- [ ] Läs rapporten. Rimliga siffror? Ungefär lika många historiklänkar som det
-      finns avslutade fältarbeten, och lika många aktiva som det finns pågående.
-- [ ] Stämmer det: ändra raden i scriptet till
-      `MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });` och kör igen
-- [ ] Öppna några anläggningar och kontrollera att historiken ser rätt ut
+* [ ] Kör actionen **`Återställ historik`**. Den gör en **torrkörning** och
+  rapporterar vad den *skulle* göra — den skriver ingenting.
+
+* [ ] Läs rapporten. Rimliga siffror? Ungefär lika många historiklänkar som det
+  finns avslutade fältarbeten, och lika många aktiva som det finns pågående.
+
+* [ ] Stämmer det: ändra raden i scriptet till
+  `MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });` och kör igen
+
+* [ ] Öppna några anläggningar och kontrollera att historiken ser rätt ut
 
 Funktionen **lägger bara till** länkar. Den tar aldrig bort någon, och den rör
 inga fältvärden. Kör man den två gånger händer ingenting den andra gången.
 
 Rapporterar den *misslyckade länkningar* — säg till innan du går vidare.
 
----
+***
 
 ## B3. Varje enhet
 
 Två saker synkroniseras **inte** mellan enheter och måste göras på varje
 telefon och varje dator som används:
 
-- [ ] **Library permission** enligt B2b
-- [ ] I `Moduler`: klicka **uppdateringsknappen** vid bibliotekslistan
-      *(desktop: den runda pilen ovanför listan. Android: längst ner till höger
-      under listan.)*
-- [ ] Kör **`Version`** och kontrollera att byggtiden stämmer med de andra
-      enheterna
+* [ ] **Library permission** enligt B2b
+
+* [ ] I `Moduler`: klicka **uppdateringsknappen** vid bibliotekslistan
+  *(desktop: den runda pilen ovanför listan. Android: längst ner till höger
+  under listan.)*
+
+* [ ] Kör **`Version`** och kontrollera att byggtiden stämmer med de andra
+  enheterna
 
 En enhet som missas slutar fungera tyst medan de andra fungerar. Det är den
 svåraste felkällan i hela upplägget, eftersom allt ser rätt ut tills någon
@@ -296,24 +338,27 @@ faktiskt kör något just där.
 > rättningar, och säg till användarna att höra av sig om `Version` visar att
 > bygget är gammalt.
 
----
+***
 
 ## B4. Ett riktigt ärende
 
 Välj **en** anläggning som har tidigare ärenden och följ den hela vägen.
 
-- [ ] Kör `Nytt Fältarbete` → ett fältarbete skapas, och anläggningens
-      `Aktivt Fältarbete` pekar på det
-- [ ] `Tidigare fältarbeten` visar de gamla ärendena
-- [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
-- [ ] Avsluta ärendet → anläggningen uppdateras, ärendet låses och hamnar i
-      anläggningens historik
+* [ ] Kör `Nytt Fältarbete` → ett fältarbete skapas, och anläggningens
+  `Aktivt Fältarbete` pekar på det
+
+* [ ] `Tidigare fältarbeten` visar de gamla ärendena
+
+* [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
+
+* [ ] Avsluta ärendet → anläggningen uppdateras, ärendet låses och hamnar i
+  anläggningens historik
 
 **Sista frågan, och den enda som avgör: har något blivit sämre än förut?**
 
 Är svaret nej är driftsättningen godkänd.
 
----
+***
 
 ## Om något ser fel ut
 
@@ -329,11 +374,13 @@ Välj **en** anläggning som har tidigare ärenden och följ den hela vägen.
 Koden som hämtas utifrån kan inte göra något i sig — den kör ingenting förrän
 ett script i biblioteket anropar den.
 
----
+***
 
 ## Efteråt
 
-- [ ] Ny template-export av alla fyra bibliotek, sparad som "efter"-läge
-- [ ] Bestäm **vem som får ändra strukturen framöver**. Kodändringar sker
-      utanför biblioteken och kräver ingen behörighet — men ett nytt fält
-      eller ett nytt script gör det, och då behövs den här rundan igen.
+* [ ] Ny template-export av alla fyra bibliotek, sparad som "efter"-läge
+
+* [ ] Bestäm **vem som får ändra strukturen framöver**. Kodändringar sker
+  utanför biblioteken och kräver ingen behörighet — men ett nytt fält
+  eller ett nytt script gör det, och då behövs den här rundan igen.
+

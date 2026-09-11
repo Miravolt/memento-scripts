@@ -390,4 +390,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 14:19", hash: "b612ab6" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 14:39", hash: "b612ab6" });
