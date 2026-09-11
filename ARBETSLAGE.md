@@ -13,6 +13,37 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
 
 ---
 
+## HÄRNÄST — läs det här först
+
+Sex saker återstår. Ungefär en halvdags arbete plus ägarens timme.
+
+**1. Radera `Historiska Fältarbeten` i Fältarbete Copy.** Enda länkfältet som
+fortfarande pekar utanför kopieuppsättningen. *Två minuter.*
+
+**2. Reproducera A3 och A4.** Se *Avvikelser* längre ner — de är de enda öppna
+felen. A3: ett fältarbete utan koppling, **sparat**, sedan knappen. A4: dyker
+`Firmware Status` upp i loggen vid nästa sparning? *En kvart.*
+
+**3. Generalrepetition.** Kör hela `DRIFTSATTNING.md` **Del B** mot kopiorna,
+från B0 till B4. Det är den enda repetition som betyder något, och den avslöjar
+vad som är otydligt i körschemat innan ägaren läser det. Glöm inte **B2b**,
+torrkörningen av `Återställ historik` — se att siffrorna ser rimliga ut mot 706
+anläggningar. *En till två timmar.*
+
+**4. Rätta körschemat** utifrån allt du snubblade på i punkt 3. Det ägaren
+snubblar på i skarpt läge är det du snubblade på i kopian.
+
+**5. Skicka underlaget till ägaren och boka tiden.** `DRIFTSATTNING.md` Del B,
+`memento/UPPSATTNING.md` och `memento/KOPIERING.md`. Säg att det tar 30–60
+minuter, att datan inte rörs, och att det är en engångsinsats.
+
+**6. Ägaren kör Del B.** Du är anträffbar under tiden.
+
+Efter det är det driftsatt. `TESTPLAN.md` är genomgången, länkkartan är utredd,
+och ingen dataflytt behövs.
+
+---
+
 ## Klart
 
 - Alla script extraherade ur de fyra `.mlt2`-filerna och avdubblade till åtta
@@ -21,7 +52,7 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
   sekretesskontroll före push och `push.cmd` för hela kedjan.
 - Byggstämpel + `Version`-action, så man ser i appen vilket bygge som körs och
   om en enskild modul är cachad.
-- 202 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
+- 279 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
 - Åtta buggar rättade, var och en med `REGRESSION`-test. Historiken, `Nyckel`
   som länkfält, den döda `actionText`/`cleanLog`-koden, halvtomma fältarbeten
   från importen, tappade `Mobilnummer 2` / `Lev.punkt`, koordinatstatus,
@@ -44,6 +75,11 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
   `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`.
   Torrkörning som standard; lägger bara till länkar, tar aldrig bort någon.
   Engångskörning vid driftsättningen, se `DRIFTSATTNING.md` B2b.
+- **Varning för gammalt bygge.** `MV.byggVarning()` räknar byggets ålder ur
+  byggstämpeln — **utan nätverk** — och hakar på en rad i kvittensen efter
+  skapa och avsluta när den passerat `byggVarningDagar` (30 som standard, 0 =
+  av). Åldern syns också i `Version`. Fungerar i flygplansläge och kan aldrig
+  blockera något.
 - **`Granska`-action.** Räknar posterna i en uppsättning och listar varje länk
   som pekar ut ur den. Kom till för att två kontroller i `TESTPLAN.md` avsnitt
   5 inte gick att göra för hand med hundratals poster. Läser bara.

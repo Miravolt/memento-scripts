@@ -198,6 +198,14 @@ Dashboards, dialoger, kortlayout. Efter paritet.
 
 ### 6. Varning när enheten kör en gammal version
 
+> **Delvis byggt.** Den offline-baserade halvan finns: `MV.byggVarning()`
+> räknar byggets ålder ur byggstämpeln och varnar när den passerat
+> `MV.config.byggVarningDagar`. Inget nätverk, ingen blockering, fungerar i
+> flygplansläge. Den kan säga *"den här koden är 45 dagar gammal"* men inte
+> *"det finns en nyare"*. Resten av avsnittet beskriver den nätverksbaserade
+> kontrollen, som fortfarande är oskriven — och som mest tillför i fallet där
+> en enhet är gammal men under åldersgränsen.
+
 Idag upptäcks en gammal version bara om **någon** modul är nyare än de andra —
 då flaggar `MV.avvikande()` den, gratis och offline. Är *alla* åtta lika gamla
 finns det ingen intern ledtråd alls: modulerna är konsekventa med varandra,

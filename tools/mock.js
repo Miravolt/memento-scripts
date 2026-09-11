@@ -211,15 +211,32 @@ Library.prototype.seed = function (values) {
  * Globala Memento-funktioner
  * ---------------------------------------------------------------- */
 
-global.moment = function (value) {
-    var d = (value === undefined || value === null) ? new Date(NOW) : new Date(value);
-    return {
+global.moment = function (value, format) {
+    var d;
+    if (value === undefined || value === null) {
+        d = new Date(NOW);
+    } else if (typeof value === "string" && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(value)) {
+        // Byggstämpelns format. Riktiga moment tar det via format-argumentet;
+        // Date gör det bara med ett T emellan.
+        d = new Date(value.replace(" ", "T") + ":00");
+    } else {
+        d = new Date(value);
+    }
+
+    var api = {
         valueOf: function () { return d.getTime(); },
+        isValid: function () { return !isNaN(d.getTime()); },
+        diff: function (other, enhet) {
+            var ms = d.getTime() - other.valueOf();
+            if (enhet === "days") return ms / 86400000;
+            return ms;
+        },
         format: function () {
             function p(n) { return (n < 10 ? "0" : "") + n; }
             return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate());
         }
     };
+    return api;
 };
 
 global.message = function (text) { messages.push(String(text)); };

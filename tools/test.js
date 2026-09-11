@@ -1452,6 +1452,55 @@ function historikScenario() {
 
 
 /* ================================================================ */
+suite("mv-core — varna för gammalt bygge");
+
+/*
+ * Enheten hämtar inte moduler av sig själv. En telefon som ingen rört kan mala
+ * vidare på månadsgammal kod utan att någon märker det — det hände på riktigt,
+ * ett bygge från 08:51 satt kvar i timmar efter en push.
+ *
+ * Åldern räknas ur byggstämpeln och kräver INGET nät. Varningen fungerar
+ * därför lika bra i flygplansläge och kan aldrig blockera något.
+ */
+(function () {
+    var sparad = MV.build.moduler;
+    MV.build.moduler = [{ namn: "mv-core", byggd: "2026-06-01 10:00", hash: "x" }];
+
+    eq(MV.byggAlderDagar("2026-06-01 10:00"), 0, "samma dag = noll dagar");
+    eq(MV.byggAlderDagar("2026-06-11 10:00"), 10, "tio dagar räknas rätt");
+    eq(MV.byggAlderDagar("2026-05-01 10:00"), 0,
+       "AVSIKT: en klocka som gått fel bakåt ger 0, inte ett negativt tal");
+
+    MV.config.byggVarningDagar = 30;
+    eq(MV.byggVarning("2026-06-20 10:00"), "", "inom gränsen: ingen varning");
+    ok(MV.byggVarning("2026-08-01 10:00").indexOf("61 dagar") > 0,
+       "över gränsen: varning med antal dagar");
+    ok(MV.byggVarning("2026-08-01 10:00").indexOf("Moduler") > 0,
+       "varningen säger vad man ska göra åt saken");
+
+    MV.config.byggVarningDagar = 0;
+    eq(MV.byggVarning("2027-01-01 10:00"), "",
+       "AVSIKT: 0 stänger av varningen helt");
+    MV.config.byggVarningDagar = 30;
+
+    // Åldern ska synas i versionsrapporten, inte bara i varningen.
+    ok(MV.about({ idag: "2026-06-11 10:00" }).indexOf("10 dagar gammalt") > 0,
+       "MV.about visar åldern");
+    ok(MV.about({ kort: true, idag: "2026-06-11 10:00" }).indexOf("10 dagar") > 0,
+       "även kortformen");
+    ok(MV.about({ idag: "2026-08-01 10:00" }).indexOf("61 dagar gammal") > 0,
+       "och varningen när bygget är gammalt");
+
+    // Ostämplat bygge får inte ge en påhittad ålder.
+    MV.build.moduler = [];
+    eq(MV.byggAlderDagar("2026-06-11 10:00"), -1, "utan stämpel: okänd ålder");
+    eq(MV.byggVarning("2026-06-11 10:00"), "", "och då ingen varning");
+
+    MV.build.moduler = sparad;
+})();
+
+
+/* ================================================================ */
 
 console.log("\n" + passed + " ok, " + failed + " fel");
 process.exitCode = failed ? 1 : 0;

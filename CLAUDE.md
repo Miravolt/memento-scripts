@@ -214,7 +214,7 @@ fa-*.js              projektet fältarbete
   fa-firmware.js     firmwarestatus
 
 tools/
-  test.js            202 tester. REGRESSION = buggen får inte tillbaka.
+  test.js            279 tester. REGRESSION = buggen får inte tillbaka.
                      AVSIKT = beteendet är beslutat, riv det inte.
   mock.js            Memento-simulator. Flaggorna COLD_CREATE och LAZY_MAP
                      återskapar appens egenheter med flit.

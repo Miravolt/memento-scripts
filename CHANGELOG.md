@@ -15,6 +15,24 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **Varning när enheten kör ett gammalt bygge — utan nätverk.**
+  `MV.byggAlderDagar()` räknar dagar sedan byggstämpeln, och `MV.byggVarning()`
+  ger en rad att haka på ett meddelande när gränsen passerats
+  (`MV.config.byggVarningDagar`, 30 som standard, 0 stänger av). Raden hakas på
+  kvittensen efter *skapa* och *avsluta*, och åldern visas i `Version`.
+
+  Poängen är vad den **inte** gör: inget `http()`, ingen `Network`-permission,
+  inget som kan blockera en sparning i flygplansläge. Den besvarar den fråga
+  som går att besvara offline — *hur gammal är den här koden?* — i stället för
+  den som kräver nät: *finns det en nyare?* Enheten hämtar ändå inte moduler av
+  sig själv, så ålder är den signal som betyder något.
+- **`Återställ historik`-action.** Bygger upp `Historiska Fältarbeten` och
+  `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`.
+  Avsedd som engångskörning vid driftsättningen: i driften saknar 676 av 706
+  anläggningar all historik, eftersom länkfältet var bundet till ett gammalt
+  bibliotek och länkningen misslyckades tyst. Torrkörning som standard, lägger
+  bara till länkar, tar aldrig bort någon.
+
 - **`mementools.py links`** — visar vilket bibliotek varje länkfält pekar på.
   Måltabellen ligger i fältets `cnt[0].s` och fältets egen tabell i `lib`;
   exporteras alla bibliotek samtidigt går id:na att lösa upp till namn. Kört på

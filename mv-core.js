@@ -64,6 +64,19 @@ if (!MV.config.theme) MV.config.theme = {
 
 if (MV.config.dateFormat === undefined) MV.config.dateFormat = "YYYY-MM-DD";
 
+/**
+ * Efter hur många dagar ska ett bygge anses gammalt? 0 = varna aldrig.
+ *
+ * Enheten hämtar inte moduler av sig själv, så en enhet som ingen rört kan
+ * mala vidare på månadsgammal kod utan att någon märker det. Åldern räknas ur
+ * byggstämpeln och kräver därför INGEN nätverkskontakt — varningen fungerar
+ * lika bra i flygplansläge, och kan aldrig blockera något.
+ *
+ * Den säger inte att en nyare version finns. Den säger att den här är gammal,
+ * vilket är den fråga man faktiskt kan besvara offline.
+ */
+if (MV.config.byggVarningDagar === undefined) MV.config.byggVarningDagar = 30;
+
 /* -------------------------------------------------------------- *
  * Biblioteksnamn
  *
@@ -146,6 +159,41 @@ MV.avvikande = function () {
 };
 
 /**
+ * Byggets ålder i dagar. -1 om det inte går att avgöra.
+ *
+ * @param idag  valfritt referensdatum, för testbarhet
+ */
+MV.byggAlderDagar = function (idag) {
+    var byggd = MV.byggd();
+    if (!byggd) return -1;
+
+    var d = moment(byggd, "YYYY-MM-DD HH:mm");
+    if (!d.isValid()) return -1;
+
+    var nu = idag ? moment(idag) : moment();
+    var dagar = Math.floor(nu.diff(d, "days"));
+
+    return dagar < 0 ? 0 : dagar;      // klockan kan gå fel åt andra hållet
+};
+
+/**
+ * En rad att haka på ett meddelande när bygget börjar bli gammalt, annars "".
+ *
+ * Medvetet en textrad och ingen dialog: den ska synas i förbifarten, inte
+ * kräva ett klick mitt i ett fältarbete.
+ */
+MV.byggVarning = function (idag) {
+    var grans = MV.config.byggVarningDagar;
+    if (!grans || grans <= 0) return "";
+
+    var dagar = MV.byggAlderDagar(idag);
+    if (dagar < 0 || dagar < grans) return "";
+
+    return "OBS: koden i den här enheten är " + dagar + " dagar gammal. " +
+        "Uppdatera modullistan i Moduler-scriptet.";
+};
+
+/**
  * Läsbar versionsrapport.
  *
  * @param opts { kort: true } -> en rad, för loggar och meddelanden
@@ -157,12 +205,15 @@ MV.about = function (opts) {
     var avvikande = MV.avvikande();
     var byggd = MV.byggd() || "ostämplad";
 
+    var dagar = MV.byggAlderDagar(opts.idag);
+    var alder = dagar < 0 ? "" : " (" + dagar + " dagar gammalt)";
+
     if (opts.kort) {
-        return "Bygge " + byggd + ", " + antal + " moduler" +
+        return "Bygge " + byggd + alder + ", " + antal + " moduler" +
             (avvikande.length > 0 ? " (" + avvikande.length + " AVVIKER)" : "");
     }
 
-    var rader = ["Bygge:   " + byggd, "Moduler: " + antal, ""];
+    var rader = ["Bygge:   " + byggd + alder, "Moduler: " + antal, ""];
 
     for (var i = 0; i < MV.build.moduler.length; i++) {
         var m = MV.build.moduler[i];
@@ -174,6 +225,12 @@ MV.about = function (opts) {
         rader.push("");
         rader.push("Minst en modul är äldre än de andra. Memento har troligen");
         rader.push("en cachad version. Läs om repo-kopplingen i script-editorn.");
+    }
+
+    var varning = MV.byggVarning(opts.idag);
+    if (varning !== "") {
+        rader.push("");
+        rader.push(varning);
     }
     return rader.join("\n");
 };
@@ -304,4 +361,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 08:52", hash: "9e6406a" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 09:54", hash: "1ec5e12" });

@@ -1040,8 +1040,10 @@ MV.Faltarbete.avslutaMedDialog = function (entryObj) {
     var t = MV.Faltarbete.TEXTER;
 
     if (res.ok) {
+        // Byggvarningen hakas på kvittensen i stället för att bli en egen ruta.
+        // Den ska synas i förbifarten, inte kräva ett klick mitt i ett jobb.
         MV.util.say("Fältarbetet har uppdaterats till anläggningen och låsts! (" +
-            res.andringar + " ändring(ar))");
+            res.andringar + " ändring(ar))" + MV.Faltarbete._byggSuffix());
     } else if (res.reason === "last") {
         MV.ui.info(t.last.titel, t.last.text);
     } else if (res.reason === "validering") {
@@ -1068,7 +1070,7 @@ MV.Faltarbete.skapaMedDialog = function (anlaggning, opts) {
         MV.util.say("Fältarbete skapat och länkat!" +
             (res.historik > 0
                 ? " " + res.historik + " tidigare fältarbete(n) sammanfattade."
-                : ""));
+                : "") + MV.Faltarbete._byggSuffix());
     } else if (res.reason === "redan-aktivt") {
         MV.ui.info(t.redanAktivt.titel, t.redanAktivt.text);
     } else {
@@ -1077,6 +1079,12 @@ MV.Faltarbete.skapaMedDialog = function (anlaggning, opts) {
     return res;
 };
 
+
+/** Byggvarningen som ett suffix till ett meddelande, eller "". */
+MV.Faltarbete._byggSuffix = function () {
+    var v = MV.byggVarning();
+    return v === "" ? "" : "\n\n" + v;
+};
 
 /** Ser värdet ut som ett länkfält (array av entries, eller ett entry)? */
 MV.Faltarbete._arLankfalt = function (value) {
@@ -1088,4 +1096,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-11 08:52", hash: "edb18cd" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-11 09:54", hash: "da662a2" });
