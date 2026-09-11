@@ -410,8 +410,11 @@ den.
 - **M4.** Vad händer i flygplansläge när connectorns data behövs? Tomt värde
   och vidare, eller en väntan? En väntan som kan blockera en sparning gör
   connectorn oanvändbar på samma sätt som `http()` i en trigger.
-- **M5.** Finns connectorn på Android, eller bara på desktop? Hjälpsidans
-  rubrik nämner Desktop app, vilket är oroande men inte ett besked.
+- **M5. BESVARAD 11 sep: connectorn finns inte på Android.** *Edit library* på
+  telefonen har bara flikarna MAIN, FIELDS, AGGREGATION, AUTOFILL och NOTES —
+  ingen Connectors. Den går alltså bara att **konfigurera** på desktop. Om en
+  connector som satts upp på desktop sedan *körs* på telefonen är en annan
+  fråga, och den ingår i M6.
 - **M6.** Blir hämtad data ett vanligt entry som **synkas** till andra enheter,
   eller hämtar varje enhet för sig? Synkas det är frågan i praktiken löst.
 
@@ -428,6 +431,33 @@ på desktop och telefon, med och utan täckning.
 Rättighetsfrågan är däremot **besvarad**: script-permissions deklareras i
 strukturen och godkänns av användaren själv vid första körningen. `Network`
 och fil kostar alltså en dialogruta per enhet, inte en ägarinsats.
+
+#### Bygg det i två steg, med desktop först
+
+Jimmys observation 11 sep, och den ändrar hela ordningen: **import och avslut
+görs alltid från desktop**, liksom det mesta arbetet som inte kräver att någon
+är på plats. Varje ärende passerar alltså en dator minst två gånger.
+
+**Steg 1 — bara desktop. Ingen bärare behövs alls.**
+Datorn hämtar `senaste.json` och jämför mot sitt eget bygge. Punkt. Ingen
+synk, inget entry, inget att bestämma om var markören ska bo, inget som rör
+telefonerna. Det är den minsta möjliga version som ger verkligt värde, och den
+täcker den maskin där mest arbete sker och där en felaktig import kostar mest.
+Hämtningen görs där en paus är begriplig — `Version`, eller `Lägg upp` som
+redan tar tid och alltid körs inomhus med täckning.
+
+Alla tre riskerna vi oroat oss för försvinner i steg 1: connectorn behöver inte
+finnas på Android, `Network` behöver bara godkännas på datorn, och
+flygplansläge är inte ett realistiskt läge för en kontorsdator.
+
+**Steg 2 — låt datorn förmedla vidare.**
+Först om telefonerna visar sig glida isär i praktiken: datorn skriver det den
+hämtat till ett entry, som synkas ut som vanlig data. Telefonerna läser bara
+lokalt, utan nät, utan `Network`-permission, utan fil. Då — och först då —
+måste frågan om var entryt ska bo besvaras.
+
+Poängen med uppdelningen är att steg 1 kan byggas och driftsättas utan att en
+enda av de öppna frågorna behöver besvaras.
 
 **Detta är nu den enda vägen framåt, inte ett tillägg.** Åldersvarningen som
 byggdes först är avstängd som standard (11 sep), eftersom den mäter fel sak:
