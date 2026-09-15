@@ -38,7 +38,7 @@ Suffixet är inte kosmetik. Koden härleder vilken uppsättning den arbetar i ur
 namnet på det bibliotek den körs i, så lika suffix håller kopiorna för sig
 själva. Blandade suffix gör att en körning i kopian kan nå driften.
 
-* [ ] Alla fyra kopior har samma suffix
+* [x] Alla fyra kopior har samma suffix
 
 * [x] Exportera dem som `.mlt2` och kontrollera länkmålen med:
 
@@ -164,7 +164,7 @@ visar vad den skulle göra innan något skrivs, och den *lägger bara till* län
 Räkna med **30–60 minuter**. Avbryt hellre mitt i än gissa — se *Om något ser
 fel ut* sist.
 
----
+***
 
 ## Så här är biblioteksavsnitten uppbyggda
 
@@ -172,16 +172,16 @@ B1 till B4 är ett bibliotek var, och alla fyra har **samma åtta steg i samma
 ordning**. Ordningen följer appen: först strukturredigeraren, sedan
 Automation-dialogen uppifrån och ner, och sist raderingarna.
 
-| | Steg | Var i appen |
-|---|---|---|
-| 1 | Fält och länkfält | *Edit library → Fields* |
-| 2 | Knappfält | *Edit library → Fields*, i kortets ordning |
-| 3 | `Moduler` | *Automation → Shared* |
-| 4 | Triggers | *Automation → Triggers* |
-| 5 | Actions | *Automation → Actions* |
-| 6 | Permissions | *Automation → Permissions*, längst ner |
-| 7 | Radera de gamla scripten | *Automation* |
-| 8 | Kontroll innan du går vidare | `Version` |
+| <br /> | Steg                         | Var i appen                                |
+| ------ | ---------------------------- | ------------------------------------------ |
+| 1      | Fält och länkfält            | *Edit library → Fields*                    |
+| 2      | Knappfält                    | *Edit library → Fields*, i kortets ordning |
+| 3      | `Moduler`                    | *Automation → Shared*                      |
+| 4      | Triggers                     | *Automation → Triggers*                    |
+| 5      | Actions                      | *Automation → Actions*                     |
+| 6      | Permissions                  | *Automation → Permissions*, längst ner     |
+| 7      | Radera de gamla scripten     | *Automation*                               |
+| 8      | Kontroll innan du går vidare | `Version`                                  |
 
 **Ett bibliotek klart i taget.** Gå inte vidare till nästa förrän steg 8 stämmer.
 
@@ -204,30 +204,24 @@ ingenting ändras — bara scriptet.
 
 ### Modullistan är densamma i alla bibliotek
 
-Nio rader, i den ordning Memento visar dem — `moment.min.js` överst, våra åtta
-i bokstavsordning under:
+**Listan står utskriven på plats i varje biblioteks steg 3** — du behöver inte
+bläddra tillbaka hit. Det här är bara bakgrunden till varför den ser ut som den
+gör.
 
-- [ ] `moment.min.js` — **Mementos egen, ligger inte i vårt repo.** Den ligger
-  alltid **överst**, före våra, eftersom den är intern i appen. Alla våra heter
-  `mv-*` eller `fa-*`.
-- [ ] `fa-anteckning.js`
-- [ ] `fa-faltarbete.js`
-- [ ] `fa-firmware.js`
-- [ ] `fa-import.js`
-- [ ] `mv-core.js`
-- [ ] `mv-db.js`
-- [ ] `mv-format.js`
-- [ ] `mv-logg.js`
+Nio moduler, samma nio överallt. Att bocka i alla i alla bibliotek är avsiktligt:
+en modul för mycket kostar ingenting, medan tre olika listor att hålla isär
+kostar varje gång något ändras.
 
-Att bocka i alla nio överallt är avsiktligt. En modul för mycket kostar
-ingenting, medan tre olika listor att hålla isär kostar varje gång något ändras.
+`moment.min.js` ligger alltid **överst**, före våra, eftersom den är Mementos
+egen och intern i appen. Våra åtta sorteras i bokstavsordning under den och
+heter alla `mv-*` eller `fa-*`.
 
 **Bocka bara i dem på `Moduler`.** Bibliotek som bockas i på ett *Shared*-script
 blir tillgängliga för alla script i biblioteket. Bockas de i på fler ställen
 läses varje fil in flera gånger, och `Version` börjar rapportera 16 eller 24
 moduler i stället för 8.
 
----
+***
 
 ## B0. Säkerhetskopia
 
@@ -237,30 +231,37 @@ Två kopior, som skyddar mot olika saker. Ta båda.
 
 **a) En full kopia med data — görs i Android-appen.**
 
-- [ ] Långtryck på biblioteket → *Kopiera* → **struktur med data**, för vart och
-  ett av de fyra biblioteken, med dagens datum i namnet
-- [ ] Kontrollera att kopiorna har lika många poster som originalen
-
 Detta är den kopia som kan rädda dig om något går fel. **B6** skriver länkar
 mellan entries, och en strukturkopia hade inte kunnat lägga tillbaka dem.
 Kopiering går bara att göra från Android; desktop kan det inte.
 
-**b) En template-export — desktop eller telefon.**
+* [x] Långtryck på biblioteket → *Kopiera* → **struktur med data**, för vart och
+  ett av de fyra biblioteken, med dagens datum i namnet
 
-- [ ] För vart och ett av de fyra biblioteken: *Library menu → Export →
-  Template*, med dagens datum i filnamnet
-- [ ] Kontrollera att alla fyra filer finns och är större än noll byte
+* [x] Kontrollera att kopiorna har lika många poster som originalen
+
+**b) En template-export — desktop eller telefon.**
 
 Template-exporten är struktur och script, ingen data. Den är den snabba vägen
 tillbaka om en strukturändring blir fel. Den ersätter inte a).
 
----
+* [x] För vart och ett av de fyra biblioteken: *Library menu → Export →
+  Template*, med dagens datum i filnamnet
+
+* [x] Kontrollera att alla fyra filer finns och är större än noll byte
+
+***
 
 ## B1. Fältarbete
 
 ### 1. Fält och länkfält
 
-- [ ] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**,
+> **Länkfälten är det farligaste i hela dokumentet.** De binder mot bibliotekets
+> *id*, inte dess namn — ett fält kan alltså peka på ett helt annat bibliotek än
+> det som står i fältets namn. Pekar ett av dem fel skrivs data på fel ställe,
+> utan felmeddelande. Kontrollera vart och ett.
+
+* [x] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**,
   på en egen flik
 
   Här skrivs sammanfattningen av anläggningens tidigare ärenden när ett nytt
@@ -269,81 +270,93 @@ tillbaka om en strukturändring blir fel. Den ersätter inte a).
   `Logg` i stället; det är en nödutgång så att inget går förlorat, inte ett
   alternativ.
 
-- [ ] **`Koppling till anläggning`** → pekar på **Anläggningar** i samma
+* [x] **`Koppling till anläggning`** → pekar på **Anläggningar** i samma
   uppsättning
-- [ ] **`Nyckel`** och **`Lookup`** → pekar på **Nyckelregister** i samma
+
+* [x] **`Nyckel`** och **`Lookup`** → pekar på **Nyckelregister** i samma
   uppsättning
-- [ ] **`Historiska Fältarbeten`**, om det finns kvar: lämna det som det är
+
+* [x] **`Historiska Fältarbeten`**, om det finns kvar: lämna det som det är
 
   Koden använder det inte längre, och det kan ändå inte fungera — ett
   länkfält kan inte peka på sitt eget bibliotek, så ett fältarbete kan aldrig
   länka till andra fältarbeten. Att den gamla pekaren ligger kvar är ofarligt.
 
-> **Länkfälten är det farligaste i hela dokumentet.** De binder mot bibliotekets
-> *id*, inte dess namn — ett fält kan alltså peka på ett helt annat bibliotek än
-> det som står i fältets namn. Pekar ett av dem fel skrivs data på fel ställe,
-> utan felmeddelande. Kontrollera vart och ett.
-
 ### 2. Knappfält
+
+**Knappfältens kod når man genom att redigera strukturen och öppna fältet** —
+den ligger inte i Automation-dialogen som de andra scripten.
 
 I kortets ordning, uppifrån och ner. Byt ut koden i vart och ett.
 
-- [ ] **`Lägg till datum i kommentar`**
+* [x] **`Lägg till datum i kommentar`**
 
   ```js
   MV.Anteckning.laggTillDatumIKommentar();
   ```
 
-- [ ] **`Spara anteckning`**
+* [x] **`Spara anteckning`**
 
   ```js
   MV.Anteckning.spara();
   ```
 
-- [ ] **`Hämta anteckning för valt datum`**
+* [x] **`Hämta anteckning för valt datum`**
 
   ```js
   MV.Anteckning.hamta();
   ```
 
-- [ ] **`Spara ändringar och avsluta Fältarbete`**
+* [x] **`Spara ändringar och avsluta Fältarbete`**
 
   ```js
   MV.Faltarbete.avslutaMedDialog();
   ```
 
-Knappfältens kod når man genom att **redigera strukturen** och öppna fältet —
-den ligger inte i Automation-dialogen som de andra scripten.
-
 ### 3. Automation → Shared → `Moduler`
 
-- [ ] *Automation* → *Script* → nytt **Shared**-script, döp det `Moduler`
-- [ ] Panelen **JavaScript Libraries** → penn-ikonen → **+ Add URL** →
-  **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
-- [ ] Bocka i alla nio enligt listan ovan
-- [ ] Koden i scriptet ska vara **tom**. Spara.
-- [ ] Kontrollera att det bara finns **ett** script som heter `Moduler`
+* [x] *Automation* → *Script* → nytt **Shared**-script, döp det `Moduler`
 
-  *Appen hindrar inte två script med samma namn. Två `Moduler` laddar varje
+* [x] Panelen **JavaScript Libraries** → penn-ikonen → **+ Add URL** →
+  **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
+
+* [ ] Bocka i dessa nio. `moment.min.js` ligger **överst** — den är Mementos
+  egen; våra åtta står i bokstavsordning under den.
+
+  - [ ] `moment.min.js`
+  - [ ] `fa-anteckning.js`
+  - [ ] `fa-faltarbete.js`
+  - [ ] `fa-firmware.js`
+  - [ ] `fa-import.js`
+  - [ ] `mv-core.js`
+  - [ ] `mv-db.js`
+  - [ ] `mv-format.js`
+  - [ ] `mv-logg.js`
+
+* [x] Koden i scriptet ska vara **tom**. Spara.
+
+* [x] Kontrollera att det bara finns **ett** script som heter `Moduler`
+
+  *Appen hindrar inte två script med samma namn. Två* *`Moduler`* *laddar varje
   modul två gånger.*
 
 ### 4. Automation → Triggers
 
-- [ ] **`Updating a field - Before saving the entry - Update Firmware Status`**
+* [x] **`Updating a field - Before saving the entry - Update Firmware Status`**
   — `Updating a field` → `Before saving the entry`
 
   ```js
   MV.Firmware.syncStatus();
   ```
 
-- [ ] **`Updating an entry - Before saving the entry`**
+* [x] **`Updating an entry - Before saving the entry`**
   — `Updating an entry` → `Before saving the entry`
 
   ```js
   MV.Faltarbete.loggaAndringar();
   ```
 
-- [ ] **`Updating an entry - Before saving the entry - Update Firmware Status`**
+* [x] **`Updating an entry - Before saving the entry - Update Firmware Status`**
   — `Updating an entry` → `Before saving the entry`
 
   ```js
@@ -351,9 +364,9 @@ den ligger inte i Automation-dialogen som de andra scripten.
   ```
 
   *De två ovan har samma Event och samma fas. Skilj dem åt på namnet: bara
-  den här slutar med `- Update Firmware Status`.*
+  den här slutar med* *`- Update Firmware Status`.*
 
-- [ ] **`Set Logg Datum`**
+* [x] **`Set Logg Datum`**
   — `Updating an entry` → `Opening an Entry Edit card`
 
   ```js
@@ -362,7 +375,7 @@ den ligger inte i Automation-dialogen som de andra scripten.
 
 ### 5. Automation → Actions
 
-- [ ] **`Version`** — ny, typ **Library action**
+* [x] **`Version`** — ny, typ **Library action**
 
   ```js
   MV.ui.info("Version", MV.about());
@@ -370,65 +383,69 @@ den ligger inte i Automation-dialogen som de andra scripten.
 
 ### 6. Automation → Permissions
 
-Längst ner i script-listan, under *Logs*.
+Panelen sitter **längst ner** i script-listan, under *Logs*.
 
-- [ ] **Library permission** → **Fältarbete**, **Anläggningar**,
+Saknas en rättighet kastar Memento en `PermissionError` och scriptet avbryts.
+Det är den vanligaste orsaken till att ett script "inte gör något". Bibliotek
+som inget script rör — arkiv, kartbibliotek och liknande — lämnas obockade.
+
+* [ ] **Library permission** → **Fältarbete**, **Anläggningar**,
   **Nyckelregister** — samma uppsättning, alla tre
-- [ ] *Read files*, *Write files* och *Network* ska vara **obockade**
 
-Bibliotek som inget script rör — arkiv, kartbibliotek och liknande — lämnas
-obockade.
-
-> Saknas en rättighet kastar Memento en `PermissionError`, och scriptet avbryts.
-> Det är den vanligaste orsaken till att ett script "inte gör något".
+* [ ] *Read files*, *Write files* och *Network* ska vara **obockade**
 
 ### 7. Radera de gamla scripten
-
-- [ ] Shared: **`LoggWriter`** — ligger nu i `mv-logg.js`
-- [ ] Shared: **`FirmwareSync`** — ligger nu i `fa-firmware.js`
-- [ ] Action: **`Flyttad till knapp - - Spara ändringar och avsluta Fältarbete`**
-  — avstängd dubblett, flyttad till knappfältet
 
 Ordningen spelar ingen roll: `appendToLog()` och `updateFirmwareStatus()` finns
 kvar som shims i modulerna, så inget slutar fungera mitt i.
 
+* [ ] Shared: **`LoggWriter`** — ligger nu i `mv-logg.js`
+
+* [ ] Shared: **`FirmwareSync`** — ligger nu i `fa-firmware.js`
+
+* [ ] Action: **`Flyttad till knapp - - Spara ändringar och avsluta Fältarbete`**
+  — avstängd dubblett, flyttad till knappfältet
+
 ### 8. Kontroll innan du går vidare
 
-- [ ] Kör **`Version`** → **8 moduler**, samma byggtid på alla
+* [ ] Kör **`Version`** → **8 moduler**, samma byggtid på alla
 
   *Säger den 16 eller 24 är modulerna ibockade på fler än ett script. Säger
   den att någon modul AVVIKER har appen en cachad version.*
 
-- [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
+* [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
   *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
   `Moduler`
 
-- [ ] Öppna ett entry → kortet ser normalt ut
-- [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
+* [ ] Öppna ett entry → kortet ser normalt ut
 
----
+* [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
+
+***
 
 ## B2. Anläggningar
 
 ### 1. Fält och länkfält
 
-- [ ] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → pekar på
-  **Fältarbete** i samma uppsättning
-- [ ] **`Nyckel`** → pekar på **Nyckelregister** i samma uppsättning
+Inga nya fält behövs här — bara kontroll av att länkfälten pekar rätt. Samma
+varning som i B1 gäller: de binder mot bibliotekets *id*, inte dess namn.
 
-Inga nya fält behövs här.
+* [ ] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → pekar på
+  **Fältarbete** i samma uppsättning
+
+* [ ] **`Nyckel`** → pekar på **Nyckelregister** i samma uppsättning
 
 ### 2. Knappfält
 
 I kortets ordning.
 
-- [ ] **`Spara anteckning`**
+* [ ] **`Spara anteckning`**
 
   ```js
   MV.Anteckning.spara();
   ```
 
-- [ ] **`Hämta anteckning för valt datum`**
+* [ ] **`Hämta anteckning för valt datum`**
 
   ```js
   MV.Anteckning.hamta();
@@ -436,24 +453,46 @@ I kortets ordning.
 
 ### 3. Automation → Shared → `Moduler`
 
-- [ ] Samma som B1 steg 3: nytt Shared-script `Moduler`, repot tillagt, alla
-  nio ibockade, tom kod, **bara ett** script med det namnet
+* [ ] *Automation* → *Script* → nytt **Shared**-script, döp det `Moduler`
+
+* [ ] Panelen **JavaScript Libraries** → penn-ikonen → **+ Add URL** →
+  **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
+
+* [ ] Bocka i dessa nio. `moment.min.js` ligger **överst** — den är Mementos
+  egen; våra åtta står i bokstavsordning under den.
+
+  - [ ] `moment.min.js`
+  - [ ] `fa-anteckning.js`
+  - [ ] `fa-faltarbete.js`
+  - [ ] `fa-firmware.js`
+  - [ ] `fa-import.js`
+  - [ ] `mv-core.js`
+  - [ ] `mv-db.js`
+  - [ ] `mv-format.js`
+  - [ ] `mv-logg.js`
+
+* [ ] Koden i scriptet ska vara **tom**. Spara.
+
+* [ ] Kontrollera att det bara finns **ett** script som heter `Moduler`
+
+  *Appen hindrar inte två script med samma namn. Två `Moduler` laddar varje
+  modul två gånger.*
 
 ### 4. Automation → Triggers
 
-- [ ] **`Set Logg Datum`**
+* [ ] **`Set Logg Datum`**
   — `Opening an Entry View card`, i fasen **före** kortet visas
 
   ```js
   MV.Logg.setDatum();
   ```
 
-  *Anläggningars `Set Logg Datum` har ett annat Event än Fältarbetes med
+  *Anläggningars* *`Set Logg Datum`* *har ett annat Event än Fältarbetes med
   samma namn. Det är avsiktligt.*
 
 ### 5. Automation → Actions
 
-- [ ] **`Nytt Fältarbete`** — finns redan, typ **Entry action**
+* [ ] **`Nytt Fältarbete`** — finns redan, typ **Entry action**
 
   ```js
   MV.Faltarbete.skapaMedDialog(entry(), {
@@ -461,13 +500,13 @@ I kortets ordning.
   });
   ```
 
-- [ ] **`Version`** — ny, typ **Library action**
+* [ ] **`Version`** — ny, typ **Library action**
 
   ```js
   MV.ui.info("Version", MV.about());
   ```
 
-- [ ] **`Granska`** — ny, typ **Library action**. Valfri men rekommenderad.
+* [ ] **`Granska`** — ny, typ **Library action**. Valfri men rekommenderad.
 
   ```js
   MV.Faltarbete.granskaMedDialog();
@@ -477,7 +516,7 @@ I kortets ordning.
   som inte går att kontrollera för hand med hundratals anläggningar. Läser
   bara, skriver aldrig.
 
-- [ ] **`Återställ historik`** — ny, typ **Library action**. Används i **B6**.
+* [ ] **`Återställ historik`** — ny, typ **Library action**. Används i **B6**.
 
   ```js
   MV.Faltarbete.aterstallHistorikMedDialog();
@@ -485,33 +524,41 @@ I kortets ordning.
 
 ### 6. Automation → Permissions
 
-- [ ] **Library permission** → **Anläggningar**, **Fältarbete**,
+Panelen sitter **längst ner** i script-listan, under *Logs*.
+
+Saknas en rättighet kastar Memento en `PermissionError` och scriptet avbryts.
+Det är den vanligaste orsaken till att ett script "inte gör något". Bibliotek
+som inget script rör — arkiv, kartbibliotek och liknande — lämnas obockade.
+
+* [ ] **Library permission** → **Anläggningar**, **Fältarbete**,
   **Nyckelregister**
-- [ ] *Read files*, *Write files* och *Network* obockade
+
+* [ ] *Read files*, *Write files* och *Network* obockade
 
 ### 7. Radera de gamla scripten
 
-- [ ] Shared: **`Shared_LoggWriter`** — identisk kopia av `LoggWriter`, ligger nu
+* [ ] Shared: **`Shared_LoggWriter`** — identisk kopia av `LoggWriter`, ligger nu
   i `mv-logg.js`
 
 ### 8. Kontroll innan du går vidare
 
-- [ ] Kör **`Version`** → **8 moduler**, samma byggtid
-- [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
+* [ ] Kör **`Version`** → **8 moduler**, samma byggtid
+
+* [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
   *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
   `Moduler`
 
-- [ ] Kör **`Granska`** → den ska svara med siffror, inte med ett fel
+* [ ] Kör **`Granska`** → den ska svara med siffror, inte med ett fel
 
   *Går den inte alls: kontrollera Library permission innan du letar vidare.*
 
----
+***
 
 ## B3. Import Fältarbete
 
 ### 1. Fält och länkfält
 
-- [ ] **`Befintlig`** → pekar på **Anläggningar** i samma uppsättning
+* [ ] **`Befintlig`** → pekar på **Anläggningar** i samma uppsättning
 
 ### 2. Knappfält
 
@@ -519,11 +566,34 @@ Inga.
 
 ### 3. Automation → Shared → `Moduler`
 
-- [ ] Samma som B1 steg 3
+* [ ] *Automation* → *Script* → nytt **Shared**-script, döp det `Moduler`
+
+* [ ] Panelen **JavaScript Libraries** → penn-ikonen → **+ Add URL** →
+  **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
+
+* [ ] Bocka i dessa nio. `moment.min.js` ligger **överst** — den är Mementos
+  egen; våra åtta står i bokstavsordning under den.
+
+  - [ ] `moment.min.js`
+  - [ ] `fa-anteckning.js`
+  - [ ] `fa-faltarbete.js`
+  - [ ] `fa-firmware.js`
+  - [ ] `fa-import.js`
+  - [ ] `mv-core.js`
+  - [ ] `mv-db.js`
+  - [ ] `mv-format.js`
+  - [ ] `mv-logg.js`
+
+* [ ] Koden i scriptet ska vara **tom**. Spara.
+
+* [ ] Kontrollera att det bara finns **ett** script som heter `Moduler`
+
+  *Appen hindrar inte två script med samma namn. Två `Moduler` laddar varje
+  modul två gånger.*
 
 ### 4. Automation → Triggers
 
-- [ ] **`Lägg in koordinater`**
+* [ ] **`Lägg in koordinater`**
   — `Updating an entry` → `Before saving the entry`
 
   ```js
@@ -532,19 +602,19 @@ Inga.
 
 ### 5. Automation → Actions
 
-- [ ] **`Hitta befintliga`** — finns redan, typ **Library action**
+* [ ] **`Hitta befintliga`** — finns redan, typ **Library action**
 
   ```js
   MV.Import.hittaBefintliga();
   ```
 
-- [ ] **`Lägg upp`** — finns redan, typ **Library action**
+* [ ] **`Lägg upp`** — finns redan, typ **Library action**
 
   ```js
   MV.Import.laggUpp();
   ```
 
-- [ ] **`Version`** — ny, typ **Library action**
+* [ ] **`Version`** — ny, typ **Library action**
 
   ```js
   MV.ui.info("Version", MV.about());
@@ -552,12 +622,19 @@ Inga.
 
 ### 6. Automation → Permissions
 
-- [ ] **Library permission** → **alla fyra**: Import Fältarbete, Anläggningar,
-  Fältarbete, Nyckelregister
-- [ ] *Read files*, *Write files* och *Network* obockade
+Panelen sitter **längst ner** i script-listan, under *Logs*.
 
-*Import behöver alla fyra eftersom `Lägg upp` skapar anläggningen, därefter
-fältarbetet, och länkar in nyckeln.*
+Saknas en rättighet kastar Memento en `PermissionError` och scriptet avbryts.
+Det är den vanligaste orsaken till att ett script "inte gör något". Bibliotek
+som inget script rör — arkiv, kartbibliotek och liknande — lämnas obockade.
+
+Import behöver **alla fyra** eftersom `Lägg upp` skapar anläggningen, därefter
+fältarbetet, och länkar in nyckeln.
+
+* [ ] **Library permission** → Import Fältarbete, Anläggningar, Fältarbete,
+  Nyckelregister
+
+* [ ] *Read files*, *Write files* och *Network* obockade
 
 ### 7. Radera de gamla scripten
 
@@ -565,46 +642,48 @@ Inga.
 
 ### 8. Kontroll innan du går vidare
 
-- [ ] Kör **`Version`** → **8 moduler**, samma byggtid
-- [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
+* [ ] Kör **`Version`** → **8 moduler**, samma byggtid
+
+* [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
   *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
   `Moduler`
 
   *Det räcker att en enda modul ligger kvar på ett enskilt script för att
-  räkningen ska bli fel. Har `Version` sagt 8 är det redan bevisat, men det
+  räkningen ska bli fel. Har* *`Version`* *sagt 8 är det redan bevisat, men det
   här steget hittar en modul som är ibockad men ännu inte hunnit störa.*
 
----
+***
 
 ## B4. Nyckelregister
 
 Inga script, inga triggrar, inga knappfält, inga rättigheter.
 
-- [ ] Kontrollera bara att de andra bibliotekens `Nyckel`-fält pekar hit, och
+* [ ] Kontrollera bara att de andra bibliotekens `Nyckel`-fält pekar hit, och
   inte på ett Nyckelregister i en annan uppsättning
 
----
+***
 
 ## B5. Varje enhet
 
 Två saker synkroniseras **inte** mellan enheter och måste göras på varje telefon
-och varje dator som används:
+och varje dator som används.
 
-- [ ] **Script-permissions** godkänns — varje användare får frågan första gången
+En enhet som missas slutar fungera tyst medan de andra fungerar. Det är den
+svåraste felkällan i hela upplägget, eftersom allt ser rätt ut tills någon
+faktiskt kör något just där — gå igenom enheterna en och en och bocka av.
+
+* [ ] **Script-permissions** godkänns — varje användare får frågan första gången
   scripten körs på sin enhet
-- [ ] I `Moduler`: klicka **uppdateringsknappen** vid bibliotekslistan
+
+* [ ] I `Moduler`: klicka **uppdateringsknappen** vid bibliotekslistan
 
   *Desktop: den runda pilen ovanför listan. Android: längst ner till höger
   under listan.*
 
-- [ ] Kör **`Version`** med täckning och kontrollera att byggtiden stämmer med
+* [ ] Kör **`Version`** med täckning och kontrollera att byggtiden stämmer med
   de andra enheterna
 
   *Körningen fyller också cachen, så att enheten fungerar offline efteråt.*
-
-En enhet som missas slutar fungera tyst medan de andra fungerar. Det är den
-svåraste felkällan i hela upplägget, eftersom allt ser rätt ut tills någon
-faktiskt kör något just där.
 
 > **Uppdateringsknappen sitter på script-sidan, och den når bara den som äger
 > biblioteket.** En vanlig användare kan alltså inte hämta in nya moduler själv,
@@ -612,7 +691,7 @@ faktiskt kör något just där.
 > inget problem — det är du som äger biblioteken. Men **varje framtida
 > kodändring kan kräva att du gör om B5 på de berörda enheterna.**
 
----
+***
 
 ## B6. Återställ historiken — engångskörning
 
@@ -627,77 +706,86 @@ själv vilken anläggning det hör till, så inget behöver skrivas in för hand
 
 ### Före
 
-- [ ] Kör **`Granska`** och anteckna siffrorna: antal anläggningar, antal
+* [ ] Kör **`Granska`** och anteckna siffrorna: antal anläggningar, antal
   fältarbeten
-- [ ] Anteckna hur många anläggningar som har en historik idag
+
+* [ ] Anteckna hur många anläggningar som har en historik idag
 
 ### Torrkörning
 
-- [ ] Kör **`Återställ historik`**. Standardläget är torrkörning — den rapporterar
+Funktionen **lägger bara till** länkar. Den tar aldrig bort någon, och den rör
+inga fältvärden. Körs den två gånger händer ingenting den andra gången.
+
+* [ ] Kör **`Återställ historik`**. Standardläget är torrkörning — den rapporterar
   vad den *skulle* göra och skriver ingenting.
 
 Rapporten ska stämma med detta för att vara rimlig:
 
-| Rapporten säger | Ska ungefär motsvara |
-|---|---|
-| antal fältarbeten | samma siffra som `Granska` gav |
+| Rapporten säger               | Ska ungefär motsvara              |
+| ----------------------------- | --------------------------------- |
+| antal fältarbeten             | samma siffra som `Granska` gav    |
 | historiklänkar att lägga till | antalet **avslutade** fältarbeten |
-| aktiva länkar att lägga till | antalet **pågående** fältarbeten |
-| redan OK | de som redan är länkade |
-| utan koppling | ska vara **noll eller nära noll** |
-| misslyckade | ska vara **noll** |
+| aktiva länkar att lägga till  | antalet **pågående** fältarbeten  |
+| redan OK                      | de som redan är länkade           |
+| utan koppling                 | ska vara **noll eller nära noll** |
+| misslyckade                   | ska vara **noll**                 |
 
-- [ ] **Är "misslyckade" större än noll — stanna och säg till.** Gå inte vidare.
-- [ ] Är "utan koppling" oväntat stort: det är fältarbeten som saknar
+* [ ] **Är "misslyckade" större än noll — stanna och säg till.** Gå inte vidare.
+
+* [ ] Är "utan koppling" oväntat stort: det är fältarbeten som saknar
   `Koppling till anläggning`. De går inte att länka, och det är inte ett fel
   i scriptet — men det är värt att veta varför de finns.
 
 ### Skarp körning
 
-- [ ] Ändra raden i scriptet till:
+* [ ] Ändra raden i scriptet till:
 
   ```js
   MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });
   ```
 
-- [ ] Kör igen. Rapporten ska nu visa samma siffror som torrkörningen, men som
+* [ ] Kör igen. Rapporten ska nu visa samma siffror som torrkörningen, men som
   utfört.
 
 ### Efter
 
-- [ ] Öppna tre eller fyra anläggningar som du vet har haft ärenden → historiken
+* [ ] Öppna tre eller fyra anläggningar som du vet har haft ärenden → historiken
   finns där
-- [ ] Öppna en anläggning med ett pågående ärende → `Aktivt Fältarbete` pekar rätt
-- [ ] Kör **`Granska`** igen → inga länkar pekar ut ur uppsättningen
-- [ ] **Ändra tillbaka scriptet** till torrkörningsraden, så att en oavsiktlig
+
+* [ ] Öppna en anläggning med ett pågående ärende → `Aktivt Fältarbete` pekar rätt
+
+* [ ] Kör **`Granska`** igen → inga länkar pekar ut ur uppsättningen
+
+* [ ] **Ändra tillbaka scriptet** till torrkörningsraden, så att en oavsiktlig
   körning i framtiden inte skriver något:
 
   ```js
   MV.Faltarbete.aterstallHistorikMedDialog();
   ```
 
-Funktionen **lägger bara till** länkar. Den tar aldrig bort någon, och den rör
-inga fältvärden. Körs den två gånger händer ingenting den andra gången.
-
----
+***
 
 ## B7. Ett riktigt ärende
 
 Välj **en** anläggning som har tidigare ärenden och följ den hela vägen.
 
-- [ ] Kör `Nytt Fältarbete` → ett fältarbete skapas, och anläggningens
+* [ ] Kör `Nytt Fältarbete` → ett fältarbete skapas, och anläggningens
   `Aktivt Fältarbete` pekar på det
-- [ ] `Tidigare fältarbeten` visar de gamla ärendena
-- [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
-- [ ] Ändra `Firmware` och spara → `Firmware Status` hamnar i `Logg`
-- [ ] Avsluta ärendet → anläggningen uppdateras, ärendet låses och hamnar i
+
+* [ ] `Tidigare fältarbeten` visar de gamla ärendena
+
+* [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
+
+* [ ] Ändra `Firmware` och spara → `Firmware Status` hamnar i `Logg`
+
+* [ ] Avsluta ärendet → anläggningen uppdateras, ärendet låses och hamnar i
   anläggningens historik
 
 **Sista frågan, och den enda som avgör: har något blivit sämre än förut?**
 
 Är svaret nej är driftsättningen godkänd.
 
----
+***
 
 ## Om något ser fel ut
 
@@ -716,11 +804,13 @@ Välj **en** anläggning som har tidigare ärenden och följ den hela vägen.
 Koden som hämtas utifrån kan inte göra något i sig — den kör ingenting förrän
 ett script i biblioteket anropar den.
 
----
+***
 
 ## Efteråt
 
-- [ ] Ny template-export av alla fyra bibliotek, sparad som "efter"-läge
-- [ ] Bestäm **vem som får ändra strukturen framöver**. Kodändringar sker utanför
+* [ ] Ny template-export av alla fyra bibliotek, sparad som "efter"-läge
+
+* [ ] Bestäm **vem som får ändra strukturen framöver**. Kodändringar sker utanför
   biblioteken och kräver ingen behörighet — men ett nytt fält eller ett nytt
   script gör det, och då behövs den här rundan igen.
+

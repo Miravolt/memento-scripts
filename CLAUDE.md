@@ -202,6 +202,23 @@ för att den fanns kvar på Jimmys disk.
 Använd `Edit` med exakt sträng. Skriver du ändå ett script: hävda antalet
 träffar först, och avbryt om det inte stämmer.
 
+### Dokument som någon följer steg för steg
+
+`DRIFTSATTNING.md` läses med appen öppen bredvid, av någon som utför medan hen
+läser. Tre regler, alla efterfrågade av Jimmy under generalrepetitionen:
+
+- **Allt man behöver veta står FÖRE listan.** En förklaring under en checklista
+  hittas inte — man har redan börjat klicka. Varningar, förutsättningar och
+  "det här är ofarligt"-lugnanden hör överst i steget.
+- **Ingenting får kräva att man bläddrar tillbaka.** Behövs modullistan i tre
+  steg skrivs den ut tre gånger. Dubbleringen är billigare än scrollandet, och
+  `tools/kontroll.js` håller listorna i synk.
+- **Ordningen är appens, inte dokumentets.** Stegen följer det man ser på
+  skärmen uppifrån och ner. Avviker man måste skälet stå på plats.
+
+*Två omgångar kommentarer gick åt till det här innan jag förstod att det var en
+regel och inte enskilda synpunkter.*
+
 ### Ton och språk
 
 Svenska, i kod, kommentarer, dokumentation och chatt. Koncist. Jimmy är ny på
