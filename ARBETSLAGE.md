@@ -18,42 +18,40 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
 *Avsnitt i `ARBETSLAGE.md`, inte en egen fil. Det är här arbetet börjar varje
 gång, och det som hänvisas till som "HÄRNÄST".*
 
-Fem saker återstår. Ungefär en halvdags arbete plus ägarens timme.
+Fyra saker återstår. Ungefär en halvdags arbete plus ägarens timme.
 
 **A3 och A4 är avklarade** (11 sep). A3 var inget fel — kontrollen fungerar.
 A4 var ett riktigt fel och är rättat i koden; det behöver bara verifieras i
 appen efter nästa push, som en del av punkt 2.
 
-**1. Radera `Historiska Fältarbeten` i Fältarbete Copy.** Enda länkfältet som
-fortfarande pekar utanför kopieuppsättningen. Det är städning inför
-repetitionen, inte en rättning — i drift får fältet ligga kvar, och Del B säger
-uttryckligen det. Poängen är bara att kopiorna ska vara en sluten uppsättning så
-att en länkkontroll under repetitionen inte ger falskt utslag. *Två minuter.*
+**1. Generalrepetition.** Kör hela `DRIFTSATTNING.md` **Del B** mot kopiorna,
+från B0 till B7. Det är den enda repetition som betyder något, och den avslöjar
+vad som är otydligt i körschemat innan ägaren läser det. Glöm inte **B6**,
+torrkörningen av `Återställ historik` — rapporten ska stämma med tabellen där.
+*En till två timmar.*
 
-**2. Generalrepetition.** Kör hela `DRIFTSATTNING.md` **Del B** mot kopiorna,
-från B0 till B4. Det är den enda repetition som betyder något, och den avslöjar
-vad som är otydligt i körschemat innan ägaren läser det. Glöm inte **B2b**,
-torrkörningen av `Återställ historik` — se att siffrorna ser rimliga ut mot 706
-anläggningar. *En till två timmar.*
+*Påbörjad 15 sep och pausad. Kopiorna är städade, länkarna pekar rätt inom
+uppsättningen, och de tre felen som stoppade den är rättade: dubbla `Moduler` i
+Import, rättigheten i Anläggningar, och `catch`-kraschen i `Återställ historik`.
+Körschemat är omskrivet efter dina kommentarer — börja om från B0 mot det nya.*
 
-**Del B är ordningen; `UPPSATTNING.md` är uppslagsverket.** All uppsättning i
-appen — `Moduler`, enradsstubbarna, `Version`-actionen, rättigheterna,
-raderingen av de gamla scripten — ingår i Del B, som hänvisar till
-`UPPSATTNING.md` för koden att klistra in. Gör alltså inte uppsättningen som en
-egen omgång först och repetitionen sedan; då testas aldrig körschemat, vilket är
-hela poängen med repetitionen.
+**Del B är numera hela körschemat.** All uppsättning i appen — fält,
+knappfält, `Moduler`, triggrar, actioner, rättigheter, raderingar — står på
+plats där, ett bibliotek i taget, i den ordning sakerna dyker upp i Memento.
+`UPPSATTNING.md` och `BORTTAGET.md` är uppgångna i den och finns bara kvar som
+vägvisare. Det fanns inget annat sätt: under repetitionen 15 sep blev flera steg
+gjorda två gånger just för att de stod på två ställen.
 
-**3. Verifiera A4-rättningen** i den nyss uppsatta kopian: ändra `Firmware`
-till `Uppgraderad`, spara, och se att `Firmware Status` nu dyker upp i loggen.
-Kräver att modulerna hämtats om efter pushen. *Två minuter.*
+**2. Verifiera A4-rättningen** — ingår numera i B7: ändra `Firmware` till
+`Uppgraderad`, spara, och se att `Firmware Status` dyker upp i loggen. Kräver
+att modulerna hämtats om efter pushen.
 
-**4. Rätta körschemat** utifrån allt du snubblade på i punkt 2. Det ägaren
+**3. Rätta körschemat** utifrån allt du snubblade på i punkt 1. Det ägaren
 snubblar på i skarpt läge är det du snubblade på i kopian.
 
-**5. Skicka underlaget till ägaren och boka tiden.** `DRIFTSATTNING.md` Del B,
-`memento/UPPSATTNING.md` och `memento/KOPIERING.md`. Säg att det tar 30–60
-minuter, att datan inte rörs, och att det är en engångsinsats. Sedan kör ägaren
-Del B, med dig anträffbar.
+**4. Skicka Del B till ägaren och boka tiden.** Del B är komplett — ingen annan
+fil behövs. Säg att det tar 30–60 minuter, att datan i stort sett inte rörs, och
+att det är en engångsinsats. Sedan kör ägaren Del B, med dig anträffbar.
 
 Efter det är det driftsatt. `TESTPLAN.md` är genomgången, länkkartan är utredd,
 och ingen dataflytt behövs.
@@ -68,7 +66,7 @@ och ingen dataflytt behövs.
   sekretesskontroll före push och `push.cmd` för hela kedjan.
 - Byggstämpel + `Version`-action, så man ser i appen vilket bygge som körs och
   om en enskild modul är cachad.
-- 285 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
+- 298 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
 - Åtta buggar rättade, var och en med `REGRESSION`-test. Historiken, `Nyckel`
   som länkfält, den döda `actionText`/`cleanLog`-koden, halvtomma fältarbeten
   från importen, tappade `Mobilnummer 2` / `Lev.punkt`, koordinatstatus,
@@ -90,7 +88,7 @@ och ingen dataflytt behövs.
 - **`Återställ historik`-action.** Bygger upp `Historiska Fältarbeten` och
   `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`.
   Torrkörning som standard; lägger bara till länkar, tar aldrig bort någon.
-  Engångskörning vid driftsättningen, se `DRIFTSATTNING.md` B2b.
+  Engångskörning vid driftsättningen, se `DRIFTSATTNING.md` B6.
 - **Byggets ålder syns i `Version`.** `MV.byggAlderDagar()` räknar den ur
   byggstämpeln, utan nätverk. Den *varning* som kan hakas på kvittensen efter
   skapa och avsluta finns kvar i koden men är **avstängd som standard**
@@ -120,10 +118,10 @@ stod. Nu är *HÄRNÄST* den enda.
 | Kör hela `TESTPLAN.md` | **Klart.** Kvar ur den: A3 och A4, se *Avvikelser*. |
 | Mät driftens tillstånd via en orörd kopia | **Klart** 9 sep. Se *Länkkartan*. Ingen dataflytt behövs. |
 | Flygplanslägestest | **Klart** — riktiga flöden i varje bibliotek, 8 moduler i cachen. |
-| Uppsättning i appen: `Moduler`, enradsstubbar, `Version` i Anläggningar och Import Fältarbete | Ingår i **Del B**, alltså i generalrepetitionen. Inget separat steg. |
-| Radera de gamla scripten (`BORTTAGET.md`) | Ingår i **Del B**, steg B2 e). |
-| Library permission per bibliotek och enhet | Ingår i **Del B**, steg B2 b) och B3. |
-| Kör `Version` med täckning på varje ny enhet innan den går ut i fält | Ingår i **Del B**, steg B3. Fyller cachen. |
+| Uppsättning i appen: fält, knappfält, `Moduler`, triggrar, actioner | Ingår i **Del B**, steg 1–5 i varje biblioteksavsnitt. |
+| Radera de gamla scripten | Ingår i **Del B**, steg 7 i varje biblioteksavsnitt. |
+| Library permission per bibliotek och enhet | Ingår i **Del B**, steg 6 i varje biblioteksavsnitt, plus B5. |
+| Kör `Version` med täckning på varje ny enhet innan den går ut i fält | Ingår i **Del B**, steg B5. Fyller cachen. |
 
 ## Avvikelser från testkörningen
 
@@ -327,7 +325,7 @@ Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
   `ARBETSFLODE.md` punkt 6. Behövs inte före driftsättning.
 - Nollställer `Mätare bytt` omstartsräknaren? (punkt 2 ovan)
 - Behöver `Config`-scriptet finnas i alla bibliotek, eller bara där något
-  faktiskt avviker? Står som *VALFRI* i `UPPSATTNING.md` tills det avgjorts.
+  faktiskt avviker? Nämns inte i Del B alls — läggs bara till om något visar sig avvika.
 - Testbiblioteken innehåller riktiga data från avslutade jobb. Ska de tömmas
   innan varvet i punkt 4, eller är det tvärtom värdefullt att köra mot dem?
 

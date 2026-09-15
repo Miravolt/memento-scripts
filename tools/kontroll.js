@@ -178,10 +178,10 @@ function kontrolleraReferenser() {
 
     // Åt andra hållet: en modul som ingen dokumentation känner till kommer
     // aldrig att bockas i i appen, och blir därmed osynlig för scripten.
-    var uppsattning = las(path.join(ROOT, "memento", "UPPSATTNING.md"));
+    var korschema = las(path.join(ROOT, "memento", "DRIFTSATTNING.md"));
     for (var j = 0; j < moduler.length; j++) {
-        if (uppsattning.indexOf(moduler[j]) === -1) {
-            fail("I5", moduler[j] + " saknas i memento/UPPSATTNING.md — den" +
+        if (korschema.indexOf(moduler[j]) === -1) {
+            fail("I5", moduler[j] + " saknas i memento/DRIFTSATTNING.md — den" +
                 " kommer då inte att bockas i i appen och syns inte för scripten");
         }
     }

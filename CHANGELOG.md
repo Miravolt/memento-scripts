@@ -91,7 +91,7 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
   namngivna, så att regeln går att ifrågasätta i stället för att bara följas.
 - **`tools/kontroll.js`.** Kontrollerar det testerna inte kan se: ES6-syntax
   som Rhino kraschar på, moduler som skriver över varandras data på toppnivå,
-  moduler som inte laddas i testerna eller inte nämns i `UPPSATTNING.md`,
+  moduler som inte laddas i testerna eller inte nämns i körschemat,
   saknade byggstämplar och döda länkar i dokumentationen. Körs som steg 3 i
   `push.cmd` och stoppar pushen vid fel. En regel i en textfil kan glömmas;
   det här kan den inte.
@@ -128,6 +128,18 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
   två av Mementos egenheter: kalla `create()`-objekt och tröga kartfält.
 
 ### Ändrat
+
+- **Ett dokument i stället för tre.** `DRIFTSATTNING.md` Del B är numera hela
+  körschemat: fält, knappfält, `Moduler`, triggrar, actioner, rättigheter och
+  raderingar, ett bibliotek i taget, i den ordning sakerna dyker upp i Memento.
+  `UPPSATTNING.md` och `BORTTAGET.md` är uppgångna i den och står kvar som
+  vägvisare.
+
+  Skälet är uppmätt, inte estetiskt: under generalrepetitionen 15 sep blev
+  flera steg gjorda två gånger, eftersom samma sak stod i två filer och
+  ordningen var dokumentets i stället för appens. Rättigheterna ligger nu där de
+  sitter i gränssnittet — efter scripten, längst ner — och varje bibliotek
+  avslutas med en kontroll som ska stämma innan man går vidare.
 
 - **Byggåldersvarningen är avstängd som standard** (`byggVarningDagar = 0`),
   och dess uppmaning är en egen inställning (`byggVarningAtgard`).
@@ -187,6 +199,23 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Rättat
 
+- **`Återställ historik` kraschade i sitt eget `catch` (generalrepetitionen
+  15 sep).** Saknad `Library permission` fick Memento att kasta en
+  `PermissionError`. Rhino kan inte bygga catch-scopet för en felklass den inte
+  känner till och dog med `No enum constant ...NativeErrors.PermissionError` —
+  en Java-stacktrace i loggen i stället för appens egen rättighetsdialog.
+
+  Det defensiva `try`/`catch` runt `MV.db.lib()` gjorde alltså ett tydligt fel
+  obegripligt. `MV.db.libEller()` returnerar nu `null` när biblioteket saknas,
+  så `granska()` och `aterstallHistorik()` klarar sig utan `catch` och
+  rättighetsfel går vidare orörda. Ny invariant I10: **fånga bara fel du själv
+  kastat.**
+- **`Version` räknade moduler flera gånger.** Rapporterade 16 i Import
+  Fältarbete, där två Shared-script råkade heta `Moduler` och båda hade
+  modulerna ibockade. Byggstämpeln är den enda satsen på toppnivå som inte är
+  idempotent, så allt annat tålde dubbelinläsningen — det var bara räkningen
+  som blev fel. `MV.about()` räknar nu varje modul en gång och pekar ut
+  dubbletterna med namn och åtgärd.
 - **`Firmware Status` hamnade aldrig i ändringsloggen (avvikelse A4).**
   Fältet härleds ur `Firmware` av en egen trigger, och Memento garanterar ingen
   ordning mellan triggrar. Kör den efter `loggaAndringar()` ser diffen det
