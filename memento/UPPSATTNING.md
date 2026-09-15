@@ -38,13 +38,13 @@ vad scriptet gör — därför ser de inte ut som man väntar sig.
 **`Event`-panelen har två val, inte ett.** Först händelsen, sedan när i
 förloppet den ska köra:
 
-| Övre listan — händelsen | Nedre listan — när |
-| --- | --- |
-| `Creating an entry` | `Opening an Entry Edit card` |
-| `Updating an entry` | `Before saving the entry` |
-| `Updating a field` | `After saving the entry` |
-| `Opening an Entry View card` | |
-| *m.fl.* | |
+| Övre listan — händelsen      | Nedre listan — när           |
+| ---------------------------- | ---------------------------- |
+| `Creating an entry`          | `Opening an Entry Edit card` |
+| `Updating an entry`          | `Before saving the entry`    |
+| `Updating a field`           | `After saving the entry`     |
+| `Opening an Entry View card` | <br />                       |
+| *m.fl.*                      | <br />                       |
 
 Varje trigger nedan anger båda, skrivna som `Händelse` → `Fas`. Stämmer de med
 det som redan står i panelen ska ingenting ändras där — bara scriptet.
@@ -57,6 +57,7 @@ väntade dig; det är precis så en dubblett uppstår.
 
 ## 0. En gång per bibliotek — Moduler-scriptet
 
+½"Kan vi flytta stegen för vad som behöver göras till modul steget för varje bibliotek istället längre ner i detta dokument? Jag upplever det som att det blir lite rörigt att behöva hoppa fram och tillbaka ifall man glömmer dessa stegen."½\
 Modulerna behöver **inte** bockas i på varje script. Bibliotek som är ibockade
 på ett **Shared script** blir tillgängliga för alla script i biblioteket
 — verifierat på både Android och desktop.
@@ -98,6 +99,8 @@ inte för något script. `Version` räknar modulerna, så avvikelsen upptäcks d
 
 ### Moduler
 
+½"Skulle vara bra om våra moduler istället listas i bokstavsordning i dokumentet. Det blir lättare att följa då memento alltid listar modulerna i bokstavsordning när de ska bockas i"½
+
 *Shared script*
 
 **Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
@@ -123,7 +126,7 @@ alla tre biblioteken**, så det bara finns en att hålla reda på:
 * [x] `fa-import.js`
 
 Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
-räknas inte, den är inte vår och stämplar sig inte.
+räknas inte, den är inte vår och stämplar sig inte. ½"Lite förvirrande att nämna Version scriptet här. Det är mindre förvirrande om du bara har med informationen som berör detta steget och inget som berör de andra förrän det steget om det inte påverkar något i detta."½
 
 Script:
 
@@ -138,7 +141,7 @@ Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliote
 
 ### Set Logg Datum
 
-*Trigger — **finns redan**, byt bara ut scriptet.*\
+*Trigger —* ***finns redan**, byt bara ut scriptet.*\
 **Event:** `Updating an entry` → `Opening an Entry Edit card`
 
 Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`\
@@ -152,7 +155,7 @@ MV.Logg.setDatum();
 
 ### Updating an entry - Before saving the entry - Update Firmware Status
 
-*Trigger — **finns redan**, byt bara ut scriptet.*\
+*Trigger —* ***finns redan**, byt bara ut scriptet.*\
 **Event:** `Updating an entry` → `Before saving the entry`
 
 Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`\
@@ -166,7 +169,7 @@ MV.Firmware.syncStatus();
 
 ### Updating a field - Before saving the entry - Update Firmware Status
 
-*Trigger — **finns redan**, byt bara ut scriptet.*\
+*Trigger —* ***finns redan**, byt bara ut scriptet.*\
 **Event:** `Updating a field` → `Before saving the entry`
 
 Beroende av: `moment.min.js`, `mv-core.js`, `fa-firmware.js`\
@@ -180,12 +183,12 @@ MV.Firmware.syncStatus();
 
 ### Updating an entry - Before saving the entry
 
-*Trigger — **finns redan**, byt bara ut scriptet.*\
+*Trigger —* ***finns redan**, byt bara ut scriptet.*\
 **Event:** `Updating an entry` → `Before saving the entry`
 
 *Två triggrar i Fältarbete har samma Event och samma fas. Skilj dem åt på
-namnet: den här heter bara `Updating an entry - Before saving the entry`, den
-andra slutar med `- Update Firmware Status`.*
+namnet: den här heter bara* *`Updating an entry - Before saving the entry`, den
+andra slutar med* *`- Update Firmware Status`.*
 
 Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-firmware.js`\
 *(bockas inte i här —* *`Moduler`* *bär listan. Står med som dokumentation av vad scriptet behöver.)*
@@ -211,6 +214,7 @@ MV.ui.info("Version", MV.about());
 
 ### Hamta anteckning for valt datum
 
+½"Skulle vara bra om det skulle vara lättare att se att detta steg kräver att man redigerar strukturen för att kunna se knappen och koden den kör. Det samma gäller också alla följande knapp fält. Det skulle också vara lättare att hitta rätt knapp om dessa knappar listades i samma ordning här som de ligger i memento. Säg till så jag bifogar screenshots på strukturen så du kan se ordningen om du inte kan läsa ut det själv från struktur filerna. Ordningen på många utav de andra skripten skiljer sig också mot hur de ligger i memento. Kan du ordna om dessa också så de kommer i samma ordning som de ligger i memento?"½\
 *Knappfält (ft\_button)*
 
 Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`, `fa-anteckning.js`\
@@ -270,24 +274,24 @@ MV.Anteckning.spara();
 **Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
 alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-* [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+* [x] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
   standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
 
-* [ ] `mv-core.js`
+* [x] `mv-core.js`
 
-* [ ] `mv-db.js`
+* [x] `mv-db.js`
 
-* [ ] `mv-format.js`
+* [x] `mv-format.js`
 
-* [ ] `mv-logg.js`
+* [x] `mv-logg.js`
 
-* [ ] `fa-anteckning.js`
+* [x] `fa-anteckning.js`
 
-* [ ] `fa-faltarbete.js`
+* [x] `fa-faltarbete.js`
 
-* [ ] `fa-firmware.js`
+* [x] `fa-firmware.js`
 
-* [ ] `fa-import.js`
+* [x] `fa-import.js`
 
 Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
 räknas inte, den är inte vår och stämplar sig inte.
@@ -305,10 +309,10 @@ Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliote
 
 ### Set Logg Datum
 
-*Trigger — **finns redan**, byt bara ut scriptet.*\
+*Trigger —* ***finns redan**, byt bara ut scriptet.*\
 **Event:** `Opening an Entry View card`, i fasen **före** kortet visas
 
-*Anläggningars `Set Logg Datum` har ett annat Event än Fältarbetes med samma
+*Anläggningars* *`Set Logg Datum`* *har ett annat Event än Fältarbetes med samma
 namn. Det är avsiktligt.*
 
 Beroende av: `moment.min.js`, `mv-core.js`, `mv-logg.js`\
@@ -376,6 +380,7 @@ MV.Anteckning.spara();
 
 ### Aterstall historik  — ENGÅNGSKÖRNING vid driftsättning
 
+½"Detta steg behöver brytas upp i tydligare steg med check lista för vad som gjorts så att man inte tappar bort sig. Vad ska rapporten visa för att det ska vara rätt? När ska det bytas till skarp körning? Behöver något kollas före och efter? Vilken typ av "Action" ska det vara? Library Action, Entry Action, Bulk Action, Entries in the list."½\
 *Action*
 
 Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`\
@@ -419,24 +424,24 @@ MV.Faltarbete.granskaMedDialog();
 **Bocka i dessa här** — det är detta scripts enda syfte. **Samma lista i
 alla tre biblioteken**, så det bara finns en att hålla reda på:
 
-* [ ] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
+* [x] `moment.min.js` — **Mementos egen modul, inte vår.** Den ligger i
   standardlistan, inte under `Miravolt/memento-scripts`. Lätt att missa.
 
-* [ ] `mv-core.js`
+* [x] `mv-core.js`
 
-* [ ] `mv-db.js`
+* [x] `mv-db.js`
 
-* [ ] `mv-format.js`
+* [x] `mv-format.js`
 
-* [ ] `mv-logg.js`
+* [x] `mv-logg.js`
 
-* [ ] `fa-anteckning.js`
+* [x] `fa-anteckning.js`
 
-* [ ] `fa-faltarbete.js`
+* [x] `fa-faltarbete.js`
 
-* [ ] `fa-firmware.js`
+* [x] `fa-firmware.js`
 
-* [ ] `fa-import.js`
+* [x] `fa-import.js`
 
 Nio rader att bocka i. `Version` ska sedan rapportera **8 moduler** — moment
 räknas inte, den är inte vår och stämplar sig inte.
@@ -454,7 +459,7 @@ Behövs inte i normalfallet. Lägg bara till den om något i just detta bibliote
 
 ### Lägg in koordinater
 
-*Trigger — **finns redan**, byt bara ut scriptet.*\
+*Trigger —* ***finns redan**, byt bara ut scriptet.*\
 **Event:** `Updating an entry` → `Before saving the entry`
 
 Beroende av: `moment.min.js`, `mv-core.js`, `mv-format.js`, `mv-db.js`, `mv-logg.js`, `fa-faltarbete.js`, `fa-import.js`\
@@ -520,6 +525,7 @@ Hoppa över detta om inget avviker, vilket är normalfallet.
 
 ## Sista steget: ta bort de gamla
 
+½"Kan vi istället lista vad som ska tas bort här eller i Driftsattning.md om dessa steg hamnar där. Det känns onödigt krångligt att behöva hoppa fram och tillbaka mellan flera olika filer för att kunna följa vad som ska göras. Smidigast hade varit om detta gjordes efter scripten uppdaterats och innan man går vidare till nästa bibliotek"½\
 Först när allt ovan är på plats och testat:
 
 Se [BORTTAGET.md](BORTTAGET.md) — fyra script ska raderas i appen.

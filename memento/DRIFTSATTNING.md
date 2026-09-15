@@ -178,7 +178,7 @@ Två kopior, som skyddar mot olika saker. Ta båda.
 
 * [ ] Kontrollera att kopiorna har lika många poster som originalen
 
-Detta är den kopia som faktiskt räddar dig. Ett steg nedan — **B2b, återställ
+Detta är den kopia som faktiskt räddar dig. ½"Det låter bättre att säga att detta kan rädda dig om något går fel"½ Ett steg nedan — **B2b, återställ
 historiken** — skriver länkar mellan entries, och en strukturkopia hade inte
 kunnat lägga tillbaka dem. Kopiering går bara att göra från Android; desktop
 kan det inte.
@@ -202,7 +202,7 @@ Ett bibliotek i taget. Öppna ett entry efteråt och se att kortet ser normalt u
 
 ### Fältarbete
 
-* [ ] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**
+* [x] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**
 
   **Detta steg är ett krav, inte en valmöjlighet.** Här skrivs en
   sammanfattning av anläggningens tidigare ärenden när ett nytt fältarbete
@@ -213,13 +213,13 @@ Ett bibliotek i taget. Öppna ett entry efteråt och se att kortet ser normalt u
   att inget går förlorat, inte ett alternativ: i loggen blandas den med
   allt annat och fyller inte sitt syfte.
 
-* [ ] Kontrollera fältet **`Koppling till anläggning`** → ska peka på
+* [x] Kontrollera fältet **`Koppling till anläggning`** → ska peka på
   **Anläggningar** i samma uppsättning
 
-* [ ] Kontrollera **`Nyckel`** och **`Lookup`** → ska peka på
+* [x] Kontrollera **`Nyckel`** och **`Lookup`** → ska peka på
   **Nyckelregister** i samma uppsättning
 
-* [ ] Fältet **`Historiska Fältarbeten`** kan lämnas som det är.
+* [x] Fältet **`Historiska Fältarbeten`** kan lämnas som det är.
   *Koden använder det inte längre, och det kan ändå inte fungera: ett
   länkfält kan inte peka på sitt eget bibliotek, så ett fältarbete kan
   aldrig länka till andra fältarbeten. Att den gamla pekaren ligger kvar
@@ -227,14 +227,14 @@ Ett bibliotek i taget. Öppna ett entry efteråt och se att kortet ser normalt u
 
 ### Anläggningar
 
-* [ ] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → ska peka på
+* [x] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → ska peka på
   **Fältarbete** i samma uppsättning
 
-* [ ] **`Nyckel`** → **Nyckelregister** i samma uppsättning
+* [x] **`Nyckel`** → **Nyckelregister** i samma uppsättning
 
 ### Import Fältarbete
 
-* [ ] **`Befintlig`** → **Anläggningar** i samma uppsättning
+* [x] **`Befintlig`** → **Anläggningar** i samma uppsättning
 
 ### Nyckelregister
 
@@ -256,20 +256,24 @@ Nyckelregister har inga script.
 
 ### a) Moduler-scriptet
 
-* [ ] **Automation → Script → nytt Shared-script**, döp det **`Moduler`**
+½"Det känns bättre att i detta steget hänvisa till uppsättnings filen istället för att lista stegen här. Det blir lite dubbelt upp med samma på flera ställen. Alternativt inkludera alla steg från filen här direkt så att det räcker med ett dokument för allt."½
 
-* [ ] I panelen **JavaScript Libraries**: penn-ikonen → **+ Add URL** →
+* [x] **Automation → Script → nytt Shared-script**, döp det **`Moduler`**
+
+* [x] I panelen **JavaScript Libraries**: penn-ikonen → **+ Add URL** →
   **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
 
-* [ ] Bocka i de moduler som `memento/UPPSATTNING.md` anger för just det
+* [x] Bocka i de moduler som `memento/UPPSATTNING.md` anger för just det
   biblioteket
 
-* [ ] Koden i scriptet ska vara **tom**. Spara.
+* [x] Koden i scriptet ska vara **tom**. Spara.
 
 Ordningen man bockar i dem spelar ingen roll — appen laddar dem alfabetiskt
 oavsett, och koden är byggd för det.
 
 ### b) Rättigheter
+
+½"Skulle böja med detta steget och läste stegen under och insåg att jag gjort flera av dessa reda då de listades i filen Uppsattning.md. Vi behöver gå igenom allt och få ett naturligt flöde genom allt. Alla steg ska helst vara i samma fil, listade efter varandra i rätt ordning och anpassat efter hur det dyker upp i memento. Just nu har det varit mycket hoppande fram och tillbaka och lite förvirring över vad som gjorts och inte när flödet är som det är just nu. Jag pausar testet här för tillfället. Några konstigheter har påträffats med skripten också. Version listar 16 moduler i Import biblioteket bland annat och torrkörning av Återställ historik kunde inte köras och listar fel i mementos logg fil. Säg till när du kommer hit så klistrar jag in felen om du inte hittar dessa själv i logg filen"½
 
 * [ ] **Permissions → Library permission**: bocka i de bibliotek som
   `memento/KOPIERING.md` anger för just det biblioteket

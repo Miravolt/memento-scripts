@@ -1561,6 +1561,49 @@ suite("mv-core — varna för gammalt bygge");
 
 
 /* ================================================================ */
+suite("mv-core — moduler inlästa dubbelt");
+
+/*
+ * REGRESSION: `Version` rapporterade 16 moduler i Import Fältarbete. Orsaken
+ * är att byggstämpeln är den enda satsen på toppnivå som inte är idempotent —
+ * den push:ar. Är modulerna ibockade på fler än ett script i biblioteket läses
+ * varje fil in en gång per script.
+ */
+(function () {
+    var sparad = MV.build.moduler;
+
+    MV.build.moduler = [
+        { namn: "mv-core", byggd: "2026-09-15 10:00", hash: "a" },
+        { namn: "mv-db", byggd: "2026-09-15 10:00", hash: "b" },
+        { namn: "mv-core", byggd: "2026-09-15 10:00", hash: "a" },
+        { namn: "mv-db", byggd: "2026-09-15 10:00", hash: "b" }
+    ];
+
+    eq(MV.moduler().length, 2, "REGRESSION: dubbletter räknas en gång");
+    eq(MV.dubbletter().join(","), "mv-core,mv-db",
+       "REGRESSION: de dubblerade namnen pekas ut");
+
+    var text = MV.about();
+    ok(text.indexOf("Moduler: 2") > -1, "rapporten räknar rätt");
+    ok(text.indexOf("ibockade på mer än ett script") > -1,
+       "REGRESSION: rapporten säger vad man ska göra åt det");
+    ok(MV.about({ kort: true }).indexOf("2 DUBBLETT") > -1,
+       "kortformen flaggar det också");
+
+    // En avvikande modul ska fortfarande hittas, även bland dubbletter.
+    MV.build.moduler.push({ namn: "mv-logg", byggd: "2026-09-01 08:00", hash: "c" });
+    eq(MV.avvikande().length, 1, "avvikande modul hittas trots dubbletterna");
+
+    // Utan dubbletter ska ingenting nämnas.
+    MV.build.moduler = [{ namn: "mv-core", byggd: "2026-09-15 10:00", hash: "a" }];
+    eq(MV.dubbletter().length, 0, "inga dubbletter -> tom lista");
+    eq(MV.about().indexOf("ibockade"), -1, "AVSIKT: tyst när allt är som det ska");
+
+    MV.build.moduler = sparad;
+})();
+
+
+/* ================================================================ */
 
 console.log("\n" + passed + " ok, " + failed + " fel");
 process.exitCode = failed ? 1 : 0;

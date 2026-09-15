@@ -176,12 +176,52 @@ MV.byggd = function () {
     return senast;
 };
 
+/**
+ * Modulerna, en gång var. Sista förekomsten vinner.
+ *
+ * Byggstämpeln är den enda satsen på toppnivå som INTE är idempotent: den
+ * push:ar. Bockas modulerna i på fler än ett script i samma bibliotek läses
+ * varje fil in en gång per script, och listan blir en multipel av åtta.
+ * *Uppmätt i drift: `Version` rapporterade 16 moduler i Import Fältarbete.*
+ *
+ * Allt annat på toppnivå tål det (invariant I1) — det är bara räkningen som
+ * blir fel. Därför städas den här, i stället för att ändra hur stämpeln
+ * skrivs.
+ */
+MV.moduler = function () {
+    var sedda = {};
+    var ut = [];
+    for (var i = 0; i < MV.build.moduler.length; i++) {
+        var m = MV.build.moduler[i];
+        if (sedda[m.namn] === undefined) {
+            sedda[m.namn] = ut.length;
+            ut.push(m);
+        } else {
+            ut[sedda[m.namn]] = m;
+        }
+    }
+    return ut;
+};
+
+/** Moduler som lästs in mer än en gång. Namn, inte objekt. */
+MV.dubbletter = function () {
+    var antal = {};
+    var ut = [];
+    for (var i = 0; i < MV.build.moduler.length; i++) {
+        var namn = MV.build.moduler[i].namn;
+        antal[namn] = (antal[namn] || 0) + 1;
+        if (antal[namn] === 2) ut.push(namn);
+    }
+    return ut;
+};
+
 /** Moduler vars byggtid avviker från den nyaste — troligen cachade. */
 MV.avvikande = function () {
     var senast = MV.byggd();
+    var lista = MV.moduler();
     var out = [];
-    for (var i = 0; i < MV.build.moduler.length; i++) {
-        if (MV.build.moduler[i].byggd !== senast) out.push(MV.build.moduler[i]);
+    for (var i = 0; i < lista.length; i++) {
+        if (lista[i].byggd !== senast) out.push(lista[i]);
     }
     return out;
 };
@@ -230,8 +270,10 @@ MV.byggVarning = function (idag) {
 MV.about = function (opts) {
     opts = opts || {};
 
-    var antal = MV.build.moduler.length;
+    var lista = MV.moduler();
+    var antal = lista.length;
     var avvikande = MV.avvikande();
+    var dubbletter = MV.dubbletter();
     var byggd = MV.byggd() || "ostämplad";
 
     var dagar = MV.byggAlderDagar(opts.idag);
@@ -239,15 +281,24 @@ MV.about = function (opts) {
 
     if (opts.kort) {
         return "Bygge " + byggd + alder + ", " + antal + " moduler" +
-            (avvikande.length > 0 ? " (" + avvikande.length + " AVVIKER)" : "");
+            (avvikande.length > 0 ? " (" + avvikande.length + " AVVIKER)" : "") +
+            (dubbletter.length > 0 ? " (" + dubbletter.length + " DUBBLETT)" : "");
     }
 
     var rader = ["Bygge:   " + byggd + alder, "Moduler: " + antal, ""];
 
-    for (var i = 0; i < MV.build.moduler.length; i++) {
-        var m = MV.build.moduler[i];
+    for (var i = 0; i < lista.length; i++) {
+        var m = lista[i];
         rader.push(m.namn + "  " + m.hash +
             (m.byggd !== byggd ? "  <- AVVIKER: " + m.byggd : ""));
+    }
+
+    if (dubbletter.length > 0) {
+        rader.push("");
+        rader.push("OBS: " + dubbletter.length + " modul(er) lästes in flera");
+        rader.push("gånger: " + dubbletter.join(", ") + ".");
+        rader.push("Modulerna är ibockade på mer än ett script i biblioteket.");
+        rader.push("Bocka ur dem överallt utom i Moduler-scriptet.");
     }
 
     if (avvikande.length > 0) {
@@ -390,4 +441,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-11 15:09", hash: "b612ab6" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-15 14:29", hash: "5ce26ef" });
