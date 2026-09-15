@@ -343,6 +343,57 @@ function kontrolleraStamplar() {
 }
 
 /* ================================================================== *
+ * Text som markdown av misstag gör till kodblock
+ *
+ * Fyra mellanslag extra indrag = kodblock. Under en punktlista räknas
+ * indraget från punktens TEXT, inte från radens början, så en
+ * fortsättningsrad under "- [ ] " ska ha två mellanslag — inte sex.
+ *
+ * Detta är inte petnoja. Hela DRIFTSATTNING.md Del B levererades en gång med
+ * varje förklaring och varje ```js-block renderat som kod, och det upptäcktes
+ * först när Jimmy försökte följa dokumentet. Källan såg riktig ut i editorn.
+ * ================================================================== */
+
+function kontrolleraIndrag() {
+    var filer = allaFiler(ROOT).filter(function (f) { return /\.md$/.test(f); });
+
+    for (var i = 0; i < filer.length; i++) {
+        var rader = las(filer[i]).split("\n");
+        var fence = false;
+        var stack = [];                     // textindrag för öppna listpunkter
+
+        for (var r = 0; r < rader.length; r++) {
+            var rad = rader[r];
+            if (/^\s*$/.test(rad)) continue;
+
+            var arFence = /^\s*```/.test(rad);
+            if (fence && !arFence) continue;        // innehåll i ett kodblock
+
+            var indrag = rad.match(/^ */)[0].length;
+            var punkt = arFence ? null : rad.match(/^( *)([-*+]|\d+\.)(\s+)/);
+
+            if (punkt) {
+                while (stack.length && stack[stack.length - 1] > indrag) stack.pop();
+                stack.push(punkt[1].length + punkt[2].length + punkt[3].length);
+                continue;
+            }
+
+            while (stack.length && stack[stack.length - 1] > indrag) stack.pop();
+            var bas = stack.length ? stack[stack.length - 1] : 0;
+
+            if (indrag - bas >= 4) {
+                fail("indrag", rel(filer[i]) + " rad " + (r + 1) +
+                    ": " + (indrag - bas) + " mellanslag för djupt — renderas" +
+                    " som kodblock. Fortsättningsrader ska ligga i linje med" +
+                    " punktens text (" + bas + " mellanslag).");
+            }
+
+            if (arFence) fence = !fence;
+        }
+    }
+}
+
+/* ================================================================== *
  * Döda länkar i dokumentationen
  * ================================================================== */
 
@@ -503,6 +554,7 @@ kontrolleraToppniva();
 kontrolleraES5();
 kontrolleraStamplar();
 kontrolleraLankar();
+kontrolleraIndrag();
 kontrolleraArbetslage();
 
 console.log("");

@@ -204,14 +204,16 @@ ingenting ändras — bara scriptet.
 
 ### Modullistan är densamma i alla bibliotek
 
-Nio rader, i den ordning Memento visar dem:
+Nio rader, i den ordning Memento visar dem — `moment.min.js` överst, våra åtta
+i bokstavsordning under:
 
+- [ ] `moment.min.js` — **Mementos egen, ligger inte i vårt repo.** Den ligger
+  alltid **överst**, före våra, eftersom den är intern i appen. Alla våra heter
+  `mv-*` eller `fa-*`.
 - [ ] `fa-anteckning.js`
 - [ ] `fa-faltarbete.js`
 - [ ] `fa-firmware.js`
 - [ ] `fa-import.js`
-- [ ] `moment.min.js` — **Mementos egen, ligger inte i vårt repo.** Den står i
-      standardlistan. Alla våra heter `mv-*` eller `fa-*`.
 - [ ] `mv-core.js`
 - [ ] `mv-db.js`
 - [ ] `mv-format.js`
@@ -236,7 +238,7 @@ Två kopior, som skyddar mot olika saker. Ta båda.
 **a) En full kopia med data — görs i Android-appen.**
 
 - [ ] Långtryck på biblioteket → *Kopiera* → **struktur med data**, för vart och
-      ett av de fyra biblioteken, med dagens datum i namnet
+  ett av de fyra biblioteken, med dagens datum i namnet
 - [ ] Kontrollera att kopiorna har lika många poster som originalen
 
 Detta är den kopia som kan rädda dig om något går fel. **B6** skriver länkar
@@ -246,7 +248,7 @@ Kopiering går bara att göra från Android; desktop kan det inte.
 **b) En template-export — desktop eller telefon.**
 
 - [ ] För vart och ett av de fyra biblioteken: *Library menu → Export →
-      Template*, med dagens datum i filnamnet
+  Template*, med dagens datum i filnamnet
 - [ ] Kontrollera att alla fyra filer finns och är större än noll byte
 
 Template-exporten är struktur och script, ingen data. Den är den snabba vägen
@@ -259,23 +261,23 @@ tillbaka om en strukturändring blir fel. Den ersätter inte a).
 ### 1. Fält och länkfält
 
 - [ ] Lägg till ett fält som heter **`Tidigare fältarbeten`**, typ **Rich text**,
-      på en egen flik
+  på en egen flik
 
-      Här skrivs sammanfattningen av anläggningens tidigare ärenden när ett nytt
-      fältarbete skapas — det är så fältpersonalen ser vad som gjorts förut.
-      **Steget är ett krav, inte en valmöjlighet.** Saknas fältet hamnar texten i
-      `Logg` i stället; det är en nödutgång så att inget går förlorat, inte ett
-      alternativ.
+  Här skrivs sammanfattningen av anläggningens tidigare ärenden när ett nytt
+  fältarbete skapas — det är så fältpersonalen ser vad som gjorts förut.
+  **Steget är ett krav, inte en valmöjlighet.** Saknas fältet hamnar texten i
+  `Logg` i stället; det är en nödutgång så att inget går förlorat, inte ett
+  alternativ.
 
 - [ ] **`Koppling till anläggning`** → pekar på **Anläggningar** i samma
-      uppsättning
+  uppsättning
 - [ ] **`Nyckel`** och **`Lookup`** → pekar på **Nyckelregister** i samma
-      uppsättning
+  uppsättning
 - [ ] **`Historiska Fältarbeten`**, om det finns kvar: lämna det som det är
 
-      Koden använder det inte längre, och det kan ändå inte fungera — ett
-      länkfält kan inte peka på sitt eget bibliotek, så ett fältarbete kan aldrig
-      länka till andra fältarbeten. Att den gamla pekaren ligger kvar är ofarligt.
+  Koden använder det inte längre, och det kan ändå inte fungera — ett
+  länkfält kan inte peka på sitt eget bibliotek, så ett fältarbete kan aldrig
+  länka till andra fältarbeten. Att den gamla pekaren ligger kvar är ofarligt.
 
 > **Länkfälten är det farligaste i hela dokumentet.** De binder mot bibliotekets
 > *id*, inte dess namn — ett fält kan alltså peka på ett helt annat bibliotek än
@@ -288,27 +290,27 @@ I kortets ordning, uppifrån och ner. Byt ut koden i vart och ett.
 
 - [ ] **`Lägg till datum i kommentar`**
 
-      ```js
-      MV.Anteckning.laggTillDatumIKommentar();
-      ```
+  ```js
+  MV.Anteckning.laggTillDatumIKommentar();
+  ```
 
 - [ ] **`Spara anteckning`**
 
-      ```js
-      MV.Anteckning.spara();
-      ```
+  ```js
+  MV.Anteckning.spara();
+  ```
 
 - [ ] **`Hämta anteckning för valt datum`**
 
-      ```js
-      MV.Anteckning.hamta();
-      ```
+  ```js
+  MV.Anteckning.hamta();
+  ```
 
 - [ ] **`Spara ändringar och avsluta Fältarbete`**
 
-      ```js
-      MV.Faltarbete.avslutaMedDialog();
-      ```
+  ```js
+  MV.Faltarbete.avslutaMedDialog();
+  ```
 
 Knappfältens kod når man genom att **redigera strukturen** och öppna fältet —
 den ligger inte i Automation-dialogen som de andra scripten.
@@ -317,61 +319,61 @@ den ligger inte i Automation-dialogen som de andra scripten.
 
 - [ ] *Automation* → *Script* → nytt **Shared**-script, döp det `Moduler`
 - [ ] Panelen **JavaScript Libraries** → penn-ikonen → **+ Add URL** →
-      **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
+  **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
 - [ ] Bocka i alla nio enligt listan ovan
 - [ ] Koden i scriptet ska vara **tom**. Spara.
 - [ ] Kontrollera att det bara finns **ett** script som heter `Moduler`
 
-      *Appen hindrar inte två script med samma namn. Två `Moduler` laddar varje
-      modul två gånger.*
+  *Appen hindrar inte två script med samma namn. Två `Moduler` laddar varje
+  modul två gånger.*
 
 ### 4. Automation → Triggers
 
 - [ ] **`Updating a field - Before saving the entry - Update Firmware Status`**
-      — `Updating a field` → `Before saving the entry`
+  — `Updating a field` → `Before saving the entry`
 
-      ```js
-      MV.Firmware.syncStatus();
-      ```
+  ```js
+  MV.Firmware.syncStatus();
+  ```
 
 - [ ] **`Updating an entry - Before saving the entry`**
-      — `Updating an entry` → `Before saving the entry`
+  — `Updating an entry` → `Before saving the entry`
 
-      ```js
-      MV.Faltarbete.loggaAndringar();
-      ```
+  ```js
+  MV.Faltarbete.loggaAndringar();
+  ```
 
 - [ ] **`Updating an entry - Before saving the entry - Update Firmware Status`**
-      — `Updating an entry` → `Before saving the entry`
+  — `Updating an entry` → `Before saving the entry`
 
-      ```js
-      MV.Firmware.syncStatus();
-      ```
+  ```js
+  MV.Firmware.syncStatus();
+  ```
 
-      *De två ovan har samma Event och samma fas. Skilj dem åt på namnet: bara
-      den här slutar med `- Update Firmware Status`.*
+  *De två ovan har samma Event och samma fas. Skilj dem åt på namnet: bara
+  den här slutar med `- Update Firmware Status`.*
 
 - [ ] **`Set Logg Datum`**
-      — `Updating an entry` → `Opening an Entry Edit card`
+  — `Updating an entry` → `Opening an Entry Edit card`
 
-      ```js
-      MV.Logg.setDatum();
-      ```
+  ```js
+  MV.Logg.setDatum();
+  ```
 
 ### 5. Automation → Actions
 
 - [ ] **`Version`** — ny, typ **Library action**
 
-      ```js
-      MV.ui.info("Version", MV.about());
-      ```
+  ```js
+  MV.ui.info("Version", MV.about());
+  ```
 
 ### 6. Automation → Permissions
 
 Längst ner i script-listan, under *Logs*.
 
 - [ ] **Library permission** → **Fältarbete**, **Anläggningar**,
-      **Nyckelregister** — samma uppsättning, alla tre
+  **Nyckelregister** — samma uppsättning, alla tre
 - [ ] *Read files*, *Write files* och *Network* ska vara **obockade**
 
 Bibliotek som inget script rör — arkiv, kartbibliotek och liknande — lämnas
@@ -385,7 +387,7 @@ obockade.
 - [ ] Shared: **`LoggWriter`** — ligger nu i `mv-logg.js`
 - [ ] Shared: **`FirmwareSync`** — ligger nu i `fa-firmware.js`
 - [ ] Action: **`Flyttad till knapp - - Spara ändringar och avsluta Fältarbete`**
-      — avstängd dubblett, flyttad till knappfältet
+  — avstängd dubblett, flyttad till knappfältet
 
 Ordningen spelar ingen roll: `appendToLog()` och `updateFirmwareStatus()` finns
 kvar som shims i modulerna, så inget slutar fungera mitt i.
@@ -394,12 +396,12 @@ kvar som shims i modulerna, så inget slutar fungera mitt i.
 
 - [ ] Kör **`Version`** → **8 moduler**, samma byggtid på alla
 
-      *Säger den 16 eller 24 är modulerna ibockade på fler än ett script. Säger
-      den att någon modul AVVIKER har appen en cachad version.*
+  *Säger den 16 eller 24 är modulerna ibockade på fler än ett script. Säger
+  den att någon modul AVVIKER har appen en cachad version.*
 
 - [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
-      *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
-      `Moduler`
+  *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
+  `Moduler`
 
 - [ ] Öppna ett entry → kortet ser normalt ut
 - [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
@@ -411,7 +413,7 @@ kvar som shims i modulerna, så inget slutar fungera mitt i.
 ### 1. Fält och länkfält
 
 - [ ] **`Aktivt Fältarbete`** och **`Historiska Fältarbeten`** → pekar på
-      **Fältarbete** i samma uppsättning
+  **Fältarbete** i samma uppsättning
 - [ ] **`Nyckel`** → pekar på **Nyckelregister** i samma uppsättning
 
 Inga nya fält behövs här.
@@ -422,86 +424,86 @@ I kortets ordning.
 
 - [ ] **`Spara anteckning`**
 
-      ```js
-      MV.Anteckning.spara();
-      ```
+  ```js
+  MV.Anteckning.spara();
+  ```
 
 - [ ] **`Hämta anteckning för valt datum`**
 
-      ```js
-      MV.Anteckning.hamta();
-      ```
+  ```js
+  MV.Anteckning.hamta();
+  ```
 
 ### 3. Automation → Shared → `Moduler`
 
 - [ ] Samma som B1 steg 3: nytt Shared-script `Moduler`, repot tillagt, alla
-      nio ibockade, tom kod, **bara ett** script med det namnet
+  nio ibockade, tom kod, **bara ett** script med det namnet
 
 ### 4. Automation → Triggers
 
 - [ ] **`Set Logg Datum`**
-      — `Opening an Entry View card`, i fasen **före** kortet visas
+  — `Opening an Entry View card`, i fasen **före** kortet visas
 
-      ```js
-      MV.Logg.setDatum();
-      ```
+  ```js
+  MV.Logg.setDatum();
+  ```
 
-      *Anläggningars `Set Logg Datum` har ett annat Event än Fältarbetes med
-      samma namn. Det är avsiktligt.*
+  *Anläggningars `Set Logg Datum` har ett annat Event än Fältarbetes med
+  samma namn. Det är avsiktligt.*
 
 ### 5. Automation → Actions
 
 - [ ] **`Nytt Fältarbete`** — finns redan, typ **Entry action**
 
-      ```js
-      MV.Faltarbete.skapaMedDialog(entry(), {
-          loggText: "Nytt fältarbete skapat från anläggningen."
-      });
-      ```
+  ```js
+  MV.Faltarbete.skapaMedDialog(entry(), {
+      loggText: "Nytt fältarbete skapat från anläggningen."
+  });
+  ```
 
 - [ ] **`Version`** — ny, typ **Library action**
 
-      ```js
-      MV.ui.info("Version", MV.about());
-      ```
+  ```js
+  MV.ui.info("Version", MV.about());
+  ```
 
 - [ ] **`Granska`** — ny, typ **Library action**. Valfri men rekommenderad.
 
-      ```js
-      MV.Faltarbete.granskaMedDialog();
-      ```
+  ```js
+  MV.Faltarbete.granskaMedDialog();
+  ```
 
-      Räknar posterna och letar efter länkar som pekar ut ur uppsättningen — det
-      som inte går att kontrollera för hand med hundratals anläggningar. Läser
-      bara, skriver aldrig.
+  Räknar posterna och letar efter länkar som pekar ut ur uppsättningen — det
+  som inte går att kontrollera för hand med hundratals anläggningar. Läser
+  bara, skriver aldrig.
 
 - [ ] **`Återställ historik`** — ny, typ **Library action**. Används i **B6**.
 
-      ```js
-      MV.Faltarbete.aterstallHistorikMedDialog();
-      ```
+  ```js
+  MV.Faltarbete.aterstallHistorikMedDialog();
+  ```
 
 ### 6. Automation → Permissions
 
 - [ ] **Library permission** → **Anläggningar**, **Fältarbete**,
-      **Nyckelregister**
+  **Nyckelregister**
 - [ ] *Read files*, *Write files* och *Network* obockade
 
 ### 7. Radera de gamla scripten
 
 - [ ] Shared: **`Shared_LoggWriter`** — identisk kopia av `LoggWriter`, ligger nu
-      i `mv-logg.js`
+  i `mv-logg.js`
 
 ### 8. Kontroll innan du går vidare
 
 - [ ] Kör **`Version`** → **8 moduler**, samma byggtid
 - [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
-      *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
-      `Moduler`
+  *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
+  `Moduler`
 
 - [ ] Kör **`Granska`** → den ska svara med siffror, inte med ett fel
 
-      *Går den inte alls: kontrollera Library permission innan du letar vidare.*
+  *Går den inte alls: kontrollera Library permission innan du letar vidare.*
 
 ---
 
@@ -522,36 +524,36 @@ Inga.
 ### 4. Automation → Triggers
 
 - [ ] **`Lägg in koordinater`**
-      — `Updating an entry` → `Before saving the entry`
+  — `Updating an entry` → `Before saving the entry`
 
-      ```js
-      MV.Import.satKoordinatStatus();
-      ```
+  ```js
+  MV.Import.satKoordinatStatus();
+  ```
 
 ### 5. Automation → Actions
 
 - [ ] **`Hitta befintliga`** — finns redan, typ **Library action**
 
-      ```js
-      MV.Import.hittaBefintliga();
-      ```
+  ```js
+  MV.Import.hittaBefintliga();
+  ```
 
 - [ ] **`Lägg upp`** — finns redan, typ **Library action**
 
-      ```js
-      MV.Import.laggUpp();
-      ```
+  ```js
+  MV.Import.laggUpp();
+  ```
 
 - [ ] **`Version`** — ny, typ **Library action**
 
-      ```js
-      MV.ui.info("Version", MV.about());
-      ```
+  ```js
+  MV.ui.info("Version", MV.about());
+  ```
 
 ### 6. Automation → Permissions
 
 - [ ] **Library permission** → **alla fyra**: Import Fältarbete, Anläggningar,
-      Fältarbete, Nyckelregister
+  Fältarbete, Nyckelregister
 - [ ] *Read files*, *Write files* och *Network* obockade
 
 *Import behöver alla fyra eftersom `Lägg upp` skapar anläggningen, därefter
@@ -565,12 +567,12 @@ Inga.
 
 - [ ] Kör **`Version`** → **8 moduler**, samma byggtid
 - [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
-      *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
-      `Moduler`
+  *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
+  `Moduler`
 
-      *Det räcker att en enda modul ligger kvar på ett enskilt script för att
-      räkningen ska bli fel. Har `Version` sagt 8 är det redan bevisat, men det
-      här steget hittar en modul som är ibockad men ännu inte hunnit störa.*
+  *Det räcker att en enda modul ligger kvar på ett enskilt script för att
+  räkningen ska bli fel. Har `Version` sagt 8 är det redan bevisat, men det
+  här steget hittar en modul som är ibockad men ännu inte hunnit störa.*
 
 ---
 
@@ -579,7 +581,7 @@ Inga.
 Inga script, inga triggrar, inga knappfält, inga rättigheter.
 
 - [ ] Kontrollera bara att de andra bibliotekens `Nyckel`-fält pekar hit, och
-      inte på ett Nyckelregister i en annan uppsättning
+  inte på ett Nyckelregister i en annan uppsättning
 
 ---
 
@@ -589,16 +591,16 @@ Två saker synkroniseras **inte** mellan enheter och måste göras på varje tel
 och varje dator som används:
 
 - [ ] **Script-permissions** godkänns — varje användare får frågan första gången
-      scripten körs på sin enhet
+  scripten körs på sin enhet
 - [ ] I `Moduler`: klicka **uppdateringsknappen** vid bibliotekslistan
 
-      *Desktop: den runda pilen ovanför listan. Android: längst ner till höger
-      under listan.*
+  *Desktop: den runda pilen ovanför listan. Android: längst ner till höger
+  under listan.*
 
 - [ ] Kör **`Version`** med täckning och kontrollera att byggtiden stämmer med
-      de andra enheterna
+  de andra enheterna
 
-      *Körningen fyller också cachen, så att enheten fungerar offline efteråt.*
+  *Körningen fyller också cachen, så att enheten fungerar offline efteråt.*
 
 En enhet som missas slutar fungera tyst medan de andra fungerar. Det är den
 svåraste felkällan i hela upplägget, eftersom allt ser rätt ut tills någon
@@ -626,13 +628,13 @@ själv vilken anläggning det hör till, så inget behöver skrivas in för hand
 ### Före
 
 - [ ] Kör **`Granska`** och anteckna siffrorna: antal anläggningar, antal
-      fältarbeten
+  fältarbeten
 - [ ] Anteckna hur många anläggningar som har en historik idag
 
 ### Torrkörning
 
 - [ ] Kör **`Återställ historik`**. Standardläget är torrkörning — den rapporterar
-      vad den *skulle* göra och skriver ingenting.
+  vad den *skulle* göra och skriver ingenting.
 
 Rapporten ska stämma med detta för att vara rimlig:
 
@@ -647,32 +649,32 @@ Rapporten ska stämma med detta för att vara rimlig:
 
 - [ ] **Är "misslyckade" större än noll — stanna och säg till.** Gå inte vidare.
 - [ ] Är "utan koppling" oväntat stort: det är fältarbeten som saknar
-      `Koppling till anläggning`. De går inte att länka, och det är inte ett fel
-      i scriptet — men det är värt att veta varför de finns.
+  `Koppling till anläggning`. De går inte att länka, och det är inte ett fel
+  i scriptet — men det är värt att veta varför de finns.
 
 ### Skarp körning
 
 - [ ] Ändra raden i scriptet till:
 
-      ```js
-      MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });
-      ```
+  ```js
+  MV.Faltarbete.aterstallHistorikMedDialog({ skarpt: true });
+  ```
 
 - [ ] Kör igen. Rapporten ska nu visa samma siffror som torrkörningen, men som
-      utfört.
+  utfört.
 
 ### Efter
 
 - [ ] Öppna tre eller fyra anläggningar som du vet har haft ärenden → historiken
-      finns där
+  finns där
 - [ ] Öppna en anläggning med ett pågående ärende → `Aktivt Fältarbete` pekar rätt
 - [ ] Kör **`Granska`** igen → inga länkar pekar ut ur uppsättningen
 - [ ] **Ändra tillbaka scriptet** till torrkörningsraden, så att en oavsiktlig
-      körning i framtiden inte skriver något:
+  körning i framtiden inte skriver något:
 
-      ```js
-      MV.Faltarbete.aterstallHistorikMedDialog();
-      ```
+  ```js
+  MV.Faltarbete.aterstallHistorikMedDialog();
+  ```
 
 Funktionen **lägger bara till** länkar. Den tar aldrig bort någon, och den rör
 inga fältvärden. Körs den två gånger händer ingenting den andra gången.
@@ -684,12 +686,12 @@ inga fältvärden. Körs den två gånger händer ingenting den andra gången.
 Välj **en** anläggning som har tidigare ärenden och följ den hela vägen.
 
 - [ ] Kör `Nytt Fältarbete` → ett fältarbete skapas, och anläggningens
-      `Aktivt Fältarbete` pekar på det
+  `Aktivt Fältarbete` pekar på det
 - [ ] `Tidigare fältarbeten` visar de gamla ärendena
 - [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
 - [ ] Ändra `Firmware` och spara → `Firmware Status` hamnar i `Logg`
 - [ ] Avsluta ärendet → anläggningen uppdateras, ärendet låses och hamnar i
-      anläggningens historik
+  anläggningens historik
 
 **Sista frågan, och den enda som avgör: har något blivit sämre än förut?**
 
@@ -720,5 +722,5 @@ ett script i biblioteket anropar den.
 
 - [ ] Ny template-export av alla fyra bibliotek, sparad som "efter"-läge
 - [ ] Bestäm **vem som får ändra strukturen framöver**. Kodändringar sker utanför
-      biblioteken och kräver ingen behörighet — men ett nytt fält eller ett nytt
-      script gör det, och då behövs den här rundan igen.
+  biblioteken och kräver ingen behörighet — men ett nytt fält eller ett nytt
+  script gör det, och då behövs den här rundan igen.
