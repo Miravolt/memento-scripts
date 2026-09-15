@@ -43,6 +43,8 @@ härleda — de är uppmätta i appen.
 | **Ett bibliotek går bara att kopiera från Android-appen** | Långtryck på biblioteket → *Kopiera* → struktur, eller struktur med data. Desktop kan det inte (Jimmy 11 sep). Varje gång ett dokument säger "gör en kopia" är det alltså ett telefonsteg, oavsett var resten av arbetet sker. |
 | **Android och desktop har olika strukturvyer** | *Edit library* på telefonen har bara MAIN, FIELDS, AGGREGATION, AUTOFILL och NOTES. Desktop har därtill Relations, **Connectors**, Advanced options, Entry Appearance och Calendar. Uppmätt 11 sep. Antag aldrig att något man ser i desktopstrukturen går att nå från telefonen. |
 | **Script kan skriva filer på enheten — men filen är lokal** | `file(namn)` med läs/skriv-permission; på Android måste användaren dessutom peka ut en mapp i behörighetsdialogen. Bra som cache, **värdelöst som spridningsväg**: en fil på Jimmys dator når aldrig en telefon. Det finns bara två kanaler ut till enheterna — Mementos datasynk (ett entry) och nätet. |
+| **Att FÅNGA ett fel från Memento kan i sig krascha scriptet** | Saknas `Library permission` kastar appen en `PermissionError`. Rhino kan inte bygga catch-scopet för en felklass den inte känner till och dör med `No enum constant ...NativeErrors.PermissionError` — en Java-stacktrace i loggen i stället för Mementos egen rättighetsdialog. *Uppmätt 15 sep 2026: `Återställ historik` kördes utan rättighet till Fältarbete och kraschade i sitt eget `catch`.* Se invariant I10. |
+| **Två Shared-script kan heta exakt samma sak** | Appen hindrar det inte. Två `Moduler` i samma bibliotek laddar varje modul två gånger; `Version` rapporterade 16 i stället för 8. Uppmätt i Import Fältarbete 15 sep. Byggstämpeln är den enda satsen på toppnivå som inte är idempotent, så det är räkningen som avslöjar det — `MV.about()` pekar numera ut dubbletterna. |
 | **Java-åtkomsten är blockerad** | `lib().getClass()` kastar. Ingen reflektion, inga `Packages.*`, inget `java.io`. Följden är att **det dokumenterade API:t är hela API:t** — det finns inget sätt att ta reda på vad som egentligen finns. Står en egenskap inte i dokumentationen och svarar `undefined` är frågan avgjord; leta inte vidare. |
 | **`message()` försvinner efter några sekunder** | Duger för en kvittens, inte för något man ska läsa. Allt med mer än en rad ska visas med `MV.ui.info()` / `dialog()`, som står kvar tills man trycker OK. Gäller i synnerhet mätscript. |
 | **Entries direkt från `create()`, `find()` eller ett länkfält är inte fullt skrivbara** | Hämta om med `findById()`. Det är hela poängen med `mv-db.js`. Mockens flagga `COLD_CREATE`. |
@@ -124,6 +126,14 @@ kryssrutefält (`ft_boolean`). Jimmy kände inte igen det och trodde jag hittat 
 något som inte fanns — vilket jag hade.* `tools/kontroll.js` varnar för fältnamn
 i koden som inte finns i inventeringen. Ändras strukturen i appen: exportera om
 och kör `python tools/mementools.py fields "Raw" memento/FALT.md`.
+
+**I10 — Fånga bara fel du själv kastat.**
+`try`/`catch` runt ett Memento-anrop är inte gratis: en `PermissionError`
+kraschar i själva catch-satsen och gör ett begripligt rättighetsfel till en
+Java-stacktrace. Behöver du hantera "finns inte", använd en variant som
+returnerar `null` i stället för att kasta — `MV.db.libEller()` är mönstret —
+och låt appens egna fel gå vidare orörda. *Det var ett defensivt `catch` runt
+`MV.db.lib()` som gjorde att `Återställ historik` dog utan att säga varför.*
 
 **I8 — Påstå aldrig en orsak som inte är bevisad.**
 Skriv "detta förklarar symptomet" eller "detta är skydd, inte bevisad

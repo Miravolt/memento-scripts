@@ -786,12 +786,19 @@ MV.Faltarbete.granska = function (opts) {
         frammande: [], andrade: [], fel: null
     };
 
-    var anlLib, faltLib;
-    try {
-        anlLib = MV.db.lib(cfg.libAnlaggning);
-        faltLib = MV.db.lib(cfg.libFaltarbete);
-    } catch (ex) {
-        resultat.fel = String(ex.message || ex);
+    /*
+     * Inget try/catch här. Saknas Library permission kastar Memento en
+     * PermissionError som Rhino inte klarar att fånga — scriptet dör då med en
+     * Java-stacktrace i stället för appens egen rättighetsdialog. Se
+     * MV.db.libEller.
+     */
+    var anlLib = MV.db.libEller(cfg.libAnlaggning);
+    var faltLib = MV.db.libEller(cfg.libFaltarbete);
+
+    if (!anlLib || !faltLib) {
+        resultat.fel = "Hittade inte " +
+            (!anlLib ? cfg.libAnlaggning : cfg.libFaltarbete) +
+            " i den här uppsättningen.";
         return resultat;
     }
 
@@ -941,11 +948,11 @@ MV.Faltarbete.aterstallHistorik = function (opts) {
         redanOk: 0, utanKoppling: 0, misslyckade: [], exempel: [], fel: null
     };
 
-    var faltLib;
-    try {
-        faltLib = MV.db.lib(cfg.libFaltarbete);
-    } catch (ex) {
-        res.fel = String(ex.message || ex);
+    /* Inget try/catch — se kommentaren i granska() och MV.db.libEller. */
+    var faltLib = MV.db.libEller(cfg.libFaltarbete);
+    if (!faltLib) {
+        res.fel = "Hittade inte " + cfg.libFaltarbete +
+            " i den här uppsättningen.";
         return res;
     }
 
@@ -1111,4 +1118,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-15 14:29", hash: "4b3e7be" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-15 14:54", hash: "17b66e4" });

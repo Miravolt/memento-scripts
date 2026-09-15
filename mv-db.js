@@ -108,18 +108,44 @@ MV.db.libName = function (base) {
  * rader senare.
  */
 MV.db.lib = function (base) {
+    var library = MV.db.libEller(base);
+    if (library) return library;
+
+    throw new Error("Hittade inte biblioteket. Sökte: '" +
+        MV.db.libKandidater(base).join("', '") + "'.");
+};
+
+/** Namnen MV.db.lib provar, i ordning. Bryts ut för felmeddelandets skull. */
+MV.db.libKandidater = function (base) {
     var a = MV.db.affix();
     var kandidater = [a.prefix + base + a.suffix];
-
     if (a.suffix !== "") kandidater.push(a.prefix + base);
+    return kandidater;
+};
 
+/**
+ * Som MV.db.lib, men returnerar null i stället för att kasta när biblioteket
+ * inte finns.
+ *
+ * Finns för att ett anropande script ska slippa `try`/`catch`. **Att fånga ett
+ * fel från Memento kan i sig krascha** — saknas `Library permission` kastar
+ * appen en `PermissionError`, och Rhino klarar inte att bygga catch-scopet för
+ * den: `No enum constant ...NativeErrors.PermissionError`. Scriptet dör då med
+ * en Java-stacktrace i stället för Mementos egna, läsbara rättighetsdialog.
+ * *Uppmätt 15 sep 2026 när `Återställ historik` kördes utan rättighet till
+ * Fältarbete.*
+ *
+ * Den här funktionen fångar därför ingenting. Saknas rättigheten går felet
+ * vidare till Memento, som säger det med egna ord. Saknas biblioteket får
+ * anroparen null och kan svara begripligt själv.
+ */
+MV.db.libEller = function (base) {
+    var kandidater = MV.db.libKandidater(base);
     for (var i = 0; i < kandidater.length; i++) {
         var library = libByName(kandidater[i]);
         if (library) return library;
     }
-
-    throw new Error("Hittade inte biblioteket. Sökte: '" +
-        kandidater.join("', '") + "'.");
+    return null;
 };
 
 /**
@@ -271,4 +297,4 @@ MV.db.copyFields = function (sourceEntry, fieldNames) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-db", byggd: "2026-09-15 14:29", hash: "70f2698" });
+MV.build.moduler.push({ namn: "mv-db", byggd: "2026-09-15 14:54", hash: "4955439" });

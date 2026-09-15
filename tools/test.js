@@ -1354,6 +1354,63 @@ suite("fa-faltarbete — granska en uppsättning");
        "utan andradeEfter listas inga ändrade poster");
 })();
 
+
+/* ================================================================ */
+suite("mv-db / fa-faltarbete — rättighetsfel får inte fångas");
+
+/*
+ * REGRESSION 15 sep 2026. `Återställ historik` kördes utan Library permission
+ * till Fältarbete. Memento kastade en PermissionError, och vårt try/catch runt
+ * MV.db.lib() gjorde saken värre: Rhino klarar inte att bygga catch-scopet för
+ * en felklass den inte känner till, så scriptet dog med
+ *
+ *     No enum constant org.mozilla.javascript.TopLevel.NativeErrors.PermissionError
+ *
+ * i stället för att visa Mementos egen rättighetsdialog. Felet ska alltså gå
+ * vidare orört — bara "biblioteket finns inte" hanteras av oss.
+ */
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    var riktig = global.libByName;
+
+    // Saknat bibliotek: null, inget kastat, begripligt svar.
+    eq(MV.db.libEller("Finns Inte"), null,
+       "libEller ger null för okänt bibliotek");
+
+    var kastade = false;
+    try { MV.db.lib("Finns Inte"); } catch (ex) { kastade = true; }
+    ok(kastade, "AVSIKT: MV.db.lib kastar fortfarande — den är den strikta");
+
+    // Rättighetsfel: ska passera rakt igenom granska() och aterstallHistorik().
+    global.libByName = function () {
+        var e = new Error("Permission denied");
+        e.name = "PermissionError";
+        throw e;
+    };
+
+    var slapptIgenom = false;
+    try {
+        MV.Faltarbete.granska();
+    } catch (ex) {
+        slapptIgenom = (ex.name === "PermissionError");
+    }
+    ok(slapptIgenom,
+       "REGRESSION: granska fångar inte rättighetsfelet");
+
+    slapptIgenom = false;
+    try {
+        MV.Faltarbete.aterstallHistorik();
+    } catch (ex) {
+        slapptIgenom = (ex.name === "PermissionError");
+    }
+    ok(slapptIgenom,
+       "REGRESSION: aterstallHistorik fångar inte heller det");
+
+    global.libByName = riktig;
+})();
+
 (function () {
     var s = scenario();
     mock.use(s.anlLib);
