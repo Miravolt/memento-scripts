@@ -475,3 +475,32 @@ detta. Det här är ett skyddsnät för den som glömmer, och för telefoner som
 ingen rört på en månad. Åldersvarningen täcker redan den telefon som ingen rört;
 det här täcker fallet där en bugfix är två dagar gammal och enheten inte vet om
 det.
+
+### 7. Ett färdigt template-paket för nästa kund
+
+Idé från Jimmy 15 sep, ursprungligen tänkt som en genväg för *den här*
+driftsättningen. Som genväg duger den inte — se nedan — men som förberedelse
+för **nästa kund** är den rätt väg.
+
+När driftsättningen är klar och strukturen har stått emot verkligheten:
+exportera de fyra biblioteken som `.mlt2` och spara dem som startpunkt. En ny
+kund blir då *importera fyra templates, döp dem med kundens suffix, peka om åtta
+länkfält, bocka i modulerna*. Inget klickande genom fält, triggrar och actioner.
+
+**Filerna får inte ligga i repot.** En `.mlt2` innehåller biblioteksnamnen och
+därmed kundnamnet (I3). Antingen förvaras de utanför repot, eller så
+maskeras namnen först — `tools/mementools.py` har redan maskeringen.
+
+**Varför det inte duger för en befintlig kund.** En importerad template blir
+alltid ett **nytt** bibliotek; Memento kan inte lägga en template ovanpå ett
+existerande. Datan skulle alltså behöva flyttas, och den enda vägen in är
+**CSV-import**. CSV bär inte:
+
+- **bilder** — `Bilder övrigt`, `Bild befintlig mätare`, `Bild ny mätare`
+- **länkar mellan entries** — måste byggas om av ett script som matchar på
+  någon nyckel, alltså exakt den operation som redan gått fel två gånger
+- **`Skapad`, entry-id, `User`, entry-historik, favoriter och kommentarer**
+
+Till det kommer att varje ny uppsättning måste delas om till alla användare och
+sättas upp på varje enhet igen. Risken flyttas från klick till data, och det är
+fel håll.
