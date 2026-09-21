@@ -19,6 +19,10 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
   `TRACK_FIELDS` omfattar nu `1.8.0`–`4.8.0`, `Tid för avläsning`,
   `Nytt mätarnummer`, `Nytt Star Serienummer` och `1.8.0 Ny`–`4.8.0 Ny`.
 
+  Även **`Kundinformation`**, som var en lucka: fältet skrevs tillbaka till
+  anläggningen vid avslut men loggades inte, så ändringen syntes i anläggningen
+  utan att det gick att se när eller av vem den gjordes.
+
   Två sorters fält i samma avsnitt är med flit utelämnade:
   kommentarfälten, som redan loggas som egna block via `COMMENT_FIELDS` och
   annars hade kommit två gånger, och bildfälten, vars diff bara ger en intern

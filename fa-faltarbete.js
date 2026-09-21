@@ -130,6 +130,14 @@ MV.Faltarbete.TRACK_FIELDS = [
     "RF-bas", "Mätarplacering", "Firmware Status",
 
     /*
+     * Kundinformation skrevs tillbaka till anläggningen vid avslut
+     * (SYNC_TO_ANLAGGNING) men loggades inte. Ändringen syntes alltså i
+     * anläggningen utan att det gick att se när eller av vem den gjordes.
+     * Tillagt 21 sep.
+     */
+    "Kundinformation",
+
+    /*
      * Avläsning befintlig och Ny mätare — tillagt 21 sep på begäran från
      * verksamheten. Mätarställningarna är det som faktiskt läses av på plats,
      * och en felskriven siffra måste gå att spåra i efterhand.
@@ -1139,4 +1147,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-21 11:01", hash: "dc28160" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-21 11:06", hash: "053c810" });

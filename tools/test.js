@@ -54,7 +54,8 @@ var FALT_FIELDS = ANL_FIELDS
              "Datum för avslut", "Nytt mätarnummer", "Nytt Star Serienummer",
              "User", "Firmware",
              "1.8.0", "2.8.0", "3.8.0", "4.8.0", "Tid för avläsning",
-             "1.8.0 Ny", "2.8.0 Ny", "3.8.0 Ny", "4.8.0 Ny"]);
+             "1.8.0 Ny", "2.8.0 Ny", "3.8.0 Ny", "4.8.0 Ny",
+             "Kundinformation"]);
 
 function scenario(prefix, suffix) {
     mock.reset();
@@ -450,6 +451,15 @@ suite("fa-faltarbete — avläsningar och ny mätare loggas");
     ok(changes.indexOf("12345.6") > -1, "med det nya värdet");
     ok(changes.indexOf("Nytt mätarnummer") > -1, "nytt mätarnummer loggas");
     ok(changes.indexOf("Nytt Star Serienummer") > -1, "nytt serienummer loggas");
+
+    /*
+     * Kundinformation skrevs tillbaka till anläggningen vid avslut men
+     * loggades inte — ändringen syntes utan att gå att spåra.
+     */
+    ok(MV.Faltarbete.SYNC_TO_ANLAGGNING.indexOf("Kundinformation") > -1,
+       "Kundinformation skrivs till anläggningen vid avslut");
+    ok(MV.Faltarbete.TRACK_FIELDS.indexOf("Kundinformation") > -1,
+       "REGRESSION: och ändringsloggas, så den går att spåra");
 
     /*
      * REGRESSION: datumfält kommer som millisekunder. Utan MV.config.datumFalt
