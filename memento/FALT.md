@@ -19,7 +19,7 @@ Vilka *värden* ett listfält kan ha ligger inte i templaten. De står i
 | Fält | Typ | Skrivskyddat |
 |---|---|---|
 | `Koordinat inmatning` | text |  |
-| `Koordinater` | ft_map |  |
+| `Koordinater` | karta |  |
 | `Anl. adress` | text |  |
 | `Mätarplacering` | text |  |
 | `Aktivt Fältarbete` | länk till entry |  |
@@ -41,24 +41,24 @@ Vilka *värden* ett listfält kan ha ligger inte i templaten. De står i
 | `Nätstation` | text |  |
 | `Leveranspunkt` | text |  |
 | **— Mätar info —** | | |
-| `Mätarnummer` | ft_barcode |  |
-| `Star Serienummer` | ft_barcode |  |
+| `Mätarnummer` | streckkod |  |
+| `Star Serienummer` | streckkod |  |
 | `Mätartyp` | lista, ett val |  |
 | `Omsättning` | lista, ett val |  |
 | `Kom typ` | lista, ett val |  |
 | `Antenntyp` | lista, ett val |  |
-| `SIM-kort` | ft_barcode |  |
+| `SIM-kort` | streckkod |  |
 | `RF-bas` | text |  |
 | `Firmware Status` | lista, ett val |  |
 | `Firmware uppgraderades` | datum |  |
-| `Skapad` | ft_date_time |  |
+| `Skapad` | datum och tid |  |
 | `Kundinformation` | text |  |
 | `Anteckning` | text |  |
 | `Logg Datum` | datum |  |
 | `Spara anteckning` | knapp |  |
 | `Hämta anteckning för valt datum` | knapp |  |
-| `Logg` | ft_rich_text | ja |
-| `Bilder övrigt` | ft_img |  |
+| `Logg` | rich text | ja |
+| `Bilder övrigt` | bild |  |
 | `Historiska Fältarbeten` | länk till entry |  |
 | `Redigeringsläge` | kryssruta |  |
 
@@ -87,20 +87,20 @@ Vilka *värden* ett listfält kan ha ligger inte i templaten. De står i
 | `Nätstation` | text |  |
 | `Leveranspunkt` | text |  |
 | **— Mätar info —** | | |
-| `Mätarnummer` | ft_barcode |  |
-| `Star Serienummer` | ft_barcode |  |
+| `Mätarnummer` | streckkod |  |
+| `Star Serienummer` | streckkod |  |
 | `Mätartyp` | lista, ett val |  |
 | `Omsättning` | lista, ett val |  |
 | `Kom typ` | lista, ett val |  |
 | `Antenntyp` | lista, ett val |  |
-| `SIM-kort` | ft_barcode |  |
+| `SIM-kort` | streckkod |  |
 | `RF-bas` | text |  |
 | `Firmware Status` | lista, ett val |  |
 | `Firmware uppgraderades` | datum |  |
-| `User` | ft_user |  |
+| `User` | användare |  |
 | `Status Fältarbete` | lista, ett val |  |
-| `Bokning` | ft_date_time |  |
-| `Koordinater` | ft_map |  |
+| `Bokning` | datum och tid |  |
+| `Koordinater` | karta |  |
 | `Anl. adress.` | javascript-fält |  |
 | `Kund.` | javascript-fält |  |
 | `Mätarplacering.` | javascript-fält |  |
@@ -120,32 +120,32 @@ Vilka *värden* ett listfält kan ha ligger inte i templaten. De står i
 | `2.8.0` | decimaltal |  |
 | `3.8.0` | decimaltal |  |
 | `4.8.0` | decimaltal |  |
-| `Tid för avläsning` | ft_date_time |  |
+| `Tid för avläsning` | datum och tid |  |
 | `Kommentar Avläsning` | text |  |
-| `Bild befintlig mätare` | ft_img |  |
+| `Bild befintlig mätare` | bild |  |
 | **— Ny mätare —** | | |
-| `Nytt mätarnummer` | ft_barcode |  |
-| `Nytt Star Serienummer` | ft_barcode |  |
+| `Nytt mätarnummer` | streckkod |  |
+| `Nytt Star Serienummer` | streckkod |  |
 | `1.8.0 Ny` | decimaltal |  |
 | `2.8.0 Ny` | decimaltal |  |
 | `3.8.0 Ny` | decimaltal |  |
 | `4.8.0 Ny` | decimaltal |  |
-| `Bild ny mätare` | ft_img |  |
+| `Bild ny mätare` | bild |  |
 | `Kommentar Ny mätare` | text |  |
 | `Kundinformation` | text |  |
 | `Anteckning` | text |  |
 | `Logg Datum` | datum |  |
 | `Spara anteckning` | knapp |  |
 | `Hämta anteckning för valt datum` | knapp |  |
-| `Logg` | ft_rich_text | ja |
-| `Bilder övrigt` | ft_img |  |
-| `Historiska Fältarbeten` | länk till entry |  |
+| `Logg` | rich text | ja |
+| `Bilder övrigt` | bild |  |
+| `Tidigare fältarbeten` | rich text |  |
 | `Läser i CM` | kryssruta |  |
 | `Åter till <kund>` | kryssruta |  |
 | `Nytt fältarbete krävs` | kryssruta |  |
 | `Avslutad` | kryssruta |  |
-| `Skapad` | ft_date_time |  |
-| `Datum för avslut` | ft_date_time |  |
+| `Skapad` | datum och tid |  |
+| `Datum för avslut` | datum och tid |  |
 | `Låst för redigering` | kryssruta |  |
 | `Spara ändringar och avsluta Fältarbete` | knapp |  |
 | `Redigeringsläge` | kryssruta |  |
@@ -158,7 +158,7 @@ Vilka *värden* ett listfält kan ha ligger inte i templaten. De står i
 |---|---|---|
 | `Namn` | text |  |
 | `Tjänstest. adr` | text |  |
-| `Koordinater` | ft_map |  |
+| `Koordinater` | karta |  |
 | `Tjänstenr` | heltal |  |
 | `Mobilnummer 1` | text |  |
 | `Mobilnummer 2` | text |  |
@@ -178,10 +178,10 @@ Vilka *värden* ett listfält kan ha ligger inte i templaten. De står i
 |---|---|---|
 | `Adress` | text |  |
 | `Fastighet` | text |  |
-| `Nyckelplats` | ft_multy_str_list |  |
+| `Nyckelplats` | lista, flera val |  |
 | `Nyckel` | text |  |
 | `Anmärkning` | text |  |
 | `Anmärkning Nyckelrör` | text |  |
-| `Placering Nyckelrör` | ft_map |  |
+| `Placering Nyckelrör` | karta |  |
 
 7 fält, i kortets egen ordning.

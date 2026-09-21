@@ -216,7 +216,7 @@ kostar varje gång något ändras.
 egen och intern i appen. Våra åtta sorteras i bokstavsordning under den och
 heter alla `mv-*` eller `fa-*`.
 
-**Bocka bara i dem på `Moduler`.** Bibliotek som bockas i på ett *Shared*-script
+**Bocka bara i dem på** **`Moduler`.** Bibliotek som bockas i på ett *Shared*-script
 blir tillgängliga för alla script i biblioteket. Bockas de i på fler ställen
 läses varje fil in flera gånger, och `Version` börjar rapportera 16 eller 24
 moduler i stället för 8.
@@ -320,18 +320,26 @@ I kortets ordning, uppifrån och ner. Byt ut koden i vart och ett.
 * [x] Panelen **JavaScript Libraries** → penn-ikonen → **+ Add URL** →
   **Add GitHub Repository** → `https://github.com/Miravolt/memento-scripts`
 
-* [ ] Bocka i dessa nio. `moment.min.js` ligger **överst** — den är Mementos
+* [x] Bocka i dessa nio. `moment.min.js` ligger **överst** — den är Mementos
   egen; våra åtta står i bokstavsordning under den.
 
-  - [ ] `moment.min.js`
-  - [ ] `fa-anteckning.js`
-  - [ ] `fa-faltarbete.js`
-  - [ ] `fa-firmware.js`
-  - [ ] `fa-import.js`
-  - [ ] `mv-core.js`
-  - [ ] `mv-db.js`
-  - [ ] `mv-format.js`
-  - [ ] `mv-logg.js`
+  * [x] `moment.min.js`
+
+  * [x] `fa-anteckning.js`
+
+  * [x] `fa-faltarbete.js`
+
+  * [x] `fa-firmware.js`
+
+  * [x] `fa-import.js`
+
+  * [x] `mv-core.js`
+
+  * [x] `mv-db.js`
+
+  * [x] `mv-format.js`
+
+  * [x] `mv-logg.js`
 
 * [x] Koden i scriptet ska vara **tom**. Spara.
 
@@ -389,37 +397,37 @@ Saknas en rättighet kastar Memento en `PermissionError` och scriptet avbryts.
 Det är den vanligaste orsaken till att ett script "inte gör något". Bibliotek
 som inget script rör — arkiv, kartbibliotek och liknande — lämnas obockade.
 
-* [ ] **Library permission** → **Fältarbete**, **Anläggningar**,
+* [x] **Library permission** → **Fältarbete**, **Anläggningar**,
   **Nyckelregister** — samma uppsättning, alla tre
 
-* [ ] *Read files*, *Write files* och *Network* ska vara **obockade**
+* [x] *Read files*, *Write files* och *Network* ska vara **obockade**
 
 ### 7. Radera de gamla scripten
 
 Ordningen spelar ingen roll: `appendToLog()` och `updateFirmwareStatus()` finns
 kvar som shims i modulerna, så inget slutar fungera mitt i.
 
-* [ ] Shared: **`LoggWriter`** — ligger nu i `mv-logg.js`
+* [x] Shared: **`LoggWriter`** — ligger nu i `mv-logg.js`
 
-* [ ] Shared: **`FirmwareSync`** — ligger nu i `fa-firmware.js`
+* [x] Shared: **`FirmwareSync`** — ligger nu i `fa-firmware.js`
 
-* [ ] Action: **`Flyttad till knapp - - Spara ändringar och avsluta Fältarbete`**
+* [x] Action: **`Flyttad till knapp - - Spara ändringar och avsluta Fältarbete`**
   — avstängd dubblett, flyttad till knappfältet
 
 ### 8. Kontroll innan du går vidare
 
-* [ ] Kör **`Version`** → **8 moduler**, samma byggtid på alla
+* [x] Kör **`Version`** → **8 moduler**, samma byggtid på alla
 
   *Säger den 16 eller 24 är modulerna ibockade på fler än ett script. Säger
   den att någon modul AVVIKER har appen en cachad version.*
 
-* [ ] Öppna **varje** script i biblioteket och kontrollera att panelen
+* [x] Öppna **varje** script i biblioteket och kontrollera att panelen
   *JavaScript Libraries* är **tom** — modulerna ska bara vara ibockade på
   `Moduler`
 
-* [ ] Öppna ett entry → kortet ser normalt ut
+* [x] Öppna ett entry → kortet ser normalt ut
 
-* [ ] Ändra ett fält och spara → ändringen hamnar i `Logg`
+* [x] Ändra ett fält och spara → ändringen hamnar i `Logg`
 
 ***
 
@@ -461,21 +469,29 @@ I kortets ordning.
 * [ ] Bocka i dessa nio. `moment.min.js` ligger **överst** — den är Mementos
   egen; våra åtta står i bokstavsordning under den.
 
-  - [ ] `moment.min.js`
-  - [ ] `fa-anteckning.js`
-  - [ ] `fa-faltarbete.js`
-  - [ ] `fa-firmware.js`
-  - [ ] `fa-import.js`
-  - [ ] `mv-core.js`
-  - [ ] `mv-db.js`
-  - [ ] `mv-format.js`
-  - [ ] `mv-logg.js`
+  * [ ] `moment.min.js`
+
+  * [ ] `fa-anteckning.js`
+
+  * [ ] `fa-faltarbete.js`
+
+  * [ ] `fa-firmware.js`
+
+  * [ ] `fa-import.js`
+
+  * [ ] `mv-core.js`
+
+  * [ ] `mv-db.js`
+
+  * [ ] `mv-format.js`
+
+  * [ ] `mv-logg.js`
 
 * [ ] Koden i scriptet ska vara **tom**. Spara.
 
 * [ ] Kontrollera att det bara finns **ett** script som heter `Moduler`
 
-  *Appen hindrar inte två script med samma namn. Två `Moduler` laddar varje
+  *Appen hindrar inte två script med samma namn. Två* *`Moduler`* *laddar varje
   modul två gånger.*
 
 ### 4. Automation → Triggers
@@ -574,21 +590,29 @@ Inga.
 * [ ] Bocka i dessa nio. `moment.min.js` ligger **överst** — den är Mementos
   egen; våra åtta står i bokstavsordning under den.
 
-  - [ ] `moment.min.js`
-  - [ ] `fa-anteckning.js`
-  - [ ] `fa-faltarbete.js`
-  - [ ] `fa-firmware.js`
-  - [ ] `fa-import.js`
-  - [ ] `mv-core.js`
-  - [ ] `mv-db.js`
-  - [ ] `mv-format.js`
-  - [ ] `mv-logg.js`
+  * [ ] `moment.min.js`
+
+  * [ ] `fa-anteckning.js`
+
+  * [ ] `fa-faltarbete.js`
+
+  * [ ] `fa-firmware.js`
+
+  * [ ] `fa-import.js`
+
+  * [ ] `mv-core.js`
+
+  * [ ] `mv-db.js`
+
+  * [ ] `mv-format.js`
+
+  * [ ] `mv-logg.js`
 
 * [ ] Koden i scriptet ska vara **tom**. Spara.
 
 * [ ] Kontrollera att det bara finns **ett** script som heter `Moduler`
 
-  *Appen hindrar inte två script med samma namn. Två `Moduler` laddar varje
+  *Appen hindrar inte två script med samma namn. Två* *`Moduler`* *laddar varje
   modul två gånger.*
 
 ### 4. Automation → Triggers

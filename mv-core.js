@@ -64,6 +64,28 @@ if (!MV.config.theme) MV.config.theme = {
 if (MV.config.dateFormat === undefined) MV.config.dateFormat = "YYYY-MM-DD";
 
 /**
+ * Fält som innehåller datum eller datum och tid.
+ *
+ * Memento lämnar tillbaka dem som **millisekunder**, inte som Date-objekt.
+ * Utan den här listan skriver `MV.fmt.value()` ut talet rakt av, och en
+ * loggrad blir "Tid för avläsning: 1784505600000 -> 1784592000000".
+ *
+ * Typen går inte att läsa av på värdet — ett stort tal kan lika gärna vara ett
+ * mätarställning. Därför en uttrycklig lista. Ett bibliotek som har andra
+ * datumfält skriver över den i sitt Config-script.
+ *
+ * Namnen är hämtade ur memento/FALT.md, inte gissade (invariant I9).
+ */
+if (!MV.config.datumFalt) MV.config.datumFalt = [
+    "Bokning",
+    "Datum för avslut",
+    "Firmware uppgraderades",
+    "Logg Datum",
+    "Skapad",
+    "Tid för avläsning"
+];
+
+/**
  * Efter hur många dagar ska ett bygge anses gammalt? 0 = varna aldrig.
  *
  * STANDARD ÄR 0 — AVSTÄNGD. Läs varför innan du sätter på den.
@@ -441,4 +463,4 @@ MV.ui.summary = function (title, lines) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-21 10:31", hash: "5ce26ef" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-21 11:01", hash: "ca53319" });

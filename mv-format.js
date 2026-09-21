@@ -94,6 +94,38 @@ MV.fmt.nyckel = function (item) {
  * Kanonisk textform av ett fält, för jämförelse och för loggtext.
  * Arrayer slås ihop med " | ". Nyckel-fält får detaljrad.
  */
+/**
+ * Ett datumvärde som "YYYY-MM-DD", oavsett om Memento lämnat det som ett
+ * Date-objekt, som millisekunder eller som en siffersträng.
+ *
+ * Tom sträng för tomt värde. Går talet inte att tolka returneras det oförändrat
+ * — hellre ett obegripligt värde i loggen än ett påhittat datum.
+ */
+MV.fmt.datum = function (raw) {
+    if (raw === null || raw === undefined || raw === "") return "";
+    if (raw instanceof Date) return MV.util.dateStr(raw.getTime());
+
+    // 0 är ett tomt datumfält, inte den 1 januari 1970. Ett verkligt datum i
+    // den här verksamheten ligger inte i närheten av epoken.
+    if (raw === 0) return "";
+
+    if (typeof raw === "number") return MV.util.dateStr(raw);
+
+    var num = Number(raw);
+    if (isNaN(num)) return String(raw);
+    return num === 0 ? "" : MV.util.dateStr(num);
+};
+
+/** true om fältnamnet står i MV.config.datumFalt. */
+MV.fmt.arDatumFalt = function (fieldName) {
+    var lista = MV.config.datumFalt;
+    if (!lista) return false;
+    for (var i = 0; i < lista.length; i++) {
+        if (lista[i] === fieldName) return true;
+    }
+    return false;
+};
+
 MV.fmt.value = function (entryObj, fieldName) {
     if (!entryObj) return "";
 
@@ -111,6 +143,9 @@ MV.fmt.value = function (entryObj, fieldName) {
         return raw.lat + "," + raw.lng;
     }
     if (raw instanceof Date) return MV.util.dateStr(raw.getTime());
+
+    // Datumfält kommer som millisekunder. Se MV.config.datumFalt.
+    if (MV.fmt.arDatumFalt(fieldName)) return MV.fmt.datum(raw);
 
     var items;
     if (MV.fmt.isArrayLike(raw)) {
@@ -192,4 +227,4 @@ MV.fmt.diffFields = function (oldEntry, newEntry, fieldNames) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-format", byggd: "2026-09-21 10:31", hash: "ec8e92e" });
+MV.build.moduler.push({ namn: "mv-format", byggd: "2026-09-21 11:01", hash: "1ad0deb" });

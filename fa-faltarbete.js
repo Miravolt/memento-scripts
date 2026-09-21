@@ -127,7 +127,27 @@ MV.Faltarbete.TRACK_FIELDS = [
     "Produktion", "Anl Id", "Anl Id Produktion", "Säkring",
     "Nätstation", "Leveranspunkt", "Mätarnummer", "Star Serienummer",
     "Mätartyp", "Omsättning", "Kom typ", "Antenntyp", "SIM-kort",
-    "RF-bas", "Mätarplacering", "Firmware Status"
+    "RF-bas", "Mätarplacering", "Firmware Status",
+
+    /*
+     * Avläsning befintlig och Ny mätare — tillagt 21 sep på begäran från
+     * verksamheten. Mätarställningarna är det som faktiskt läses av på plats,
+     * och en felskriven siffra måste gå att spåra i efterhand.
+     *
+     * Två sorters fält i de avsnitten är MED FLIT utelämnade:
+     *
+     *   Kommentar Avläsning, Kommentar Ny mätare
+     *       Ligger redan i COMMENT_FIELDS och loggas som egna block med sin
+     *       fulla text. Här hade de loggats en andra gång, som en före- och
+     *       efter-rad.
+     *
+     *   Bild befintlig mätare, Bild ny mätare
+     *       Bildfält. En diff av dem ger ett filnamn eller en intern
+     *       referens, inte något en människa kan läsa.
+     */
+    "1.8.0", "2.8.0", "3.8.0", "4.8.0", "Tid för avläsning",
+    "Nytt mätarnummer", "Nytt Star Serienummer",
+    "1.8.0 Ny", "2.8.0 Ny", "3.8.0 Ny", "4.8.0 Ny"
 ];
 
 /**
@@ -204,7 +224,13 @@ MV.Faltarbete.byggAtgardsblock = function (newEntry, oldEntry) {
  * uppdateras inte texten. Anläggningens "Historiska Fältarbeten" är facit.
  * ================================================================== */
 
-/** Ett datumfält som "YYYY-MM-DD". Tom sträng om fältet är tomt. */
+/**
+ * Ett datumfält som "YYYY-MM-DD". Tom sträng om fältet är tomt.
+ *
+ * Läser fältet oavsett om det står i MV.config.datumFalt — används på fält vi
+ * VET är datum. Formateringen delas med MV.fmt.datum så att en loggrad och en
+ * historikrad visar samma datum på samma sätt.
+ */
 MV.Faltarbete._datum = function (entryObj, fieldName) {
     var raw;
     try {
@@ -212,12 +238,7 @@ MV.Faltarbete._datum = function (entryObj, fieldName) {
     } catch (ex) {
         return "";
     }
-    if (raw === null || raw === undefined || raw === "") return "";
-    if (raw instanceof Date) return MV.util.dateStr(raw.getTime());
-    if (typeof raw === "number") return MV.util.dateStr(raw);
-
-    var num = Number(raw);
-    return isNaN(num) ? String(raw) : MV.util.dateStr(num);
+    return MV.fmt.datum(raw);
 };
 
 /**
@@ -1118,4 +1139,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-21 10:31", hash: "17b66e4" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-21 11:01", hash: "dc28160" });

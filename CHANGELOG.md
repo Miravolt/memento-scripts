@@ -15,6 +15,24 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **Avläsningar och ny mätare ändringsloggas.** Begärt av verksamheten 21 sep.
+  `TRACK_FIELDS` omfattar nu `1.8.0`–`4.8.0`, `Tid för avläsning`,
+  `Nytt mätarnummer`, `Nytt Star Serienummer` och `1.8.0 Ny`–`4.8.0 Ny`.
+
+  Två sorters fält i samma avsnitt är med flit utelämnade:
+  kommentarfälten, som redan loggas som egna block via `COMMENT_FIELDS` och
+  annars hade kommit två gånger, och bildfälten, vars diff bara ger en intern
+  referens. Båda är låsta med `AVSIKT`-test.
+- **`MV.config.datumFalt` — datumfält skrivs som datum.** Memento lämnar
+  tillbaka datum som millisekunder, och `MV.fmt.value()` formaterade bara äkta
+  `Date`-objekt. `Tid för avläsning` hade därför loggats som
+  `1788000000000 -> 1789000000000`.
+
+  Typen går inte att läsa av på värdet — ett stort tal kan lika gärna vara en
+  mätarställning — så listan är uttrycklig och hämtad ur `memento/FALT.md`.
+  `MV.fmt.datum()` delas nu med historiksammanfattningen, så samma datum visas
+  likadant på båda ställena. `0` räknas som tomt fält, inte som 1 januari 1970.
+
 - **Varning när enheten kör ett gammalt bygge — utan nätverk.**
   `MV.byggAlderDagar()` räknar dagar sedan byggstämpeln, och `MV.byggVarning()`
   ger en rad att haka på ett meddelande när gränsen passerats

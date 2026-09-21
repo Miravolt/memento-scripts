@@ -52,7 +52,9 @@ var FALT_FIELDS = ANL_FIELDS
     .concat(["Åtgärder", "Avslutad", "Läser i CM", "Åter till nätägare",
              "Låst för redigering", "Status Fältarbete", "Skapad",
              "Datum för avslut", "Nytt mätarnummer", "Nytt Star Serienummer",
-             "User", "Firmware"]);
+             "User", "Firmware",
+             "1.8.0", "2.8.0", "3.8.0", "4.8.0", "Tid för avläsning",
+             "1.8.0 Ny", "2.8.0 Ny", "3.8.0 Ny", "4.8.0 Ny"]);
 
 function scenario(prefix, suffix) {
     mock.reset();
@@ -414,6 +416,86 @@ suite("fa-faltarbete — ändringslogg vid spara");
 
     var alla = MV.Faltarbete.byggAtgardsblock(e, null);
     eq(alla.length, 2, "oldEntry=null tar med allt oavsett ändring");
+})();
+
+
+/* ================================================================ */
+suite("fa-faltarbete — avläsningar och ny mätare loggas");
+
+/*
+ * Begärt av verksamheten 21 sep: fälten under Avläsning befintlig och Ny
+ * mätare ska med i ändringsloggen. Mätarställningen är det som faktiskt läses
+ * av på plats, och en felskriven siffra måste gå att spåra.
+ */
+(function () {
+    var s = scenario();
+    var e = s.faltLib.seed({
+        "1.8.0": 12345.6, "2.8.0": 0, "3.8.0": 0, "4.8.0": 0,
+        "Tid för avläsning": 1789000000000,
+        "Nytt mätarnummer": "M-2", "Nytt Star Serienummer": "S-2",
+        "1.8.0 Ny": 0, "Logg": "", "Åtgärder": [], "Kommentar": ""
+    });
+    mock.use(s.faltLib, e);
+
+    var sparad = s.faltLib.seed({
+        "1.8.0": 12000, "2.8.0": 0, "3.8.0": 0, "4.8.0": 0,
+        "Tid för avläsning": 1788000000000,
+        "Nytt mätarnummer": "", "Nytt Star Serienummer": "",
+        "1.8.0 Ny": 0
+    });
+
+    var changes = MV.fmt.diffFields(sparad, e, MV.Faltarbete.TRACK_FIELDS).join("\n");
+
+    ok(changes.indexOf("1.8.0") > -1, "mätarställningen loggas");
+    ok(changes.indexOf("12345.6") > -1, "med det nya värdet");
+    ok(changes.indexOf("Nytt mätarnummer") > -1, "nytt mätarnummer loggas");
+    ok(changes.indexOf("Nytt Star Serienummer") > -1, "nytt serienummer loggas");
+
+    /*
+     * REGRESSION: datumfält kommer som millisekunder. Utan MV.config.datumFalt
+     * hade raden blivit "Tid för avläsning: 1788000000000 -> 1789000000000".
+     */
+    ok(changes.indexOf("Tid för avläsning") > -1, "avläsningstiden loggas");
+    eq(changes.indexOf("1789000000000"), -1,
+       "REGRESSION: datumet skrivs inte ut som millisekunder");
+    ok(/Tid för avläsning[^\n]*20\d\d-\d\d-\d\d/.test(changes),
+       "REGRESSION: det skrivs som ett datum");
+
+    /*
+     * AVSIKT: kommentarfälten hör till COMMENT_FIELDS och loggas där som egna
+     * block. Ligger de även i TRACK_FIELDS loggas samma text två gånger.
+     */
+    for (var i = 0; i < MV.Faltarbete.COMMENT_FIELDS.length; i++) {
+        var namn = MV.Faltarbete.COMMENT_FIELDS[i];
+        eq(MV.Faltarbete.TRACK_FIELDS.indexOf(namn), -1,
+           "AVSIKT: " + namn + " loggas som block, inte som diff");
+    }
+
+    /* AVSIKT: bildfält går inte att diffa begripligt. */
+    eq(MV.Faltarbete.TRACK_FIELDS.indexOf("Bild befintlig mätare"), -1,
+       "AVSIKT: bildfält utelämnas");
+    eq(MV.Faltarbete.TRACK_FIELDS.indexOf("Bild ny mätare"), -1,
+       "AVSIKT: även den andra bilden");
+})();
+
+
+/* ================================================================ */
+suite("mv-format — datumfält formateras som datum");
+
+(function () {
+    eq(MV.fmt.datum(null), "", "tomt ger tom sträng");
+    eq(MV.fmt.datum(""), "", "tom sträng ger tom sträng");
+    eq(MV.fmt.datum(0), "", "AVSIKT: 0 är inget datum utan ett tomt fält");
+    ok(/^20\d\d-\d\d-\d\d$/.test(MV.fmt.datum(1789000000000)),
+       "millisekunder blir ett datum");
+    ok(/^20\d\d-\d\d-\d\d$/.test(MV.fmt.datum(new Date(1789000000000))),
+       "Date-objekt blir samma datum");
+    eq(MV.fmt.datum("inte ett datum"), "inte ett datum",
+       "AVSIKT: otolkbart värde lämnas orört hellre än att hittas på");
+
+    ok(MV.fmt.arDatumFalt("Tid för avläsning"), "listan känner igen fältet");
+    eq(MV.fmt.arDatumFalt("1.8.0"), false,
+       "AVSIKT: ett stort tal i ett mätarfält är ingen tidsstämpel");
 })();
 
 
