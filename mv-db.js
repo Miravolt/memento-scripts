@@ -297,4 +297,4 @@ MV.db.copyFields = function (sourceEntry, fieldNames) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-db", byggd: "2026-09-15 15:59", hash: "4955439" });
+MV.build.moduler.push({ namn: "mv-db", byggd: "2026-09-21 10:31", hash: "4955439" });
