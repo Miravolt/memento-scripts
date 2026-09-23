@@ -961,7 +961,8 @@ MV.Faltarbete.granskaMedDialog = function (opts) {
  *   antalFaltarbeten,
  *   historik, aktiva,     antal länkar som lades till (eller skulle läggas till)
  *   redanOk,              antal som redan var rätt länkade
- *   utanKoppling,         fältarbeten som saknar anläggning — de kan inte placeras
+ *   utanKoppling,         fältarbetet har inget värde i Koppling till anläggning
+ *   okandAnlaggning,      kopplingen finns men anläggningen gick inte att hämta
  *   misslyckade,          länkningar som inte gick igenom trots försök
  *   exempel,              några rader att läsa i dialogen
  *   fel
@@ -974,7 +975,8 @@ MV.Faltarbete.aterstallHistorik = function (opts) {
 
     var res = {
         torr: !skarpt, antalFaltarbeten: 0, historik: 0, aktiva: 0,
-        redanOk: 0, utanKoppling: 0, misslyckade: [], exempel: [], fel: null
+        redanOk: 0, utanKoppling: 0, okandAnlaggning: 0,
+        misslyckade: [], exempel: [], fel: null
     };
 
     /* Inget try/catch — se kommentaren i granska() och MV.db.libEller. */
@@ -997,8 +999,14 @@ MV.Faltarbete.aterstallHistorik = function (opts) {
             continue;
         }
 
+        /*
+         * Skilj på "ingen koppling alls" och "kopplingen pekar på något vi
+         * inte når". Båda gör att posten hoppas över, men de betyder helt
+         * olika saker: det första är tom data, det andra ett länkfält som
+         * pekar fel eller en rättighet som saknas.
+         */
         var anl = MV.db.reload(kopplingar[0], cfg.libAnlaggning);
-        if (!anl) { res.utanKoppling++; continue; }
+        if (!anl) { res.okandAnlaggning++; continue; }
 
         // Avslutat eller pågående? Tre oberoende tecken — räcker med ett, för
         // äldre poster är inte alltid ifyllda på samma sätt.
@@ -1034,15 +1042,12 @@ MV.Faltarbete.aterstallHistorik = function (opts) {
     return res;
 };
 
-/** aterstallHistorik() + rapport. Torrkörning om inget annat anges. */
-MV.Faltarbete.aterstallHistorikMedDialog = function (opts) {
-    var res = MV.Faltarbete.aterstallHistorik(opts);
-
-    if (res.fel) {
-        MV.ui.info("Återställning misslyckades", res.fel);
-        return res;
-    }
-
+/**
+ * Rapporten som text, en rad per post. Utbruten ur dialogen så att den går att
+ * läsa i ett test — det var rapportens formulering, inte siffrorna, som gjorde
+ * att en tom uppsättning såg ut som ett godkänt resultat.
+ */
+MV.Faltarbete.aterstallHistorikText = function (res) {
     var rader = [
         res.torr ? "TORRKÖRNING — ingenting har skrivits." : "SKARP KÖRNING.",
         "",
@@ -1050,8 +1055,24 @@ MV.Faltarbete.aterstallHistorikMedDialog = function (opts) {
         "Redan rätt länkade:      " + res.redanOk,
         (res.torr ? "Skulle läggas till" : "Tillagda") + " i historiken: " + res.historik,
         (res.torr ? "Skulle sättas" : "Satta") + " som aktivt:      " + res.aktiva,
-        "Utan koppling till anläggning: " + res.utanKoppling
+        "Utan koppling till anläggning: " + res.utanKoppling,
+        "Koppling till okänd anläggning: " + res.okandAnlaggning
     ];
+
+    /*
+     * Saknar VARENDA fältarbete koppling är det inte data som är tom — det är
+     * något som strukits. Vanligaste orsaken är en kopia där länkfältet pekats
+     * om: ompekning kastar länkarna. Säg det, i stället för att låta rapporten
+     * se ut som ett lugnande "inget att göra".
+     */
+    if (res.antalFaltarbeten > 0 &&
+        res.utanKoppling === res.antalFaltarbeten) {
+        rader.push("");
+        rader.push("OBS: INGET fältarbete har en koppling till anläggning.");
+        rader.push("Det är inte normalt. I en kopia beror det oftast på att");
+        rader.push("länkfältet pekats om — ompekning kastar länkarna. Kontrollera");
+        rader.push("mot originalet innan du drar någon slutsats om driften.");
+    }
 
     if (res.exempel.length > 0) {
         rader.push("");
@@ -1072,7 +1093,20 @@ MV.Faltarbete.aterstallHistorikMedDialog = function (opts) {
         rader.push("Stämmer detta? Kör om med { skarpt: true }.");
     }
 
-    MV.ui.summary("Återställ historik", rader);
+    return rader.join("\n");
+};
+
+/** aterstallHistorik() + rapport. Torrkörning om inget annat anges. */
+MV.Faltarbete.aterstallHistorikMedDialog = function (opts) {
+    var res = MV.Faltarbete.aterstallHistorik(opts);
+
+    if (res.fel) {
+        MV.ui.info("Återställning misslyckades", res.fel);
+        return res;
+    }
+
+    MV.ui.summary("Återställ historik",
+        MV.Faltarbete.aterstallHistorikText(res).split("\n"));
     return res;
 };
 
@@ -1147,4 +1181,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-21 11:06", hash: "053c810" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-23 09:04", hash: "abacdc9" });

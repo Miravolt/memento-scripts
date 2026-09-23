@@ -221,6 +221,20 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Rättat
 
+- **`Återställ historik` läste som ett godkännande när den inte hade något att
+  arbeta med.** Torrkörningen i generalrepetitionen 23 sep rapporterade 786
+  fältarbeten, 0 att lägga till och 786 utan koppling — vilket ser ut som
+  "allt är redan rätt" men betyder "det finns inga kopplingar alls".
+
+  Rapporten skiljer nu på **utan koppling** (fältet är tomt) och **koppling
+  till okänd anläggning** (länken finns men målet gick inte att hämta) — två
+  helt olika fel som tidigare räknades ihop. Saknar dessutom *varenda* post
+  koppling skrivs en OBS-rad ut som pekar på den troliga orsaken: ett länkfält
+  som pekats om, eftersom ompekning kastar länkarna.
+
+  Rapporttexten är utbruten till `aterstallHistorikText()` så att den går att
+  läsa i ett test. Det var formuleringen, inte siffrorna, som var problemet.
+
 - **`Återställ historik` kraschade i sitt eget `catch` (generalrepetitionen
   15 sep).** Saknad `Library permission` fick Memento att kasta en
   `PermissionError`. Rhino kan inte bygga catch-scopet för en felklass den inte

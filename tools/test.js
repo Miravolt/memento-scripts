@@ -421,6 +421,46 @@ suite("fa-faltarbete — ändringslogg vid spara");
 
 
 /* ================================================================ */
+suite("fa-faltarbete — återställ historik utan kopplingar");
+
+/*
+ * REGRESSION 23 sep. Torrkörningen i generalrepetitionen rapporterade 786
+ * fältarbeten och 786 utan koppling — vilket läste som ett lugnande "inget att
+ * göra". Det var tvärtom: kopiornas länkfält hade pekats om, och ompekning
+ * kastar länkarna. Rapporten måste säga det, inte låta det se normalt ut.
+ */
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    s.faltLib.seed({ "Anl. adress": "Storgatan 1" });
+    s.faltLib.seed({ "Anl. adress": "Nyvägen 2" });
+
+    var res = MV.Faltarbete.aterstallHistorik();
+    eq(res.antalFaltarbeten, 2, "båda fältarbetena gicks igenom");
+    eq(res.utanKoppling, 2, "båda saknar koppling");
+    eq(res.historik, 0, "inget att lägga till");
+
+    var text = MV.Faltarbete.aterstallHistorikText(res);
+    ok(text.indexOf("INGET fältarbete har en koppling") > -1,
+       "REGRESSION: rapporten säger ifrån när alla saknar koppling");
+    ok(text.indexOf("ompekning kastar länkarna") > -1,
+       "REGRESSION: och pekar ut den troliga orsaken");
+
+    // Med en koppling på plats ska varningen försvinna.
+    var anl = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+    var fa = s.faltLib.seed({ "Anl. adress": "Storgatan 1", "Avslutad": true });
+    fa.link("Koppling till anläggning", anl);
+
+    var res2 = MV.Faltarbete.aterstallHistorik();
+    ok(res2.utanKoppling < res2.antalFaltarbeten, "nu saknar inte alla koppling");
+    var text2 = MV.Faltarbete.aterstallHistorikText(res2);
+    eq(text2.indexOf("INGET fältarbete har en koppling"), -1,
+       "AVSIKT: varningen kommer bara när den betyder något");
+})();
+
+
+/* ================================================================ */
 suite("fa-faltarbete — avläsningar och ny mätare loggas");
 
 /*
