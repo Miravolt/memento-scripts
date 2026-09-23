@@ -55,7 +55,8 @@ var FALT_FIELDS = ANL_FIELDS
              "User", "Firmware",
              "1.8.0", "2.8.0", "3.8.0", "4.8.0", "Tid för avläsning",
              "1.8.0 Ny", "2.8.0 Ny", "3.8.0 Ny", "4.8.0 Ny",
-             "Kundinformation"]);
+             "Kundinformation",
+             "Bild befintlig mätare", "Bild ny mätare"]);
 
 function scenario(prefix, suffix) {
     mock.reset();
@@ -526,6 +527,80 @@ suite("fa-faltarbete — avläsningar och ny mätare loggas");
        "AVSIKT: bildfält utelämnas");
     eq(MV.Faltarbete.TRACK_FIELDS.indexOf("Bild ny mätare"), -1,
        "AVSIKT: även den andra bilden");
+})();
+
+
+/* ================================================================ */
+suite("fa-faltarbete — bilder syns i loggen");
+
+/*
+ * Bildfälten går inte att diffa som text — en diff ger en intern referens
+ * ingen kan läsa. ANTALET går däremot, och det är det man vill veta:
+ * "har någon fotograferat?". Utan det måste man öppna kortet och titta.
+ */
+(function () {
+    var s = scenario();
+    var e = s.faltLib.seed({
+        "Kund": "Nisse", "Logg": "", "Åtgärder": [], "Kommentar": "",
+        "Bild ny mätare": [], "Bilder övrigt": []
+    });
+    mock.use(s.faltLib, e);
+
+    var sparad = s.faltLib.seed({
+        "Kund": "Nisse", "Åtgärder": [],
+        "Bild ny mätare": [], "Bilder övrigt": []
+    });
+
+    eq(MV.Faltarbete.byggBildblock(e, sparad).length, 0,
+       "inga bilder, inget block");
+
+    e.set("Bild ny mätare", ["foto1.jpg", "foto2.jpg"]);
+    var block = MV.Faltarbete.byggBildblock(e, sparad);
+
+    eq(block.length, 1, "ändrat antal ger ett block");
+    ok(block[0].indexOf("<b>Bilder:</b>") === 0, "blocket har egen rubrik");
+    ok(block[0].indexOf("Bild ny mätare: 2 bilder tillagda") > -1,
+       "AVSIKT: raden säger vilket fält och hur många");
+    ok(block[0].indexOf("(totalt 2)") > -1, "och hur många som finns nu");
+    ok(block[0].indexOf("Bilder övrigt") === -1,
+       "AVSIKT: orörda bildfält nämns inte");
+
+    // En bild i singular ska inte heta "1 bilder"
+    var en = s.faltLib.seed({ "Bild befintlig mätare": ["a.jpg"] });
+    ok(MV.Faltarbete.byggBildblock(en, null)[0].indexOf("1 bild tillagd") > -1,
+       "singular skrivs i singular");
+
+    // Borttagning är också en ändring värd att logga
+    var fore = s.faltLib.seed({ "Bilder övrigt": ["a.jpg", "b.jpg"] });
+    var efter = s.faltLib.seed({ "Bilder övrigt": ["a.jpg"] });
+    var borttag = MV.Faltarbete.byggBildblock(efter, fore);
+    ok(borttag[0].indexOf("1 bild borttagen") > -1,
+       "AVSIKT: en försvunnen bild formuleras som borttagen, inte tillagd");
+    ok(borttag[0].indexOf("(totalt 1)") > -1, "totalen är den nya");
+
+    /*
+     * Hela vägen genom loggaAndringar. Mockens findById ger tillbaka SAMMA rad,
+     * så det sparade tillståndet måste ställas ut för hand — annars kan ingen
+     * ändring alls uppstå och testet hade mätt ingenting.
+     */
+    var e2 = s.faltLib.seed({
+        "Kund": "Nisse", "Logg": "", "Åtgärder": [], "Bild ny mätare": ["foto.jpg"]
+    });
+    var sparatUtanBild = s.faltLib.seed({
+        "Kund": "Nisse", "Åtgärder": [], "Bild ny mätare": []
+    });
+    mock.use(s.faltLib, e2);
+
+    var riktigFindById = s.faltLib.findById;
+    s.faltLib.findById = function () { return sparatUtanBild; };
+    try {
+        ok(MV.Faltarbete.loggaAndringar(e2),
+           "AVSIKT: en tillagd bild räcker för att något ska loggas");
+        ok(MV.util.htmlToText(e2.field("Logg")).indexOf("1 bild tillagd") > -1,
+           "REGRESSION: bildblocket når faktiskt loggfältet");
+    } finally {
+        s.faltLib.findById = riktigFindById;
+    }
 })();
 
 
@@ -1394,6 +1469,58 @@ suite("fa-faltarbete — historiken som HTML");
 
     eq(MV.Faltarbete.historikHtml(s.anlLib.seed({ "Anl. adress": "Tom" })), "",
        "ingen historik ger tom sträng");
+})();
+
+/*
+ * Historiken ska svara på "finns det bilder i de gamla ärendena?" utan att man
+ * öppnar dem ett i taget. Det var precis det man fick göra manuellt förut.
+ */
+(function () {
+    var s = scenario();
+    mock.use(s.anlLib);
+
+    var anl = s.anlLib.seed({ "Anl. adress": "Storgatan 1", "Logg": "" });
+
+    var medBild = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-05-02"),
+        "Status Fältarbete": "Avslutad", "Åtgärder": ["Avläsning"],
+        "Bild ny mätare": ["a.jpg", "b.jpg"], "Bilder övrigt": ["c.jpg"]
+    });
+    var utanBild = s.faltLib.seed({
+        "Anl. adress": "Storgatan 1", "Datum för avslut": Date.parse("2026-05-01"),
+        "Status Fältarbete": "Avslutad", "Åtgärder": ["Avläsning"]
+    });
+    anl.link("Historiska Fältarbeten", medBild);
+    anl.link("Historiska Fältarbeten", utanBild);
+
+    eq(MV.Faltarbete.historikPost(medBild).bilder, 3,
+       "AVSIKT: bilderna räknas över alla bildfält");
+    eq(MV.Faltarbete.historikPost(utanBild).bilder, 0,
+       "ett ärende utan bilder räknas till noll");
+
+    var html = MV.Faltarbete.historikHtml(anl);
+    ok(html.indexOf("1 av dem har bilder") > 0,
+       "AVSIKT: rubriken säger direkt hur många ärenden som har bilder");
+    ok(html.indexOf("3 bilder i ärendet") > 0,
+       "och blocket säger hur många det rör sig om");
+
+    var text = MV.Faltarbete.historikText(anl);
+    ok(text.indexOf("Avläsning · 3 bilder") > 0,
+       "AVSIKT: textversionen bär samma uppgift på ärenderaden");
+    eq(text.indexOf("0 bilder"), -1, "ärenden utan bilder tiger om saken");
+
+    // Ett ärende som BARA har bilder är inte tomt.
+    var s2 = scenario();
+    mock.use(s2.anlLib);
+    var anl2 = s2.anlLib.seed({ "Anl. adress": "Nyvägen 2", "Logg": "" });
+    anl2.link("Historiska Fältarbeten", s2.faltLib.seed({
+        "Anl. adress": "Nyvägen 2", "Datum för avslut": Date.parse("2026-05-03"),
+        "Bilder övrigt": ["x.jpg"]
+    }));
+    var bara = MV.Faltarbete.historikHtml(anl2);
+    ok(bara.indexOf("1 bild i ärendet") > 0, "singular skrivs i singular");
+    eq(bara.indexOf("Inget registrerat"), -1,
+       "AVSIKT: ett ärende med bara bilder är inte 'Inget registrerat'");
 })();
 
 

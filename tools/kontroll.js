@@ -178,10 +178,13 @@ function kontrolleraReferenser() {
 
     // Åt andra hållet: en modul som ingen dokumentation känner till kommer
     // aldrig att bockas i i appen, och blir därmed osynlig för scripten.
-    var korschema = las(path.join(ROOT, "memento", "DRIFTSATTNING.md"));
+    //
+    // KORSCHEMA.md är filen ägaren följer. DRIFTSATTNING.md pekar bara på den
+    // sedan 23 sep — modullistorna bor här, och det är här de måste stämma.
+    var korschema = las(path.join(ROOT, "memento", "KORSCHEMA.md"));
     for (var j = 0; j < moduler.length; j++) {
         if (korschema.indexOf(moduler[j]) === -1) {
-            fail("I5", moduler[j] + " saknas i memento/DRIFTSATTNING.md — den" +
+            fail("I5", moduler[j] + " saknas i memento/KORSCHEMA.md — den" +
                 " kommer då inte att bockas i i appen och syns inte för scripten");
         }
     }

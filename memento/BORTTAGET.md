@@ -1,6 +1,6 @@
 # Script som ska tas bort i Memento — flyttat
 
-**Listan ligger nu i [`DRIFTSATTNING.md`](DRIFTSATTNING.md), som steg 7 i varje
+**Listan ligger nu i [`KORSCHEMA.md`](KORSCHEMA.md), som delsteg .7 i varje
 biblioteksavsnitt.**
 
 Skälet är att raderingen hör hemma i samma svep som resten av arbetet i det

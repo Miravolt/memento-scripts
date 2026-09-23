@@ -39,7 +39,8 @@ memento/             Vad som står i respektive script inne i Memento.
   FALT.md            genererad fältinventering — vad som finns, och av vilken typ
   UPPSATTNING.md     checklista för uppsättningen i appen
   TESTPLAN.md        vad som ska provas i appen
-  DRIFTSATTNING.md   vad som krävs innan driftbiblioteken rörs, i ordning
+  KORSCHEMA.md       DET ÄGAREN FÖLJER. Hela uppsättningen i appen, steg 1-8
+  DRIFTSATTNING.md   förberedelserna innan körschemat lämnas över
   KOPIERING.md       vad som måste pekas om när bibliotek kopieras
   BORTTAGET.md       Script som ska raderas i appen
 

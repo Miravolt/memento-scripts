@@ -84,6 +84,16 @@ MV.config.faltarbete = {
     faltDatumAvslut: "Datum för avslut",
     faltAtgarder: "Åtgärder",
     faltBilder: "Bilder övrigt",
+
+    /**
+     * Bildfälten, i den ordning de står i kortet.
+     *
+     * De ändringsloggas inte som vanliga fält — en diff av ett bildfält ger en
+     * intern referens som ingen kan läsa. Däremot loggas ATT bilder tillkommit,
+     * och historiken visar om ett tidigare ärende har några. Utan det måste man
+     * öppna varje gammalt ärende för att se efter.
+     */
+    bildFalt: ["Bild befintlig mätare", "Bild ny mätare", "Bilder övrigt"],
     faltKoordinater: "Koordinater",
 
     /**
@@ -183,6 +193,62 @@ MV.Faltarbete.COMMENT_FIELDS = [
  * Åtgärder och kommentarer som loggblock
  * ================================================================== */
 
+/** Antal bilder i ett bildfält. 0 om fältet saknas eller är tomt. */
+MV.Faltarbete._bildAntal = function (entryObj, faltnamn) {
+    if (!entryObj) return 0;
+    try {
+        return MV.fmt.toArray(entryObj.field(faltnamn)).length;
+    } catch (ex) {
+        return 0;           // fältet finns inte i det här biblioteket
+    }
+};
+
+/** "1 bild" / "3 bilder". Delas av loggen och historiken. */
+MV.Faltarbete._bildText = function (antal) {
+    return antal === 1 ? "1 bild" : antal + " bilder";
+};
+
+/** Totalt antal bilder på ett entry, över alla bildfält. */
+MV.Faltarbete.bildAntalTotalt = function (entryObj) {
+    var falt = MV.config.faltarbete.bildFalt;
+    var summa = 0;
+    for (var i = 0; i < falt.length; i++) {
+        summa += MV.Faltarbete._bildAntal(entryObj, falt[i]);
+    }
+    return summa;
+};
+
+/**
+ * Loggblock för bilder som tillkommit eller tagits bort.
+ *
+ * Bildfält går inte att diffa som text, men ANTALET går. Raden säger vilket
+ * fält det gäller och hur många som tillkommit — resten får man se i kortet.
+ *
+ * @param oldEntry  tidigare tillstånd. null -> räkna allt som nytt
+ * @return array av HTML-block (kan vara tom)
+ */
+MV.Faltarbete.byggBildblock = function (newEntry, oldEntry) {
+    var falt = MV.config.faltarbete.bildFalt;
+    var rader = [];
+
+    for (var i = 0; i < falt.length; i++) {
+        var nu = MV.Faltarbete._bildAntal(newEntry, falt[i]);
+        var forr = oldEntry ? MV.Faltarbete._bildAntal(oldEntry, falt[i]) : 0;
+        if (nu === forr) continue;
+
+        var diff = nu - forr;
+        var text = diff > 0
+            ? diff + (diff === 1 ? " bild tillagd" : " bilder tillagda")
+            : (-diff) + (diff === -1 ? " bild borttagen" : " bilder borttagna");
+
+        rader.push("&nbsp;&nbsp;" + falt[i] + ": " + text +
+            " (totalt " + nu + ")");
+    }
+
+    if (rader.length === 0) return [];
+    return ["<b>Bilder:</b>\n" + rader.join("\n")];
+};
+
 /**
  * Bygger loggblock för Åtgärder och kommentarer.
  *
@@ -252,7 +318,7 @@ MV.Faltarbete._datum = function (entryObj, fieldName) {
 /**
  * Plockar ut det som ska visas om ett tidigare fältarbete.
  *
- * @return { datum, anledning, atgarder[], kommentarer[{falt,text}] }
+ * @return { datum, anledning, atgarder[], bilder, kommentarer[{falt,text}] }
  */
 MV.Faltarbete.historikPost = function (tidigare) {
     var cfg = MV.config.faltarbete;
@@ -283,10 +349,14 @@ MV.Faltarbete.historikPost = function (tidigare) {
         kommentarer.push({ falt: falt, text: text });
     }
 
+    // Bilderna visas inte här — historiken är text. Antalet är ändå värt att
+    // bära med, för det är svaret på "behöver jag öppna det gamla ärendet?".
+    // Utan det måste man gå in i varje order och titta efter.
     return {
         datum: datum,
         anledning: status,
         atgarder: MV.fmt.list(tidigare, cfg.faltAtgarder),
+        bilder: MV.Faltarbete.bildAntalTotalt(tidigare),
         kommentarer: kommentarer
     };
 };
@@ -370,6 +440,14 @@ MV.Faltarbete.historikHtml = function (anl) {
                 kom.text.replace(/\n/g, "<br>") + "</div>");
         }
 
+        // Raden finns för att slippa öppna varje gammal order bara för att se
+        // om den bär bilder. Den räknas som innehåll — ett ärende med bara
+        // bilder är inte "Inget registrerat".
+        if (p.bilder > 0) {
+            delar.push("<div style='margin: 0; color: #555555;'><i>Bilder:</i> " +
+                MV.Faltarbete._bildText(p.bilder) + " i ärendet</div>");
+        }
+
         if (delar.length === 0) {
             delar.push("<div style='margin: 0; color: #888888;'>" +
                 "Inget registrerat utöver att ärendet avslutades.</div>");
@@ -383,10 +461,23 @@ MV.Faltarbete.historikHtml = function (anl) {
         html += MV.Logg.block(rubrik, delar.join("\n"));
     }
 
+    var medBilder = 0;
+    for (var b = 0; b < poster.length; b++) {
+        if (poster[b].bilder > 0) medBilder++;
+    }
+
+    var rubrik2 = "<b>" + poster.length + (poster.length === 1
+        ? " tidigare fältarbete</b> på denna anläggning."
+        : " tidigare fältarbeten</b> på denna anläggning.");
+
+    if (medBilder > 0) {
+        rubrik2 += medBilder === 1
+            ? " 1 av dem har bilder."
+            : " " + medBilder + " av dem har bilder.";
+    }
+
     var inledning = "<div style='margin: 0 0 12px 0; color: " + theme.main +
-        ";'><b>" + poster.length + (poster.length === 1
-            ? " tidigare fältarbete</b> på denna anläggning.</div>"
-            : " tidigare fältarbeten</b> på denna anläggning.</div>");
+        ";'>" + rubrik2 + "</div>";
 
     return inledning + html;
 };
@@ -411,6 +502,7 @@ MV.Faltarbete.historikText = function (anl) {
 
         if (p.anledning !== "") rad.push(p.anledning);
         if (p.atgarder.length > 0) rad.push(p.atgarder.join(", "));
+        if (p.bilder > 0) rad.push(MV.Faltarbete._bildText(p.bilder));
 
         ut.push("\u2022 " + rad.join(" \u00b7 "));
 
@@ -584,8 +676,10 @@ MV.Faltarbete.loggaAndringar = function (entryObj) {
 
     var changes = MV.fmt.diffFields(sparad, e, MV.Faltarbete.TRACK_FIELDS);
     var atgarder = MV.Faltarbete.byggAtgardsblock(e, sparad);
+    var bilder = MV.Faltarbete.byggBildblock(e, sparad);
 
     if (atgarder.length > 0) changes.push(atgarder.join("\n\n"));
+    if (bilder.length > 0) changes.push(bilder.join("\n\n"));
     if (changes.length === 0) return false;
 
     MV.Logg.append(e, MV.util.f("logg"), changes.join("\n---\n"));
@@ -702,6 +796,11 @@ MV.Faltarbete.avsluta = function (entryObj) {
     var loggblock = changes.slice(0);
     var atgarder = MV.Faltarbete.byggAtgardsblock(e, null);
     if (atgarder.length > 0) loggblock.push(atgarder.join("\n\n"));
+
+    // Bilderna räknas mot ingenting (oldEntry = null) — anläggningens logg ska
+    // säga vad ÄRENDET bar med sig, inte vad som ändrats sedan senast.
+    var bildblock = MV.Faltarbete.byggBildblock(e, null);
+    if (bildblock.length > 0) loggblock.push(bildblock.join("\n\n"));
 
     if (loggblock.length > 0) {
         MV.Logg.append(anl, MV.util.f("logg"), loggblock.join("\n---\n"));
@@ -1181,4 +1280,4 @@ MV.Faltarbete._arLankfalt = function (value) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-23 09:04", hash: "abacdc9" });
+MV.build.moduler.push({ namn: "fa-faltarbete", byggd: "2026-09-23 09:49", hash: "a1b3164" });

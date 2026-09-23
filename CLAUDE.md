@@ -262,8 +262,9 @@ tools/
 
 memento/             det som ska göras i appen, inte kod som körs
   FALT.md            GENERERAD fältinventering. Facit för vad som finns.
-  DRIFTSATTNING.md   vad som måste vara gjort innan driften rörs, och i vilken
-                     ordning. Backup och återgång ingår.
+  KORSCHEMA.md       DET ÄGAREN FÖLJER, och enda källan för uppsättningen.
+                     Steg 1-8, backup och återgång ingår.
+  DRIFTSATTNING.md   förberedelserna i kopiorna innan körschemat lämnas över
   UPPSATTNING.md     checklista + all scriptkod att klistra in
   TESTPLAN.md        paritetstestet. Facit för när vi är klara.
   KOPIERING.md       länkfält och permissions efter en kopiering

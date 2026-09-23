@@ -15,6 +15,37 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **`memento/KORSCHEMA.md` — det ägaren följer, i en egen fil.** Det som hette
+  Del B i `DRIFTSATTNING.md` ligger nu för sig självt, så att filen kan skickas
+  som den är utan att först rensas från Del A, kopiorna och repetitionen.
+
+  Numreringen är ny: B0–B7 heter nu steg 1–8, och de åtta delstegen i ett
+  biblioteksavsnitt skrivs 2.1, 2.2 och så vidare. Två avsnitt som bara gällde
+  en kopia är borta — förklaringen till varför torrkörningens siffror kan se
+  tomma ut, och repetitionens egna mätvärden. Tabellen över torrkörningens
+  rapport använder nu rapportens exakta ordalydelse, så att den går att jämföra
+  rad för rad mot skärmen.
+
+  `DRIFTSATTNING.md` behåller Del A och pekar på den nya filen. `kontroll.js` I5
+  läser `KORSCHEMA.md` när den kontrollerar att alla åtta moduler står
+  uppräknade — körschemat är enda källan, och får inte finnas på två ställen.
+- **Bilder syns i loggen och i historiken.** Begärt av verksamheten 22 sep: man
+  fick öppna varje gammalt ärende för att se om någon hade fotograferat.
+
+  Bildfälten går fortfarande inte att diffa — en diff ger en intern referens
+  ingen kan läsa, och det AVSIKT-testet står kvar. Men *antalet* går, och det
+  är det man faktiskt frågar efter. Läggs en bild till skriver loggen
+  `Bild ny mätare: 2 bilder tillagda (totalt 2)`, och en borttagen bild
+  formuleras som borttagen. Vid avslut räknas bilderna mot ingenting, så
+  anläggningens logg säger vad ärendet bar med sig.
+
+  Historiken bär samma uppgift: rubriken säger *"3 tidigare fältarbeten på
+  denna anläggning. 1 av dem har bilder."*, och det ärendet får raden
+  `Bilder: 3 bilder i ärendet`. Ett ärende som bara har bilder räknas inte
+  längre som "Inget registrerat".
+
+  Nya: `MV.config.faltarbete.bildFalt`, `MV.Faltarbete.bildAntalTotalt()`,
+  `MV.Faltarbete.byggBildblock()` och fältet `bilder` i `historikPost()`.
 - **Avläsningar och ny mätare ändringsloggas.** Begärt av verksamheten 21 sep.
   `TRACK_FIELDS` omfattar nu `1.8.0`–`4.8.0`, `Tid för avläsning`,
   `Nytt mätarnummer`, `Nytt Star Serienummer` och `1.8.0 Ny`–`4.8.0 Ny`.

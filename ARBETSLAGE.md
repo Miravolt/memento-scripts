@@ -8,7 +8,8 @@ Fas: **mot drift.** Kravet är **minst lika bra som förr** — inte identiskt
 beteende. Förbättringar får följa med. Se `CLAUDE.md` del 6.
 
 Vad som ska provas: [`memento/TESTPLAN.md`](memento/TESTPLAN.md).
-Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
+Vad ägaren gör i appen, steg för steg:
+[`memento/KORSCHEMA.md`](memento/KORSCHEMA.md). Förberedelserna före det:
 [`memento/DRIFTSATTNING.md`](memento/DRIFTSATTNING.md).
 
 ---
@@ -18,40 +19,31 @@ Vad som krävs innan driftbiblioteken rörs, och i vilken ordning:
 *Avsnitt i `ARBETSLAGE.md`, inte en egen fil. Det är här arbetet börjar varje
 gång, och det som hänvisas till som "HÄRNÄST".*
 
-Fyra saker återstår. Ungefär en halvdags arbete plus ägarens timme.
+En sak återstår innan ägaren kan köra. Punkt 1 är en kvart, punkt 2 är ägarens
+timme.
 
-**A3 och A4 är avklarade** (11 sep). A3 var inget fel — kontrollen fungerar.
-A4 var ett riktigt fel och är rättat i koden; det behöver bara verifieras i
-appen efter nästa push, som en del av punkt 2.
+**Generalrepetitionen är genomförd** (23 sep), hela vägen till slutet utan fler
+oklarheter. A3 och A4 är avklarade sedan 11 sep, och A4-rättningen är verifierad
+i appen som en del av repetitionen.
 
-**1. Generalrepetition.** Kör hela `DRIFTSATTNING.md` **Del B** mot kopiorna,
-från B0 till B7. Det är den enda repetition som betyder något, och den avslöjar
-vad som är otydligt i körschemat innan ägaren läser det. Glöm inte **B6**,
-torrkörningen av `Återställ historik` — rapporten ska stämma med tabellen där.
-*En till två timmar.*
+**Körschemat ligger numera i en egen fil: `memento/KORSCHEMA.md`.** Det är den
+filen som skickas — den nämner varken Del A, kopiorna eller repetitionen, och
+allt den innehåller görs i appen. `DRIFTSATTNING.md` behåller Del A och pekar på
+den. **Ändra aldrig körschemat på två ställen**; KORSCHEMA.md är enda källan, och
+`kontroll.js` I5 läser numera den när den kontrollerar att alla åtta moduler står
+uppräknade.
 
-*Påbörjad 15 sep och pausad. Kopiorna är städade, länkarna pekar rätt inom
-uppsättningen, och de tre felen som stoppade den är rättade: dubbla `Moduler` i
-Import, rättigheten i Anläggningar, och `catch`-kraschen i `Återställ historik`.
-Körschemat är omskrivet efter dina kommentarer — börja om från B0 mot det nya.*
+Numreringen är ny i och med utbrytningen: B0–B7 heter nu steg 1–8, och delstegen
+i ett biblioteksavsnitt skrivs 2.1, 2.2 och så vidare. Gamla anteckningar med
+B-nummer pekar ett steg fel — B1 är steg 2.
 
-**Del B är numera hela körschemat.** All uppsättning i appen — fält,
-knappfält, `Moduler`, triggrar, actioner, rättigheter, raderingar — står på
-plats där, ett bibliotek i taget, i den ordning sakerna dyker upp i Memento.
-`UPPSATTNING.md` och `BORTTAGET.md` är uppgångna i den och finns bara kvar som
-vägvisare. Det fanns inget annat sätt: under repetitionen 15 sep blev flera steg
-gjorda två gånger just för att de stod på två ställen.
+**1. Fyll i kontaktuppgifterna.** Rad 6 i `KORSCHEMA.md` har `<kontaktperson>`
+och `<telefon>` som platshållare. De står med flit tomma i repot — det är
+publikt.
 
-**2. Verifiera A4-rättningen** — ingår numera i B7: ändra `Firmware` till
-`Uppgraderad`, spara, och se att `Firmware Status` dyker upp i loggen. Kräver
-att modulerna hämtats om efter pushen.
-
-**3. Rätta körschemat** utifrån allt du snubblade på i punkt 1. Det ägaren
-snubblar på i skarpt läge är det du snubblade på i kopian.
-
-**4. Skicka Del B till ägaren och boka tiden.** Del B är komplett — ingen annan
-fil behövs. Säg att det tar 30–60 minuter, att datan i stort sett inte rörs, och
-att det är en engångsinsats. Sedan kör ägaren Del B, med dig anträffbar.
+**2. Skicka KORSCHEMA.md till ägaren och boka tiden.** Filen är komplett — ingen
+annan behövs. Säg att det tar 30–60 minuter, att datan i stort sett inte rörs,
+och att det är en engångsinsats. Sedan kör ägaren den, med dig anträffbar.
 
 Efter det är det driftsatt. `TESTPLAN.md` är genomgången, länkkartan är utredd,
 och ingen dataflytt behövs.
@@ -66,7 +58,7 @@ och ingen dataflytt behövs.
   sekretesskontroll före push och `push.cmd` för hela kedjan.
 - Byggstämpel + `Version`-action, så man ser i appen vilket bygge som körs och
   om en enskild modul är cachad.
-- 298 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
+- 346 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
 - Åtta buggar rättade, var och en med `REGRESSION`-test. Historiken, `Nyckel`
   som länkfält, den döda `actionText`/`cleanLog`-koden, halvtomma fältarbeten
   från importen, tappade `Mobilnummer 2` / `Lev.punkt`, koordinatstatus,
@@ -88,7 +80,7 @@ och ingen dataflytt behövs.
 - **`Återställ historik`-action.** Bygger upp `Historiska Fältarbeten` och
   `Aktivt Fältarbete` från varje fältarbetes egen `Koppling till anläggning`.
   Torrkörning som standard; lägger bara till länkar, tar aldrig bort någon.
-  Engångskörning vid driftsättningen, se `DRIFTSATTNING.md` B6.
+  Engångskörning vid driftsättningen, se `KORSCHEMA.md` steg 7.
 - **Byggets ålder syns i `Version`.** `MV.byggAlderDagar()` räknar den ur
   byggstämpeln, utan nätverk. Den *varning* som kan hakas på kvittensen efter
   skapa och avsluta finns kvar i koden men är **avstängd som standard**
@@ -118,10 +110,10 @@ stod. Nu är *HÄRNÄST* den enda.
 | Kör hela `TESTPLAN.md` | **Klart.** Kvar ur den: A3 och A4, se *Avvikelser*. |
 | Mät driftens tillstånd via en orörd kopia | **Klart** 9 sep. Se *Länkkartan*. Ingen dataflytt behövs. |
 | Flygplanslägestest | **Klart** — riktiga flöden i varje bibliotek, 8 moduler i cachen. |
-| Uppsättning i appen: fält, knappfält, `Moduler`, triggrar, actioner | Ingår i **Del B**, steg 1–5 i varje biblioteksavsnitt. |
-| Radera de gamla scripten | Ingår i **Del B**, steg 7 i varje biblioteksavsnitt. |
-| Library permission per bibliotek och enhet | Ingår i **Del B**, steg 6 i varje biblioteksavsnitt, plus B5. |
-| Kör `Version` med täckning på varje ny enhet innan den går ut i fält | Ingår i **Del B**, steg B5. Fyller cachen. |
+| Uppsättning i appen: fält, knappfält, `Moduler`, triggrar, actioner | Ingår i `KORSCHEMA.md`, delsteg .1–.5 i varje biblioteksavsnitt. |
+| Radera de gamla scripten | Ingår i `KORSCHEMA.md`, delsteg .7 i varje biblioteksavsnitt. |
+| Library permission per bibliotek och enhet | Ingår i `KORSCHEMA.md`, delsteg .6 i varje biblioteksavsnitt, plus steg 6. |
+| Kör `Version` med täckning på varje ny enhet innan den går ut i fält | Ingår i `KORSCHEMA.md`, steg 6. Fyller cachen. |
 
 ## Avvikelser från testkörningen
 
@@ -257,7 +249,7 @@ fältet `Tidigare fältarbeten`, ompekning av länkfält, `Moduler`, enradsstubb
 och `Version` är alla strukturändringar. `Granska` likaså — en action *är* en
 strukturändring, så den kan inte köras i driften.
 
-**Beslut 9 sep: ägaren utför ändringarna**, med `DRIFTSATTNING.md` Del B som
+**Beslut 9 sep: ägaren utför ändringarna**, med `KORSCHEMA.md` som
 körschema. Den delen är därför omskriven för en läsare som inte varit med i
 arbetet — explicit, med kontrollpunkter och en stoppregel. Del A är det Jimmy
 förbereder i kopiorna.
@@ -345,4 +337,4 @@ Bara det som ändrat riktning. Fastslagna beslut med motivering står i
 | 2026-08 | Diagnosen av historikbuggen korrigerad | Länkfält pekade på ett gammalt testbibliotek. Omhämtningen behålls som skydd, inte som bevisad rättning. |
 | 2026-08 | Dialoger ur knappscripten | Jimmys invändning; texterna hör i git. |
 | 2026-09 | Kravet: minst lika bra som förr, inte identiskt beteende | Förbättringar ska kunna följa med i stället för att vänta. |
-| 2026-09 | Ägaren utför driftsättningen | Jimmy saknar rättigheter i driftbiblioteken. `DRIFTSATTNING.md` Del B skriven för någon utan förkunskap. |
+| 2026-09 | Ägaren utför driftsättningen | Jimmy saknar rättigheter i driftbiblioteken. `KORSCHEMA.md` skriven för någon utan förkunskap. |

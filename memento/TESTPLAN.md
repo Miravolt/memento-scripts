@@ -5,7 +5,8 @@ nu med all kod i git. Beteendet behöver alltså inte vara identiskt med
 startpunkten — en avvikelse kan vara en förbättring. Är den det, flytta den till
 tabellen *Avsiktliga skillnader* nedan i stället för att rätta tillbaka.
 
-När listan är genomgången: `DRIFTSATTNING.md` för vägen till skarp drift.
+När listan är genomgången: `DRIFTSATTNING.md` för vägen till skarp drift, och
+`KORSCHEMA.md` för det ägaren sedan gör i appen.
 
 **Kör allt i testbiblioteken.** Läs `KOPIERING.md` först om de är kopierade —
 pekar ett länkfält fel skriver testet i driftdata.
