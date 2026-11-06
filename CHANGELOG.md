@@ -15,6 +15,68 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Tillagt
 
+- **Importen uppdaterar befintliga anläggningar (avvikelse A5).** Kunduppgifter,
+  `Nätstation` och `Leveranspunkt` följde bara med när anläggningen var **ny**.
+  Fanns den redan tappades de tyst — det enda som skrevs var en saknad
+  koordinat. Nätbolagen kopplar om i nätet och kunduppgifter ändras, så
+  orderfilen är ofta färskare än anläggningen.
+
+  `Lägg upp` samlar nu ihop allt som skulle ändras och **frågar i en enda
+  dialog** innan något skrivs: en rad per fält, före → efter. Sju fält får
+  uppdateras — `Kund`, `Tfn. 1`, `Tfn. 2`, `Mätarplacering`, `Nätstation`,
+  `Leveranspunkt` och `Mätarnummer`. `Anl. adress` och `Tjänst` är med flit
+  utelämnade: adressen kan vara rättad på plats, och `Tjänst` är nyckeln
+  matchningen bygger på — skrivs den om matchar raden inte längre samma
+  anläggning nästa gång, och en dubblett uppstår. `Mätarnummer` är med därför
+  att nätägaren ibland skickar egen personal som byter mätare.
+
+  Tre beslut som är värda att känna till:
+
+  **Tomt i importfilen raderar aldrig.** Samma regel som
+  `tillatTomningVidAvslut` i fältarbetet. Ett tomt fält betyder "inte med i den
+  här filen", inte "ta bort".
+
+  **Avbryter man händer ingenting alls** — inga fältarbeten heller, och
+  radernas status rörs inte, så en omkörning erbjuder samma sak igen. Skapades
+  fältarbetena ändå vore chansen borta: statusen hade bytts och nästa körning
+  hade hoppat över raderna.
+
+  **Uppdateringen sker före `skapa()`.** Den kopierar 28 fält från anläggningen
+  till det nya fältarbetet, så en uppdatering efteråt hade nått anläggningen men
+  inte ärendet man just skapade. Låst med ett `AVSIKT`-test.
+
+  **Knappens kod bär inte med sig någonting** (invariant I12). Mementos
+  dialoger körs asynkront och knappkoden kan köras som en ny instans av
+  scriptet, utan den körnings variabler som visade rutan. Callbacken är därför
+  ett enda anrop — `MV.Import.laggUpp({ godkant: true })` — som hämtar sitt
+  eget underlag på nytt. Första versionen slöt om `forslag` och hade varit grön
+  i testerna men trasig i appen. Mocken sparar numera knapparnas callbacks utan
+  att köra dem, precis som appen, och testet trycker själv.
+
+  Nytt: `MV.ui.fraga()`, `MV.Import.UPPDATERA_FALT`, `MV.Import._tjanstenr()`,
+  `MV.Import.foreslagnaAndringar()`, `MV.Import.samlaUppdateringar()`,
+  `MV.Import.uppdateringsText()`, `MV.Import.skrivUppdateringar()` och
+  `MV.Import.rapportera()`. **Kräver ingenting nytt i appen** — inget fält,
+  ingen action, ingen rättighet.
+- **`Tjänstenr` är ett krav vid import.** En rad utan nummer markerades förr som
+  "Ingen befintlig hittades", och `Lägg upp` skapade då en ny anläggning **utan
+  `Tjänst`** bredvid den som redan fanns. Den anläggningen går aldrig att matcha
+  igen, så nästa orderfil för samma abonnemang lade upp ännu en. Det förklarar
+  dubbletterna Jimmy sett tidigare.
+
+  `Hitta befintliga` lämnar nu sådana rader **obehandlade** i stället för
+  felmarkerade, och rapporten säger hur många de är och vad man ska göra. Två
+  skäl till att de lämnas obehandlade: `Lägg upp` rör bara rader med en status
+  den känner igen, så ingen anläggning kan skapas av misstag — och `Status` är
+  ett listfält, så ett nytt värde hade krävt en strukturändring hos ägaren. En
+  obehandlad rad dyker dessutom upp igen vid varje körning tills filen rättas.
+
+  `Lägg upp` har dessutom en egen spärr, för rader som hann bli statusmärkta
+  innan den här ändringen och ligger kvar i importbiblioteket.
+
+  Samtidigt rättat: en kolumn som saknas i importbiblioteket fällde hela
+  körningen med ett okänt-fält-fel. Nätägarnas filer ser inte likadana ut, så
+  den hoppas nu över.
 - **`memento/KORSCHEMA.md` — det ägaren följer, i en egen fil.** Det som hette
   Del B i `DRIFTSATTNING.md` ligger nu för sig självt, så att filen kan skickas
   som den är utan att först rensas från Del A, kopiorna och repetitionen.
@@ -182,6 +244,40 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
 
 ### Ändrat
 
+- **Invariant I11 — en uppgift bor på ett ställe, övriga pekar dit.** Tre
+  gånger har två dokument sagt emot varandra: `UPPSATTNING.md` mot Del B, de två
+  att-göra-listorna i `ARBETSLAGE.md`, och nu senast avvikelse A5, som låg som
+  "punkt 7 under *Planerat*" i en fil där punkt 7 var template-paketet. Ägaren
+  hade bett om A5 i samband med driftsättningen, och den låg still i två veckor
+  eftersom ingen lista pekade rätt.
+
+  `ARBETSFLODE.md` *Planerat* är nu enda listan. `ARBETSLAGE.md` har en
+  översikt utan eget underhållsansvar, märkt med en spegelrad:
+
+  ```
+  <!-- speglar: ARBETSFLODE.md#Planerat (9 punkter) -->
+  ```
+
+  `kontrolleraDubbelDokumentation()` i `tools/kontroll.js` jämför antalet mot
+  källan och kräver att källan är numrerad 1..N i följd. Läggs en punkt till
+  utan att översikten rörs säger den ifrån. Den läser inte texten — en punkt
+  som bytt innebörd utan att bytt nummer går igenom, och det är den halvan bara
+  en människa kan göra. Punktlistan i `CLAUDE.md` del 3 har därför fått ett
+  femte steg om att leta upp varje dokument som beskriver det man ändrat.
+
+  Samtidigt rättat: arkivbiblioteket fanns bara i `ARBETSLAGE.md` och saknas
+  inte längre i `ARBETSFLODE.md` (punkt 8, template-paketet blev 9), och I5
+  pekade fortfarande på `UPPSATTNING.md` i stället för `KORSCHEMA.md`.
+- **`Bruten i kabelskåp` räknas som en omstart.** Bekräftat 23 sep: bryts
+  matningen i kabelskåpet startar modulen om när strömmen kommer tillbaka.
+  Räkningen i `ARBETSFLODE.md` punkt 2 tar nu både den och `Terminal omstartad`.
+  Funktionen är fortfarande inte byggd.
+- **Omstartsräknaren nollställs av både `Terminal bytt` och `Mätare bytt`.**
+  Bekräftat av verksamheten 23 sep: det sitter alltid en ny
+  kommunikationsmodul på en ny mätare. Skissen i `ARBETSFLODE.md` punkt 2 hade
+  bara `Terminal bytt`, vilket gett för höga tal på varje anläggning där
+  mätaren bytts — alltså precis där modulen är som nyast. Frågan är struken ur
+  *Öppna frågor*. Funktionen är fortfarande inte byggd.
 - **Ett dokument i stället för tre.** `DRIFTSATTNING.md` Del B är numera hela
   körschemat: fält, knappfält, `Moduler`, triggrar, actioner, rättigheter och
   raderingar, ett bibliotek i taget, i den ordning sakerna dyker upp i Memento.

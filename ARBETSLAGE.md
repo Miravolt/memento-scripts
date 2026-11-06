@@ -19,34 +19,65 @@ Vad ägaren gör i appen, steg för steg:
 *Avsnitt i `ARBETSLAGE.md`, inte en egen fil. Det är här arbetet börjar varje
 gång, och det som hänvisas till som "HÄRNÄST".*
 
-En sak återstår innan ägaren kan köra. Punkt 1 är en kvart, punkt 2 är ägarens
-timme.
+**Läge 6 nov 2026: ingenting är driftsatt, och det är goda nyheter.** Ägaren
+har fått `memento/KORSCHEMA.md` men har inte hunnit börja — inget steg är kört.
+Projektet har legat stilla sedan 23 sep eftersom båda haft annat.
 
-**Generalrepetitionen är genomförd** (23 sep), hela vägen till slutet utan fler
-oklarheter. A3 och A4 är avklarade sedan 11 sep, och A4-rättningen är verifierad
-i appen som en del av repetitionen.
+Att ingenting är igång betyder att **alla ändringar kan komma in före
+driftsättningen i stället för efter**, och det gäller i synnerhet sådant som
+rör strukturen. Se punkt 3.
 
-**Körschemat ligger numera i en egen fil: `memento/KORSCHEMA.md`.** Det är den
-filen som skickas — den nämner varken Del A, kopiorna eller repetitionen, och
-allt den innehåller görs i appen. `DRIFTSATTNING.md` behåller Del A och pekar på
-den. **Ändra aldrig körschemat på två ställen**; KORSCHEMA.md är enda källan, och
-`kontroll.js` I5 läser numera den när den kontrollerar att alla åtta moduler står
-uppräknade.
+**Senaste push: 23 sep, `Bryt ut körschemat till memento/KORSCHEMA.md`**
+(c7823cc). Verifierat genom att `.git/refs/heads/main` och
+`.git/refs/remotes/origin/main` pekar på samma commit, och att arbetsfilerna är
+nyare än båda.
 
-Numreringen är ny i och med utbrytningen: B0–B7 heter nu steg 1–8, och delstegen
-i ett biblioteksavsnitt skrivs 2.1, 2.2 och så vidare. Gamla anteckningar med
-B-nummer pekar ett steg fel — B1 är steg 2.
+I pushen ingår bilder i logg och historik samt utbrytningen av körschemat.
+**Opushat på disken** ligger:
 
-**1. Fyll i kontaktuppgifterna.** Rad 6 i `KORSCHEMA.md` har `<kontaktperson>`
-och `<telefon>` som platshållare. De står med flit tomma i repot — det är
-publikt.
+* A5 — importen uppdaterar befintliga anläggningar efter godkännande
+* `Tjänstenr` som krav vid import, med spärr mot anläggning utan `Tjänst`
+* Invariant I11 (en uppgift bor på ett ställe) + `kontrolleraDubbelDokumentation()`
+* Invariant I12 (dialogknappar) + mocken sparar knapparnas callbacks
+* Sammanslagningen av de två Planerat-listorna
+* `Bruten i kabelskåp` som omstart, och `Mätare bytt` som nollställare
 
-**2. Skicka KORSCHEMA.md till ägaren och boka tiden.** Filen är komplett — ingen
-annan behövs. Säg att det tar 30–60 minuter, att datan i stort sett inte rörs,
-och att det är en engångsinsats. Sedan kör ägaren den, med dig anträffbar.
+399 tester gröna, alla fyra kontroller rena i det läge som ligger på disken.
 
-Efter det är det driftsatt. `TESTPLAN.md` är genomgången, länkkartan är utredd,
-och ingen dataflytt behövs.
+**1. Prova A5-dialogen i appen. Detta är spärren före push.**
+Det är enda stället i kodbasen där en dialog fattar ett beslut, och Mementos
+dialoger körs asynkront med knappkoden möjligen i en ny instans (I12). Koden är
+skriven för det, men det är inte provat i appen. Gör det i en kopia:
+
+* Tryck **ja** → det som stod i rutan blir också skrivet
+* Stäng rutan utan att välja → anläggningen är orörd
+* Kvittensen efter ja syns — den är ett `message()`, inte en ruta, eftersom
+  det är omätt om en dialog kan visas ovanpå en annan
+
+Står det sig: pusha. Står det sig inte: säg vad som hände, det är rättbart.
+
+**2. Pusha.** `push.cmd` kör stämpel → kontroll → tester → sekretess → commit.
+
+**3. Bestäm vad mer som ska med INNAN ägaren börjar.**
+Allt under *Planerat* i `ARBETSFLODE.md` som bara är modulkod kan läggas till
+när som helst, även efter driftsättningen — det går ut med nästa modulhämtning.
+
+Men det som kräver ett **nytt fält, ett nytt script eller en ny rättighet**
+måste in i `KORSCHEMA.md` innan ägaren kör, annars kostar det en hel ny runda
+hos hen. Just nu är det gratis. Berörda punkter: 2 (omstartsräknaren som
+heltalsfält i stället för loggrad), 3 (rikare `Lookup` via ett JS-fält i
+Nyckelregister) och 6 (versionskontrollen, som behöver `Network`).
+
+**4. Fyll i kontaktuppgifterna om filen skickas igen.** Rad 6 i `KORSCHEMA.md`
+har `<kontaktperson>` och `<telefon>` som platshållare. De står med flit tomma
+i repot — det är publikt.
+
+**Numreringen i körschemat är ny** sedan utbrytningen: B0–B7 heter steg 1–8, och
+delstegen skrivs 2.1, 2.2 och så vidare. Gamla anteckningar med B-nummer pekar
+ett steg fel — B1 är steg 2.
+
+När ägaren är igenom är det driftsatt. `TESTPLAN.md` är genomgången, länkkartan
+är utredd, och ingen dataflytt behövs.
 
 ---
 
@@ -58,7 +89,7 @@ och ingen dataflytt behövs.
   sekretesskontroll före push och `push.cmd` för hela kedjan.
 - Byggstämpel + `Version`-action, så man ser i appen vilket bygge som körs och
   om en enskild modul är cachad.
-- 346 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
+- 399 tester gröna mot Memento-simulatorn, laddade i alfabetisk ordning.
 - Åtta buggar rättade, var och en med `REGRESSION`-test. Historiken, `Nyckel`
   som länkfält, den döda `actionText`/`cleanLog`-koden, halvtomma fältarbeten
   från importen, tappade `Mobilnummer 2` / `Lev.punkt`, koordinatstatus,
@@ -117,9 +148,9 @@ stod. Nu är *HÄRNÄST* den enda.
 
 ## Avvikelser från testkörningen
 
-Hela `TESTPLAN.md` är körd. A1 är löst i koden, A2 är gjord synlig, A5 är
-parkerad som önskemål. **A3 och A4 stängdes 11 sep** — A3 var inget fel, A4 var
-det och är rättat.
+Hela `TESTPLAN.md` är körd. A1 är löst i koden och A2 är gjord synlig.
+**A3 och A4 stängdes 11 sep** — A3 var inget fel, A4 var det och är rättat.
+**A5 stängdes 23 sep** och är byggd.
 
 **A1 — LÖST i koden, kvar i appen. `Historiska Fältarbeten` i Fältarbete kan
 inte finnas.**
@@ -176,13 +207,24 @@ diffen tas. Har den andra triggern redan kört returnerar den `false` och
 ingenting händer, så resultatet blir detsamma oavsett ordning. Låst med tre
 `REGRESSION`-tester som fallerar om anropet tas bort.
 
-**A5 — Importen uppdaterar inte befintliga anläggningar.**
-Kunduppgifter, `Nätstation` och `Leveranspunkt` följer bara med när anläggningen
-är ny. Detta fungerade inte förr heller, så inget har blivit sämre — men
-verksamheten behöver det: nätbolagen kopplar om i nätet och kunduppgifter
-ändras. Önskemål: dialog som visar vad som skulle ändras och när det senast
-ändrades, med möjlighet att avbryta, samt loggning av ändringen. Parkeras som
-punkt 7 under *Planerat*.
+**A5 — RÄTTAD 23 sep. Importen uppdaterar nu befintliga anläggningar.**
+*Kunduppgifter, `Nätstation` och `Leveranspunkt` följde bara med när
+anläggningen var ny. Fanns den redan tappades de tyst — det enda som skrevs var
+en saknad koordinat. Detta fungerade inte förr heller, så det bröt inte mot
+paritetskravet, men verksamheten behöver det: nätbolagen kopplar om i nätet och
+kunduppgifter ändras.*
+`MV.Import.laggUpp()` föreslår numera ändringarna i en dialog innan något
+skrivs, och skriver bara efter ett ja. Sju fält får uppdateras: `Kund`,
+`Tfn. 1`, `Tfn. 2`, `Mätarplacering`, `Nätstation`, `Leveranspunkt` och
+`Mätarnummer`. `Anl. adress` och `Tjänst` är med flit utelämnade — adressen kan
+vara rättad på plats, och `Tjänst` är nyckeln matchningen bygger på. Tomt i
+importfilen raderar aldrig. Ändringen loggas i anläggningen med `(importen)`
+som källa. **Kräver ingenting nytt i appen** — inget fält, ingen action, ingen
+rättighet — så den går ut med nästa modulhämtning.
+**Låg fel i planeringen.** Den beskrevs som "punkt 7 under *Planerat*", men
+punkt 7 i `ARBETSFLODE.md` var template-paketet. Ägaren hade bett om det här
+i samband med driftsättningen och det föll mellan stolarna i två veckor. Det
+var anledningen till invariant I11.
 
 ## Länkkartan 9 sep — uppmätt, inte gissat
 
@@ -266,26 +308,33 @@ just därför arkitekturen ser ut som den gör.
 
 ## Parkerat till efter driftsättning
 
-Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
+**Listan står i `ARBETSFLODE.md` under *Planerat*, och bara där.**
 
-1. `Nytt fältarbete krävs` — ska kunna avsluta utan de andra kryssen, troligen
-   med en dialog som erbjuder att skapa nästa fältarbete.
-2. Omstartsräkning. `Terminal omstartad` räknas, `Terminal bytt` nollställer —
-   **obekräftat om `Mätare bytt` också nollställer.** Fråga innan du bygger.
-3. Rikare `Lookup` — mer än nyckelnumret i statusraden, via ett JS-fält i
-   Nyckelregister.
-4. PDF → CSV för importen.
-5. Widgets och utseende.
-6. Varning när enheten kör en gammal version — `senaste.json` + `http()`, aldrig
-   i en trigger. Tre saker måste mätas först, se `ARBETSFLODE.md`.
-7. Importen ska kunna uppdatera **befintliga** anläggningar — kunduppgifter,
-   `Nätstation`, `Leveranspunkt` — med en dialog som visar vad som skulle
-   ändras och när det senast ändrades, går att avbryta, och loggar ändringen.
-8. Arkivbibliotek för avslutade fältarbeten. Skulle ge äkta länkar från ett
-   fältarbete till tidigare ärenden, vilket inte går inom ett bibliotek.
-   **Utred först om bilder går att föra över** — det var där det fastnade förra
-   gången. Beställaren har sagt att allt ska ligga i ett bibliotek, så det
-   kräver också ett omtag med dem.
+Här stod länge en egen uppräkning av samma saker. De två höll ihop till punkt 6
+och numrerade sedan om åt olika håll, så "punkt 7" betydde importen på ett
+ställe och template-paketet på det andra. Den som läste fel fil fick fel svar.
+Det är samma fel som två gånger tidigare — `UPPSATTNING.md` mot Del B,
+och de två att-göra-listorna i den här filen. Se invariant I11 i `CLAUDE.md`.
+
+Kort om vad som ligger där, som orientering — **inte** som en lista att
+underhålla:
+
+<!-- speglar: ARBETSFLODE.md#Planerat (9 punkter) -->
+
+| # | Vad | Blockerad av |
+|---|---|---|
+| 1 | `Nytt fältarbete krävs` ska göra något | inget — kan byggas |
+| 2 | Omstartsräkning | inget — nollställningsregeln bekräftad 23 sep |
+| 3 | Rikare `Lookup` via ett JS-fält i Nyckelregister | omätt om JS-fält når modulerna |
+| 4 | PDF → CSV | behöver se hur PDF:erna ser ut |
+| 5 | Widgets och utseende | ospecificerat |
+| 6 | Varning när enheten kör en gammal version | steg 1 är obeblockerat, se `ARBETSFLODE.md` |
+| 7 | Bilder i logg och historik | **byggt 23 sep** |
+| 8 | Arkivbibliotek | bildöverföring + omtag med beställaren |
+| 9 | Template-paket för nästa kund | vänta tills driftsättningen står |
+
+Importen som uppdaterar **befintliga** anläggningar (avvikelse A5) låg här som
+punkt 7 och är **byggd 23 sep**. Se *Avvikelser* nedan.
 
 ## Öppna frågor
 
@@ -315,7 +364,11 @@ Specificerat i `ARBETSFLODE.md` under *Planerat*. Bygg inte i förtid.
   schemaläggning på desktop, och `lib().notes` finns inte. Kvar står ett vanligt
   entry som bärare; öppet är vilket bibliotek det ska ligga i. Se
   `ARBETSFLODE.md` punkt 6. Behövs inte före driftsättning.
-- Nollställer `Mätare bytt` omstartsräknaren? (punkt 2 ovan)
+- ~~Nollställer `Mätare bytt` omstartsräknaren?~~ **Besvarad 23 sep: ja.** Det
+  sitter alltid en ny kommunikationsmodul på en ny mätare, så både
+  `Mätare bytt` och `Terminal bytt` nollställer. Räknaren mäter hur väl den
+  nuvarande modulen fungerar sedan den blev ny. Infört i `ARBETSFLODE.md`
+  punkt 2.
 - Behöver `Config`-scriptet finnas i alla bibliotek, eller bara där något
   faktiskt avviker? Nämns inte i Del B alls — läggs bara till om något visar sig avvika.
 - Testbiblioteken innehåller riktiga data från avslutade jobb. Ska de tömmas

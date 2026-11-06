@@ -21,6 +21,17 @@ det som försvinner först när ingen skrivit ner det.
    anläggningar på Tjänstenr → `Lägg upp` skapar anläggning där ingen fanns och
    startar ett fältarbete.
 
+   **`Tjänstenr` måste finnas på raden.** Saknas det lämnas raden obehandlad
+   och flaggas i rapporten. Utan nummer går den inte att matcha, och en
+   anläggning utan `Tjänst` kan aldrig matchas igen — nästa orderfil för
+   samma abonnemang hade lagt upp ännu en.
+
+   Fanns anläggningen redan **frågar `Lägg upp` om den ska uppdateras** med
+   orderfilens uppgifter — kund, telefonnummer, mätarplacering, mätarnummer,
+   `Nätstation` och `Leveranspunkt`. Nätbolagen kopplar om i nätet och
+   kunduppgifter ändras, så filen är ofta färskare än anläggningen. Inget
+   skrivs utan ett ja, och ett tomt fält i filen raderar aldrig något.
+
 4. **Besök i fält.** För det mesta går jobbet att göra direkt — mätaren är
    åtkomlig med nyckel från nätägaren, eller via nyckelrör vid adressen. Ibland
    sitter mätaren inlåst och kräver bokning med kund. Ibland får man inte tag
@@ -106,6 +117,20 @@ Inget av detta är byggt. Ordningen är medveten: **paritet med det gamla
 beteendet först**, sedan det här. Blandar man ihop dem blir "fungerar det som
 förut?" en omöjlig fråga.
 
+> **Det här avsnittet är enda listan.** `ARBETSLAGE.md` hade länge en egen
+> uppräkning som numrerade om från punkt 7 och framåt, så att "punkt 7" betydde
+> olika saker i de två filerna. Den är borttagen 23 sep och ersatt av en
+> hänvisning hit. Lägg till, stryk och numrera om **här**, aldrig på två
+> ställen. Se invariant I11 i `CLAUDE.md`.
+>
+> Två saker rättades när listorna slogs ihop. **Arkivbiblioteket** fanns bara i
+> `ARBETSLAGE.md` och saknades helt här; det står nu som punkt 8, och
+> template-paketet som var punkt 7 heter numera 9. Och **importen som
+> uppdaterar befintliga anläggningar** (avvikelse A5) stod i `ARBETSLAGE.md`
+> som "punkt 7 under *Planerat*" — men punkt 7 här var template-paketet, så
+> hänvisningen pekade fel hela tiden. Den är **byggd 23 sep** och därför inte
+> med i listan alls.
+
 ### 1. `Nytt fältarbete krävs` ska göra något
 
 Kryssrutan finns i Fältarbete men ingen modul läser den. Avsikten var två
@@ -137,28 +162,42 @@ mot något som faktiskt finns i datan.
 Rutinen: har kommunikationsmodulen startats om **tre gånger** och samma fel
 återkommer, ska modulen bytas. Det finns ingen möjlighet att se det idag.
 
-Datan finns dock redan. `Åtgärder` innehåller `Terminal omstartad` och
-`Terminal bytt`, och varje tidigare fältarbete ligger i anläggningens historik.
-Räkningen är alltså beräkningsbar:
+Datan finns dock redan. `Åtgärder` bär alla fyra värden som behövs, och varje
+tidigare fältarbete ligger i anläggningens historik. Räkningen är alltså
+beräkningsbar:
 
 ```
-antal Terminal omstartad i historiken, räknat EFTER senaste Terminal bytt
+antal ("Terminal omstartad" ELLER "Bruten i kabelskåp") i historiken,
+räknat EFTER den SENASTE av "Terminal bytt" och "Mätare bytt"
 ```
 
 Skiss:
 
 ```js
-MV.Faltarbete.raknaAtgard(anlaggning, "Terminal omstartad", {
-    nollstallsAv: "Terminal bytt"
+MV.Faltarbete.raknaAtgard(anlaggning, ["Terminal omstartad", "Bruten i kabelskåp"], {
+    nollstallsAv: ["Terminal bytt", "Mätare bytt"]
 });
 ```
+
+**`Bruten i kabelskåp` räknas som en omstart** (bekräftat 23 sep). Bryts
+matningen i kabelskåpet startar modulen om när strömmen kommer tillbaka —
+det är samma sak för modulen som en omstart på plats, bara utfört längre
+bort i nätet.
 
 `skapa()` skulle sedan kunna sätta ett fält och skriva en tydlig rad i loggen
 när gränsen nås — `⚠ 3 omstarter sedan senaste terminalbyte. Byt terminal.`
 
-**Att bekräfta:** att räkningen ska nollställas av `Terminal bytt` är min
-tolkning av rutinen, inte något du sagt uttryckligen. Och `Mätare bytt` — ska
-den också nollställa, eller är terminal och mätare olika saker här?
+**Bekräftat 23 sep: båda nollställer.** Det sitter alltid en ny
+kommunikationsmodul på en ny mätare, så ett mätarbyte ger en ny terminal även
+när ingen bytt terminalen. Ibland byts bara modulen — när den gått sönder eller
+strulat mycket — och då nollställer `Terminal bytt` ensam.
+
+Räknaren mäter alltså **hur väl den nuvarande modulen fungerar**, sedan den
+blev ny, oavsett vilken väg den blev det. Med bara `Terminal bytt` som
+nollställare hade siffran blivit för hög på varje anläggning där mätaren bytts
+— alltså precis där modulen är som nyast, och där larmet gör mest skada.
+
+*"Terminal" är Mementos namn på kommunikationsmodulen.*
 
 Var siffran ska synas är också öppet. Loggen fungerar utan schemaändring, men
 ett heltalsfält på fältarbetet går att sortera och filtrera på, vilket är vad
@@ -476,7 +515,32 @@ ingen rört på en månad. Åldersvarningen täcker redan den telefon som ingen 
 det här täcker fallet där en bugfix är två dagar gammal och enheten inte vet om
 det.
 
-### 7. Ett färdigt template-paket för nästa kund
+### 7. Nytt: bilder i loggen och historiken — BYGGT 23 sep
+
+Behålls som rad i listan bara för att den som letar efter den ska hitta att den
+är gjord, inte planerad. Loggen säger numera när bilder tillkommit, och
+historiken visar vilka tidigare ärenden som har bilder. Se `CHANGELOG.md`.
+
+Det som fortfarande **inte** går är att diffa en bild — en diff av ett bildfält
+ger en intern referens ingen kan läsa. Det är antalet som loggas.
+
+### 8. Arkivbibliotek för avslutade fältarbeten
+
+Skulle ge **äkta länkar** från ett fältarbete till tidigare ärenden. Det går
+inte inom ett bibliotek: ett `Link to entry`-fält kan inte peka på sitt eget
+bibliotek, vilket är hela orsaken till att historiken bor i anläggningen och
+att fältarbetet bara får en textsammanfattning (avvikelse A1).
+
+Två saker blockerar, och den ena är ett samtal:
+
+- **Utred först om bilder går att föra över.** Det var där det fastnade förra
+  gången. Går de inte är ett arkiv sämre än det vi har.
+- **Beställaren har sagt att allt ska ligga i ett bibliotek.** Ett arkiv kräver
+  alltså ett omtag med dem, inte bara ett tekniskt beslut.
+
+*Stod tidigare bara i `ARBETSLAGE.md` och saknades i den här listan.*
+
+### 9. Ett färdigt template-paket för nästa kund
 
 Idé från Jimmy 15 sep, ursprungligen tänkt som en genväg för *den här*
 driftsättningen. Som genväg duger den inte — se nedan — men som förberedelse

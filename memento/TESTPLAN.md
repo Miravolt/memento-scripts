@@ -80,13 +80,103 @@ en helt ny, och en med koordinat men där anläggningen saknar koordinat.
 
 * [x] Kör `Lägg upp` **en andra gång** på samma rader → inga dubbletter skapas
 
+### Befintliga anläggningar uppdateras (A5, byggt 23 sep)
+
+**Det här är enda stället i hela kodbasen där en dialog fattar ett beslut**, och
+Mementos dialoger körs asynkront med knappkoden möjligen som en ny instans av
+scriptet. Koden är skriven för det — knappen anropar `Lägg upp` på nytt i
+stället för att bära med sig något — men det är inte provat i appen. Det är
+därför det här provet går före de andra.
+
+**Pusha först.** Provet kräver att modulerna finns på enheten, och de hämtas
+bara från GitHub. Det är ofarligt just nu: driftbiblioteken har ännu inget
+`Moduler`-script, så ingenting i drift *kan* hämta koden. Bara kopiorna har
+`Moduler`, och bara när du själv trycker på uppdateringsknappen.
+
+Allt nedan görs i **kopieuppsättningen**, på desktop.
+
+#### Förbered
+
+* [ ] Kör `push.cmd`
+
+* [ ] Öppna **Import Fältarbete**-kopian → *Automation* → `Moduler` → tryck
+  **uppdateringsknappen** vid bibliotekslistan (runda pilen ovanför listan)
+
+* [ ] Kör `Version` → byggtiden ska vara den nya, och **8 moduler**
+
+* [ ] Öppna **Anläggningar**-kopian och välj ut en anläggning att prova mot.
+  Den ska ha ett `Tjänst`-nummer, en koordinat, och **inget aktivt
+  fältarbete**. Anteckna dess `Tjänst` och dess `Kund`.
+
+  *Har den ett aktivt fältarbete vägrar `skapa()` med "anläggningen har redan
+  ett aktivt fältarbete". Uppdateringen skrivs ändå — den sker före
+  fältarbetet — så provet funkar, men rapporten säger "1 hoppades över" och
+  det ser ut som ett fel fast det inte är det.*
+
+* [ ] Skapa **en** rad i Import Fältarbete-kopian:
+
+  * `Tjänstenr` = anläggningens `Tjänst`
+  * `Namn` = något annat än anläggningens `Kund`, t.ex. `Testkund A5`
+  * `Mobilnummer 2` = ett valfritt nummer, så att du ser ett tomt fält fyllas i
+  * `Status` = `-`
+  * `Koordinater` = vad som helst, den skrivs över av anläggningens
+
+* [ ] Kör `Hitta befintliga` → raden får status **Hittat befintlig** och
+  `Befintlig` pekar på anläggningen
+
+#### Kör provet
+
+* [ ] Kör `Lägg upp` → **dialogen kommer först**, före allt annat, och visar
+  anläggningens namn med en rad per fält: `Kund: <gammalt> → Testkund A5` och
+  `Tfn. 2: tomt → <numret>`
+
+* [ ] **Stäng rutan utan att välja** (klicka utanför, eller Esc) → öppna
+  anläggningen: den ska vara **orörd**, och importraden ska fortfarande stå på
+  `Hittat befintlig`
+
+  *Det här är själva poängen med provet. Händer något här ligger skrivningen
+  på fel sida om knappen.*
+
+* [ ] Kör `Lägg upp` igen → tryck **Avbryt** → samma sak, ingenting skrivet
+
+* [ ] Kör `Lägg upp` igen → tryck **Uppdatera och lägg upp**
+
+* [ ] **Kom kvittensen fram?** Den är ett kort meddelande, inte en ruta —
+  det är omätt om en dialog kan visas ovanpå en annan. Säg till om den inte
+  syns alls.
+
+#### Kontrollera efteråt
+
+* [ ] Anläggningen har `Kund` = `Testkund A5` och `Tfn. 2` ifyllt
+
+* [ ] Anläggningens `Logg` har raderna, med `(importen)` som källa
+
+* [ ] `Anl. adress` och `Tjänst` är **orörda**
+
+* [ ] Fält som var tomma i importraden raderade ingenting
+
+* [ ] Det fältarbete som skapades bär **de nya** värdena, inte de gamla
+
+* [ ] Kör `Lägg upp` igen → ingen dialog, inget att uppdatera
+
+### Tjänstenr saknas (byggt 23 sep)
+
+* [ ] En importrad utan `Tjänstenr` → `Hitta befintliga` lämnar den med status
+  `-` och rapporten säger hur många som saknar nummer
+
+* [ ] `Lägg upp` skapar **ingen** anläggning för den raden
+
+* [ ] Kör `Hitta befintliga` igen → den flaggas på nytt, den glöms inte
+
+* [ ] Fyll i `Tjänstenr` och kör om → raden behandlas som vanligt
+
 ### Fält som förr tappades
 
-* [x] `Mobilnummer 2` hamnar i `Tfn. 2` (Tfn. 2 följer med när ny anläggning skapas. Inga nya kundupgifter följer med till befintlig anläggning. Kundens upgifter kan ändras mellan gångerna. Behöver en dialog för att godkänna att det ändras med datum det senast ändrades. Måste gå att avbryta för att kolla så det stämmer och sedan försöka igen)
+* [x] `Mobilnummer 2` hamnar i `Tfn. 2` (Tfn. 2 följer med när ny anläggning skapas. Inga nya kundupgifter följer med till befintlig anläggning. Kundens upgifter kan ändras mellan gångerna. Behöver en dialog för att godkänna att det ändras med datum det senast ändrades. Måste gå att avbryta för att kolla så det stämmer och sedan försöka igen) — **åtgärdat 23 sep, se A5 ovan.** Dialogen visar före → efter och går att avbryta. *Datumet för när fältet senast ändrades är däremot inte med: det finns bara i anläggningens `Logg`, och bara om ändringen gjordes av ett av våra script. Säg till om det behövs ändå.*
 
-* [x] `Lev.punkt(1)` → `Nätstation` (Var fältet tomt i befintlig och fylldes inte i vid uppläggning. Nätbolagen kan koppla om i nätet så dessa kan ändras mellan anläggningar. Logga vid ändring)
+* [x] `Lev.punkt(1)` → `Nätstation` (Var fältet tomt i befintlig och fylldes inte i vid uppläggning. Nätbolagen kan koppla om i nätet så dessa kan ändras mellan anläggningar. Logga vid ändring) — **åtgärdat 23 sep.** Loggas i anläggningen.
 
-* [x] `Lev.punkt(2)` → `Leveranspunkt` (Samma som Lev.punkt(1))
+* [x] `Lev.punkt(2)` → `Leveranspunkt` (Samma som Lev.punkt(1)) — **åtgärdat 23 sep.**
 
 * [x] Det nya fältarbetet är **inte halvtomt** — gå igenom att fälten från
   anläggningen faktiskt följt med, inte bara de första (Det som fylldes i följde med)

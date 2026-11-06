@@ -315,6 +315,7 @@ Importfilens koordinat är grov; en fälttekniker på plats vet bättre.
 | `Lägg upp`, anläggningen saknar koordinat | Anläggningen **får** importradens, innan fältarbetet skapas |
 | `Lägg upp`, anläggningen har koordinat | Rörs inte |
 | `Lägg upp` skapar en **ny** anläggning | Får importradens koordinat |
+| `Lägg upp` uppdaterar en **befintlig** anläggning | Koordinaten är inte med bland fälten som uppdateras — anläggningens gäller |
 | Fältarbete skapas | Kopierar anläggningens koordinat |
 | **Fältarbete avslutas** | Fältarbetets koordinat **skrivs till anläggningen** — har teknikern rättat den på plats gäller den framåt |
 

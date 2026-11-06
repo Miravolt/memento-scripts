@@ -247,8 +247,18 @@ global.dialog = function () {
         title: function (t) { d.title = t; return api; },
         text: function (t) { d.text = t; return api; },
         view: function (v) { d.lines = v.lines || []; return api; },
-        positiveButton: function () { return api; },
-        negativeButton: function () { return api; },
+        /*
+         * Knapparnas callbacks SPARAS men körs inte. Så beter sig appen: rutan
+         * visas, scriptet går vidare, och koden i knappen körs först när någon
+         * trycker — asynkront, och möjligen som en ny instans av scriptet.
+         *
+         * Testet trycker själv, med d.ja(). Det gör två saker synliga som
+         * annars inte går att se: att ingenting skrivs innan någon svarat, och
+         * att callbacken klarar sig utan den anropande körningens variabler.
+         * Se invariant I12.
+         */
+        positiveButton: function (t, cb) { d.jaText = t; d.ja = cb; return api; },
+        negativeButton: function (t, cb) { d.nejText = t; d.nej = cb; return api; },
         show: function () { dialogs.push(d); return api; }
     };
     return api;

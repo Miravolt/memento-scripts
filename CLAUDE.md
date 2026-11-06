@@ -47,6 +47,7 @@ härleda — de är uppmätta i appen.
 | **Att FÅNGA ett fel från Memento kan i sig krascha scriptet** | Saknas `Library permission` kastar appen en `PermissionError`. Rhino kan inte bygga catch-scopet för en felklass den inte känner till och dör med `No enum constant ...NativeErrors.PermissionError` — en Java-stacktrace i loggen i stället för Mementos egen rättighetsdialog. *Uppmätt 15 sep 2026: `Återställ historik` kördes utan rättighet till Fältarbete och kraschade i sitt eget `catch`.* Se invariant I10. |
 | **Två Shared-script kan heta exakt samma sak** | Appen hindrar det inte. Två `Moduler` i samma bibliotek laddar varje modul två gånger; `Version` rapporterade 16 i stället för 8. Uppmätt i Import Fältarbete 15 sep. Byggstämpeln är den enda satsen på toppnivå som inte är idempotent, så det är räkningen som avslöjar det — `MV.about()` pekar numera ut dubbletterna. |
 | **Java-åtkomsten är blockerad** | `lib().getClass()` kastar. Ingen reflektion, inga `Packages.*`, inget `java.io`. Följden är att **det dokumenterade API:t är hela API:t** — det finns inget sätt att ta reda på vad som egentligen finns. Står en egenskap inte i dokumentationen och svarar `undefined` är frågan avgjord; leta inte vidare. |
+| **En dialogs knappkod körs asynkront, och kan köras som en NY instans av scriptet** | Jimmys erfarenhet av Mementos dialoger, 23 sep. Två följder: `show()` kan returnera direkt, så allt som ska hända måste ligga i knappens callback och inget efter anropet — och callbacken kan sakna den anropande körningens variabler, så den får inte bära med sig entry-handtag, listor eller opts. Skriv den som ett anrop som hämtar sitt eget underlag på nytt. Se invariant I12 och `MV.ui.fraga()`. Om en dialog kan visas ovanpå en annan är **omätt**; kvittera med `message()` inifrån en callback. |
 | **`message()` försvinner efter några sekunder** | Duger för en kvittens, inte för något man ska läsa. Allt med mer än en rad ska visas med `MV.ui.info()` / `dialog()`, som står kvar tills man trycker OK. Gäller i synnerhet mätscript. |
 | **Entries direkt från `create()`, `find()` eller ett länkfält är inte fullt skrivbara** | Hämta om med `findById()`. Det är hela poängen med `mv-db.js`. Mockens flagga `COLD_CREATE`. |
 
@@ -102,8 +103,11 @@ Den ordningen är själva testet av I1. Står i en kommentar i `tools/test.js`
 också, men värt att upprepa.
 
 **I5 — Byter en fil namn, eller tillkommer en: fyra ställen ska uppdateras.**
-`tools/test.js`, `memento/UPPSATTNING.md`, `memento/<bibliotek>/shared/Moduler.js`
-och `README.md`. `tools/kontroll.js` kontrollerar att de är i synk. *Detta är
+`tools/test.js`, `memento/KORSCHEMA.md`, `memento/<bibliotek>/shared/Moduler.js`
+och `README.md`. `tools/kontroll.js` kontrollerar att de är i synk.
+*(Stod `UPPSATTNING.md` fram till 23 sep. Modullistorna flyttade till
+`KORSCHEMA.md` när körschemat bröts ut, och den här raden följde inte med
+förrän efteråt — se I11.)* *Detta är
 misstaget där fyra döda `mv-*.js` pushades: jag döpte om filerna i min egen
 kopia och glömde att bryggan inte kan radera filer hos Jimmy.* Första gången
 kontrollen kördes på riktigt hittade den femton kvarglömda `mv-`-referenser i
@@ -136,6 +140,47 @@ returnerar `null` i stället för att kasta — `MV.db.libEller()` är mönstret
 och låt appens egna fel gå vidare orörda. *Det var ett defensivt `catch` runt
 `MV.db.lib()` som gjorde att `Återställ historik` dog utan att säga varför.*
 
+**I11 — En uppgift bor på ETT ställe. Övriga pekar dit.**
+Står samma lista, samma numrering eller samma steg i två filer kommer de att
+glida isär, och den som läser fel fil får fel svar. Skriv därför aldrig av en
+lista till en andra fil — hänvisa. Behövs en översikt på andra hållet får den
+vara just en översikt, utan egna nummer att underhålla.
+
+Och åt andra hållet: **när något ändras, sök upp varje ställe som beskriver
+det** innan du säger att du är klar. `grep` på namnet, på filnamnet och på
+numret. En ändring är inte levererad förrän dokumenten säger samma sak som
+koden.
+
+*Tre gånger har det här kostat tid. `UPPSATTNING.md` och Del B beskrev samma
+uppsättning olika, och under repetitionen 15 sep blev flera steg gjorda två
+gånger. `ARBETSLAGE.md` hade två att-göra-listor som inte höll ihop. Och värst:
+avvikelse A5 låg som "punkt 7 under Planerat" i en fil där punkt 7 var något
+helt annat — ägaren hade bett om den i samband med driftsättningen, och den låg
+still i två veckor eftersom ingen lista pekade rätt.* Den maskinella delen
+finns i `tools/kontroll.js`, `kontrolleraDubbelDokumentation()`.
+
+**I12 — Koden i en dialogknapp ska klara sig helt själv.**
+En dialog körs asynkront, och knappens kod kan köras som en **ny instans** av
+scriptet — utan den körnings variabler som visade rutan. Skriv därför
+callbacken som ETT anrop som hämtar sitt eget underlag på nytt:
+
+```js
+function () { MV.Import.laggUpp({ godkant: true }); }
+```
+
+Aldrig med ett uträknat resultat, ett entry-handtag eller ett opts-objekt från
+den anropande körningen. Att räkna om kostar inget — ingen hinner ändra något
+medan rutan står öppen. Och allt som ska hända ligger **i** callbacken, aldrig
+efter `show()`: returnerar `show()` direkt skulle det annars köras utan att
+någon svarat, och frågan vore en kuliss.
+
+Mocken sparar knapparnas callbacks utan att köra dem, precis som appen. Ett
+test trycker själv med `d.ja()` och kontrollerar dels att ingenting skrevs
+innan dess, dels att callbacken klarar sig ensam. *Regeln kommer från Jimmy
+23 sep: "de tycks alltid köras asynkront och kör koden i en knapp som en ny
+instans". A5 var först skriven med en callback som slöt om `forslag` — grön i
+testerna, trasig i appen.*
+
 **I8 — Påstå aldrig en orsak som inte är bevisad.**
 Skriv "detta förklarar symptomet" eller "detta är skydd, inte bevisad
 rättning". *Jag utpekade en gång kalla `create()`-entries som orsaken till att
@@ -151,7 +196,7 @@ lösning.* Se kommentarhuvudet i `mv-db.js` för hur det ska formuleras.
 
 ```
 node tools/stamp.js --check     # stämplar aktuella och hash stämmer
-node tools/kontroll.js          # invarianterna I1, I2, I5, I9 + döda referenser
+node tools/kontroll.js          # invarianterna I1, I2, I5, I9, I11 + döda referenser
 node tools/test.js              # alla tester gröna
 sh /home/claude/sekretess.sh    # inga kundnamn — se I3
 ```
@@ -164,6 +209,12 @@ Alla fyra. Sedan, och först då:
 3. **Ge honom ett commit-meddelande.** Han har uttryckligen bett om det, varje
    gång något är pushfärdigt. Kort, imperativ svenska, en rad.
 4. Uppdatera `ARBETSLAGE.md` och `CHANGELOG.md` i samma leverans.
+5. **Leta rätt på varje annat dokument som beskriver det du ändrat** (I11).
+   Det räcker inte att de fyra kontrollerna är gröna — de fångar döda
+   filreferenser och dubblerade listor, inte en mening som blivit osann.
+   `grep` på funktionsnamnet, fältnamnet, filnamnet och numret. *Jimmy bad om
+   det här uttryckligen 23 sep, efter tredje gången två dokument sade emot
+   varandra.*
 
 ### Bryggan har tre begränsningar som har bitit oss
 
@@ -250,7 +301,7 @@ fa-*.js              projektet fältarbete
   fa-firmware.js     firmwarestatus
 
 tools/
-  test.js            285 tester. REGRESSION = buggen får inte tillbaka.
+  test.js            399 tester. REGRESSION = buggen får inte tillbaka.
                      AVSIKT = beteendet är beslutat, riv det inte.
   mock.js            Memento-simulator. Flaggorna COLD_CREATE och LAZY_MAP
                      återskapar appens egenheter med flit.

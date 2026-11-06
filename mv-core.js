@@ -461,6 +461,56 @@ MV.ui.summary = function (title, lines) {
         .show();
 };
 
+/**
+ * Fråga med två knappar. Allt som ska hända vid ja körs i onJa.
+ *
+ * TRE REGLER FÖR onJa. De följer av hur Mementos dialoger faktiskt beter sig,
+ * inte av smak. Se invariant I12 i CLAUDE.md.
+ *
+ *   1. **onJa får inte bero på någonting utanför sig själv.** Dialogen körs
+ *      asynkront, och koden i en knapp kan köras som en NY instans av
+ *      scriptet. En ny instans har inte den anropande körningens variabler —
+ *      entry-handtag, uträknade listor och opts-objekt är borta eller döda.
+ *      Skriv callbacken som ETT anrop som hämtar sitt eget underlag på nytt:
+ *
+ *          function () { MV.Import.laggUpp({ godkant: true }); }
+ *
+ *      Att räkna om kostar nästan ingenting. Ingen hinner ändra något medan
+ *      dialogen står öppen, och skulle något ändå ha ändrats är den andra
+ *      läsningen den färskare.
+ *
+ *   2. **Allt som ska hända ligger I onJa, aldrig efter anropet.** Vi vet inte
+ *      om `show()` väntar in ett knapptryck, och dokumentationen säger det
+ *      inte. Ligger arbetet i callbacken spelar det ingen roll: trycks ingen
+ *      knapp händer ingenting. Ligger det efter anropet kan det köras utan att
+ *      någon svarat, och då är frågan en kuliss.
+ *
+ *   3. **Öppna inte en ny dialog inifrån onJa.** Om en dialog kan visas ovanpå
+ *      en annan är omätt. Kvittera med MV.util.say() i stället.
+ *
+ * Saknas `dialog()` — batch, synk, testerna — händer INGENTING. Det är med
+ * flit: en fråga som inte går att ställa får inte besvaras med ja åt
+ * användaren. Anroparen får i så fall ett `false` tillbaka och kan säga det.
+ *
+ * @return true om frågan gick att ställa
+ */
+MV.ui.fraga = function (title, lines, jaText, onJa) {
+    if (typeof dialog !== "function" || typeof ui !== "function") {
+        return false;
+    }
+    var layout = [];
+    for (var i = 0; i < lines.length; i++) {
+        layout.push(ui().text(lines[i]));
+    }
+    dialog()
+        .title(title)
+        .view(ui().layout(layout))
+        .positiveButton(jaText, function () { onJa(); return true; })
+        .negativeButton("Avbryt", function () { return true; })
+        .show();
+    return true;
+};
+
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-09-23 09:49", hash: "ca53319" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-11-06 13:49", hash: "abec1dd" });

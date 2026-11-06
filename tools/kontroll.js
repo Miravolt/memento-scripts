@@ -421,6 +421,99 @@ function kontrolleraLankar() {
 }
 
 /* ================================================================== *
+ * Samma lista på två ställen (I11)
+ *
+ * En numrerad lista som skrivs av till en andra fil glider isär. Det har
+ * hänt tre gånger: UPPSATTNING.md mot Del B, de två att-göra-listorna i
+ * ARBETSLAGE.md, och avvikelse A5 som låg som "punkt 7 under Planerat" i en
+ * fil där punkt 7 var template-paketet. Den sista kostade två veckor —
+ * ägaren hade bett om funktionen och ingen lista pekade rätt.
+ *
+ * Regeln är att listan bor på ETT ställe. Behövs en översikt på andra hållet
+ * märks den med en spegelrad som säger vilken lista den speglar och hur många
+ * punkter den hade när den skrevs:
+ *
+ *     <!-- speglar: ARBETSFLODE.md#Planerat (9 punkter) -->
+ *
+ * Kontrollen jämför antalet mot källan. Läggs en punkt till utan att
+ * översikten rörs säger den ifrån. Den läser INTE texten — en punkt som bytt
+ * innebörd utan att bytt nummer går igenom. Det är I11:s andra hälft, och den
+ * kan bara en människa göra.
+ * ================================================================== */
+
+function kontrolleraDubbelDokumentation() {
+    var filer = allaFiler(ROOT).filter(function (f) { return /\.md$/.test(f); });
+    var re = /<!--\s*speglar:\s*([^\s#]+)#(\S+)\s*\((\d+)\s*punkter\)\s*-->/g;
+
+    for (var i = 0; i < filer.length; i++) {
+        var innehall = las(filer[i]);
+        var m;
+        re.lastIndex = 0;
+
+        while ((m = re.exec(innehall)) !== null) {
+            var kallfil = m[1];
+            var rubrik = m[2];
+            var pastatt = parseInt(m[3], 10);
+
+            var full = path.resolve(path.dirname(filer[i]), kallfil);
+            if (!fs.existsSync(full)) {
+                fail("I11", rel(filer[i]) + " speglar " + kallfil +
+                    " som inte finns");
+                continue;
+            }
+
+            var nummer = punkterUnder(las(full), rubrik);
+            if (nummer === null) {
+                fail("I11", rel(filer[i]) + " speglar rubriken '" + rubrik +
+                    "' som inte finns i " + kallfil);
+                continue;
+            }
+
+            if (nummer.length !== pastatt) {
+                fail("I11", rel(filer[i]) + " säger sig spegla " + pastatt +
+                    " punkter ur " + kallfil + "#" + rubrik + ", men där finns " +
+                    nummer.length + ". Uppdatera översikten och spegelraden.");
+            }
+
+            for (var n = 0; n < nummer.length; n++) {
+                if (nummer[n] !== n + 1) {
+                    fail("I11", kallfil + "#" + rubrik + " är numrerad " +
+                        nummer.join(", ") + " — den ska vara 1 till " +
+                        nummer.length + " i följd, annars betyder ett nummer" +
+                        " olika saker i olika filer");
+                    break;
+                }
+            }
+        }
+    }
+}
+
+/** Numren på "### N. ..." under en viss "## Rubrik". null om rubriken saknas. */
+function punkterUnder(innehall, rubrik) {
+    var rader = innehall.split("\n");
+    var inne = false;
+    var hittad = false;
+    var nummer = [];
+
+    for (var i = 0; i < rader.length; i++) {
+        var rad = rader[i];
+
+        if (/^## /.test(rad)) {
+            // Rubriken matchas utan mellanslag, så att spegelraden kan skrivas
+            // som ett ord: "#Planerat" för "## Planerat".
+            inne = rad.substring(3).replace(/\s+/g, "") === rubrik;
+            if (inne) hittad = true;
+            continue;
+        }
+        if (!inne) continue;
+
+        var m = rad.match(/^### (\d+)\. /);
+        if (m) nummer.push(parseInt(m[1], 10));
+    }
+    return hittad ? nummer : null;
+}
+
+/* ================================================================== *
  * Arbetsläget hänger med
  * ================================================================== */
 
@@ -558,6 +651,7 @@ kontrolleraES5();
 kontrolleraStamplar();
 kontrolleraLankar();
 kontrolleraIndrag();
+kontrolleraDubbelDokumentation();
 kontrolleraArbetslage();
 
 console.log("");

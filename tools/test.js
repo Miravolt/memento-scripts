@@ -1115,6 +1115,312 @@ suite("fa-import — lägg upp");
 
 
 /* ================================================================ */
+suite("fa-import — A5: befintliga anläggningar uppdateras");
+
+/*
+ * Avvikelse A5. Kunduppgifter, Nätstation och Leveranspunkt följde bara med
+ * när anläggningen var NY. Fanns den redan tappades de tyst. Nätbolagen
+ * kopplar om och kunduppgifter ändras, så orderfilen är ofta färskare.
+ */
+(function () {
+    var s = scenario();
+    var impLib = mock.defineLib(s.n("Import Fältarbete"), {
+        fields: ["Namn", "Tjänstest. adr", "Koordinater", "Tjänstenr",
+                 "Mobilnummer 1", "Mobilnummer 2", "App.placering",
+                 "Lev.punkt(1)", "Lev.punkt(2)", "Befintlig apparat",
+                 "Status", "Status Koordinater"],
+        linkFields: ["Befintlig"],
+        mapFields: ["Koordinater"],
+        nameField: "Namn"
+    });
+
+    var anl = s.anlLib.seed({
+        "Anl. adress": "Storgatan 1", "Tjänst": "900123", "Kund": "Nisse",
+        "Tfn. 1": "070-1", "Tfn. 2": "", "Mätarnummer": "M-1",
+        "Nätstation": "Kvarnbacken", "Leveranspunkt": "",
+        "Koordinater": "56.88,14.81", "Logg": ""
+    });
+
+    var rad = impLib.seed({
+        Namn: "Kajsa", "Tjänstest. adr": "EN ANNAN ADRESS", "Tjänstenr": "900123",
+        "Mobilnummer 1": "070-1", "Mobilnummer 2": "070-9",
+        "Befintlig apparat": "M-2", "Lev.punkt(1)": "Söderby",
+        Status: "Hittat befintlig", "Status Koordinater": "Koordinater inmatade",
+        "Koordinater": "56.88,14.81"
+    });
+    rad.link("Befintlig", anl);
+
+    var andringar = MV.Import.foreslagnaAndringar(rad, anl);
+    var falt = [];
+    for (var i = 0; i < andringar.length; i++) falt.push(andringar[i].falt);
+    falt.sort();
+
+    eq(falt, ["Kund", "Mätarnummer", "Nätstation", "Tfn. 2"],
+       "AVSIKT: bara fält som skiljer, och bara de tillåtna");
+
+    eq(falt.indexOf("Anl. adress"), -1,
+       "AVSIKT: adressen rörs inte — den kan vara rättad på plats");
+    eq(falt.indexOf("Tjänst"), -1,
+       "AVSIKT: Tjänst rörs inte — det är nyckeln vi matchade på");
+    eq(falt.indexOf("Tfn. 1"), -1, "oförändrat fält föreslås inte");
+    eq(falt.indexOf("Leveranspunkt"), -1,
+       "AVSIKT: tomt i importen betyder inte ifyllt, aldrig radera");
+
+    // Mätarnummer är MED, trots att vi kan ha bytt mätaren själva:
+    // nätägaren skickar ibland egen personal som byter.
+    ok(falt.indexOf("Mätarnummer") > -1,
+       "AVSIKT: mätarnumret uppdateras — nätägaren kan ha bytt själv");
+
+    var forslag = MV.Import.samlaUppdateringar(impLib.entries());
+    eq(forslag.antalAnlaggningar, 1, "en anläggning berörs");
+    eq(forslag.antalAndringar, 4, "fyra ändringar totalt");
+
+    var text = MV.Import.uppdateringsText(forslag).join("\n");
+    ok(text.indexOf("1 anläggning(ar) får ändrade uppgifter, 4 ändring(ar)") === 0,
+       "dialogen inleds med hur mycket det gäller");
+    ok(text.indexOf("Nätstation: Kvarnbacken → Söderby") > -1,
+       "AVSIKT: varje rad visar före och efter");
+    ok(text.indexOf("Tfn. 2: tomt → 070-9") > -1,
+       "ett tomt nuvarande värde skrivs som 'tomt', inte som ingenting");
+    ok(text.indexOf("Avbryter du skrivs inget alls") > -1,
+       "det står att man kan avbryta");
+
+    /*
+     * Frågan ställs, men ingen trycker på någon knapp — mockens dialog gör
+     * ingenting mer än att spara rutan. Det är exakt det läge vi vill prova:
+     * skrivningen ligger i ja-knappens callback, så utan tryck ska ingenting
+     * ha hänt. Låg den efter dialogen i stället vore frågan en kuliss, och
+     * det här testet hade avslöjat det.
+     */
+    mock.use(impLib);
+    var fragad = MV.Import.laggUpp({ tyst: true });
+
+    eq(fragad.fragad, true, "frågan ställs innan något skrivs");
+    ok(mock.dialogs.length > 0, "en dialog visades");
+    eq(MV.fmt.value(s.anlLib.findById(anl.id), "Kund"), "Nisse",
+       "AVSIKT: inget skrivs förrän någon tryckt ja");
+    eq(rad.field("Status"), "Hittat befintlig",
+       "AVSIKT: radens status rörs inte heller — en omkörning ska erbjuda samma sak");
+    eq(MV.fmt.toArray(s.anlLib.findById(anl.id).field("Aktivt Fältarbete")).length, 0,
+       "AVSIKT: avbryter man skapas inga fältarbeten heller");
+
+    /*
+     * Går dialogen inte att visa alls — batch, synk — får ett ja inte gissas
+     * åt användaren, och uppgifterna får inte tappas tyst. Då sägs det.
+     */
+    var riktigDialog = global.dialog;
+    global.dialog = undefined;
+    try {
+        mock.use(impLib);
+        var utanDialog = MV.Import.laggUpp({ tyst: true });
+        eq(utanDialog.fragad, false, "utan dialog ställs ingen fråga");
+        eq(MV.fmt.value(s.anlLib.findById(anl.id), "Kund"), "Nisse",
+           "AVSIKT: och då skrivs ingenting");
+        ok(mock.messages.join(" ").indexOf("kan inte fråga här") > -1,
+           "AVSIKT: tystnad vore det gamla felet igen — det sägs i klartext");
+    } finally {
+        global.dialog = riktigDialog;
+    }
+
+    /*
+     * Tryck på ja-knappen, så som appen gör det: callbacken körs för sig,
+     * efteråt, utan tillgång till den körning som visade rutan. Klarar den
+     * inte det är A5 trasig i appen men grön i testerna. Se invariant I12.
+     */
+    var ruta = mock.dialogs[mock.dialogs.length - 1];
+    eq(ruta.jaText, "Uppdatera och lägg upp", "ja-knappen heter vad den gör");
+    ok(typeof ruta.nej === "function", "det finns en avbrytknapp");
+
+    mock.use(impLib);
+    ruta.ja();
+
+    eq(MV.fmt.value(s.anlLib.findById(anl.id), "Kund"), "Kajsa",
+       "REGRESSION: knappen gör jobbet utan att bära med sig något från förra körningen");
+    eq(rad.field("Status"), "Befintlig återstartad",
+       "och kör hela Lägg upp, inte bara uppdateringen");
+
+    var efter = s.anlLib.findById(anl.id);
+    eq(MV.fmt.value(efter, "Kund"), "Kajsa", "kunden uppdaterad");
+    eq(MV.fmt.value(efter, "Tfn. 2"), "070-9", "tomt fält fylldes i");
+    eq(MV.fmt.value(efter, "Nätstation"), "Söderby", "nätstationen omkopplad");
+    eq(MV.fmt.value(efter, "Mätarnummer"), "M-2", "mätarnumret uppdaterat");
+    eq(MV.fmt.value(efter, "Anl. adress"), "Storgatan 1",
+       "REGRESSION: adressen står kvar");
+    eq(MV.fmt.value(efter, "Leveranspunkt"), "",
+       "REGRESSION: tomt i importen raderade ingenting");
+
+    var logg = MV.util.htmlToText(efter.field("Logg"));
+    ok(logg.indexOf("Nätstation ändrades från 'Kvarnbacken' till 'Söderby'") > -1,
+       "ändringen loggas i anläggningen");
+    ok(logg.indexOf("(importen)") > -1, "och det syns var den kom ifrån");
+
+    /*
+     * Ordningen är hela poängen: skapa() kopierar fälten FRÅN anläggningen.
+     * Uppdateras den efteråt får ärendet man just skapade de gamla värdena.
+     */
+    var aktiva = MV.fmt.toArray(efter.field("Aktivt Fältarbete"));
+    eq(aktiva.length, 1, "ett fältarbete skapades");
+    var fb = s.faltLib.findById(aktiva[0].id);
+    eq(MV.fmt.value(fb, "Kund"), "Kajsa",
+       "AVSIKT: fältarbetet får det UPPDATERADE värdet, inte det gamla");
+    eq(MV.fmt.value(fb, "Nätstation"), "Söderby",
+       "AVSIKT: samma sak för nätstationen");
+
+    // Omkörning: inget kvar att uppdatera, inget nytt fältarbete.
+    mock.use(impLib);
+    var res2 = MV.Import.laggUpp({ tyst: true, godkant: true });
+    eq(res2.uppdaterade, 0, "andra körningen har inget att uppdatera");
+    eq(res2.totalt, 0, "och skapar inget nytt");
+})();
+
+/* Samma sak utan dialogvägen, för siffrornas skull. */
+(function () {
+    var s = scenario();
+    var impLib = mock.defineLib(s.n("Import Fältarbete"), {
+        fields: ["Namn", "Tjänstenr", "Status", "Status Koordinater",
+                 "Koordinater", "Mobilnummer 1"],
+        linkFields: ["Befintlig"], mapFields: ["Koordinater"], nameField: "Namn"
+    });
+
+    var anl = s.anlLib.seed({
+        "Anl. adress": "Storgatan 1", "Tjänst": "900123", "Kund": "Nisse",
+        "Koordinater": "56.88,14.81", "Logg": ""
+    });
+    var rad = impLib.seed({
+        Namn: "Kajsa", "Tjänstenr": "900123", Status: "Hittat befintlig",
+        "Status Koordinater": "Koordinater inmatade", "Koordinater": "56.88,14.81"
+    });
+    rad.link("Befintlig", anl);
+
+    mock.use(impLib);
+    var res = MV.Import.laggUpp({ tyst: true, godkant: true });
+
+    eq(res.uppdaterade, 1, "rapporten räknar uppdaterade anläggningar");
+    eq(res.befintliga, 1, "och fältarbetena");
+
+    mock.use(impLib);
+    var res2 = MV.Import.laggUpp({ tyst: true, godkant: true });
+    eq(res2.uppdaterade, 0, "andra körningen har inget att uppdatera");
+    eq(res2.totalt, 0, "och skapar inget nytt");
+})();
+
+/* ================================================================ */
+suite("fa-import — Tjänstenr är ett krav");
+
+/*
+ * En rad utan Tjänstenr markerades förr som "Ingen befintlig hittades", och
+ * Lägg upp skapade då en ny anläggning UTAN Tjänst — bredvid den som redan
+ * fanns. Den anläggningen går aldrig att matcha igen, så nästa orderfil för
+ * samma abonnemang lägger upp ännu en. Så uppstod dubbletterna.
+ */
+(function () {
+    var s = scenario();
+    var impLib = mock.defineLib(s.n("Import Fältarbete"), {
+        fields: ["Namn", "Tjänstest. adr", "Tjänstenr", "Status",
+                 "Status Koordinater", "Koordinater", "Mobilnummer 1",
+                 "Mobilnummer 2", "App.placering", "Lev.punkt(1)",
+                 "Lev.punkt(2)", "Befintlig apparat"],
+        linkFields: ["Befintlig"], mapFields: ["Koordinater"], nameField: "Namn"
+    });
+
+    var utan = impLib.seed({
+        Namn: "Utan nummer", "Tjänstest. adr": "Storgatan 1", Status: "-",
+        "Status Koordinater": "Koordinater inmatade", "Koordinater": "56.9,14.8"
+    });
+    var med = impLib.seed({
+        Namn: "Med nummer", "Tjänstest. adr": "Nyvägen 7", "Tjänstenr": "900500",
+        Status: "-", "Status Koordinater": "Koordinater inmatade",
+        "Koordinater": "57.1,15.2"
+    });
+
+    mock.use(impLib);
+    var res = MV.Import.hittaBefintliga({ tyst: true });
+
+    eq(res.utanTjanst, 1, "raden utan Tjänstenr räknas för sig");
+    eq(utan.field("Status"), "-",
+       "AVSIKT: den lämnas OBEHANDLAD, inte markerad som 'ingen hittades'");
+    eq(med.field("Status"), "Ingen befintlig hittades",
+       "raden med nummer behandlas som vanligt");
+
+    // Och då kan Lägg upp inte skapa någon anläggning för den.
+    var innan = s.anlLib.entries().length;
+    mock.use(impLib);
+    MV.Import.laggUpp({ tyst: true, godkant: true });
+
+    eq(s.anlLib.entries().length, innan + 1,
+       "REGRESSION: bara raden med Tjänstenr gav en ny anläggning");
+
+    // Den dyker upp igen nästa gång, tills någon rättar filen.
+    mock.use(impLib);
+    eq(MV.Import.hittaBefintliga({ tyst: true }).utanTjanst, 1,
+       "AVSIKT: obehandlad rad flaggas om och om igen — den ska inte glömmas");
+
+    // Rapporten säger vad som ska göras åt saken.
+    mock.use(impLib);
+    MV.Import.hittaBefintliga();
+    var ruta = mock.dialogs[mock.dialogs.length - 1];
+    var text = ruta.lines.join("\n");
+    ok(text.indexOf("1 rad(er) saknar Tjänstenr") > -1, "antalet står i rapporten");
+    ok(text.indexOf("Fyll i Tjänstenr") > -1, "och vad man ska göra");
+})();
+
+/*
+ * Spärren i Lägg upp behövs för rader som HANN bli statusmärkta innan
+ * ändringen ovan. De ligger kvar i importbiblioteket med fel status.
+ */
+(function () {
+    var s = scenario();
+    var impLib = mock.defineLib(s.n("Import Fältarbete"), {
+        fields: ["Namn", "Tjänstest. adr", "Tjänstenr", "Status",
+                 "Status Koordinater", "Koordinater"],
+        linkFields: ["Befintlig"], mapFields: ["Koordinater"], nameField: "Namn"
+    });
+
+    impLib.seed({
+        Namn: "Gammal rad", "Tjänstest. adr": "Storgatan 1",
+        Status: "Ingen befintlig hittades",
+        "Status Koordinater": "Koordinater inmatade", "Koordinater": "56.9,14.8"
+    });
+
+    mock.use(impLib);
+    var res = MV.Import.laggUpp({ tyst: true, godkant: true });
+
+    eq(res.nya, 0, "REGRESSION: ingen anläggning utan Tjänst läggs upp");
+    eq(res.hoppades, 1, "raden hoppas över");
+    ok(res.problem.join(" ").indexOf("Tjänstenr saknas") > -1,
+       "och den står med i problemlistan, inte tyst överhoppad");
+})();
+
+/* En rad som laggUpp ändå skulle hoppa över får inte lova en uppdatering. */
+(function () {
+    var s = scenario();
+    var impLib = mock.defineLib(s.n("Import Fältarbete"), {
+        fields: ["Namn", "Tjänstenr", "Status", "Status Koordinater",
+                 "Koordinater", "Mobilnummer 1"],
+        linkFields: ["Befintlig"], mapFields: ["Koordinater"], nameField: "Namn"
+    });
+
+    var anl = s.anlLib.seed({
+        "Anl. adress": "Skogsvägen 3", "Tjänst": "900700", "Kund": "Olle", "Logg": ""
+    });
+
+    var utanKoord = impLib.seed({
+        Namn: "Ny Kund", "Tjänstenr": "900700", Status: "Hittat befintlig",
+        "Status Koordinater": "-"
+    });
+    utanKoord.link("Befintlig", anl);
+
+    eq(MV.Import.samlaUppdateringar(impLib.entries()).antalAndringar, 0,
+       "AVSIKT: rad utan koordinatstatus lovar ingen uppdatering — den hoppas ju över");
+
+    utanKoord.set("Status Koordinater", "Koordinater inmatade");
+    utanKoord.set("Status", "Hittade flera befintliga");
+    eq(MV.Import.samlaUppdateringar(impLib.entries()).antalAndringar, 0,
+       "AVSIKT: en rad med flera träffar rörs inte heller");
+})();
+
+
+/* ================================================================ */
 suite("fa-import — koordinatstatus");
 
 (function () {
