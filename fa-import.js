@@ -347,8 +347,14 @@ MV.Import.uppdateringsText = function (forslag, maxPoster) {
 
         for (var a = 0; a < post.andringar.length; a++) {
             var and = post.andringar[a];
+            /*
+             * ASCII-pil med flit. Mementos dialoger renderar INTE tecken
+             * utanför Latin-1: "→" (U+2192) kom ut som "?" på desktop 3.11.1,
+             * mitt i den rad som bär hela budskapet. Svenska bokstäver
+             * fungerar; symboler gör det inte. Uppmätt 6 nov 2026.
+             */
             lines.push("   " + and.falt + ": " +
-                MV.fmt.orEmpty(and.fran) + " → " + and.till);
+                MV.fmt.orEmpty(and.fran) + " -> " + and.till);
         }
         lines.push("");
     }
@@ -645,4 +651,4 @@ MV.Import._forklara = function (reason) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-import", byggd: "2026-11-06 13:49", hash: "3750941" });
+MV.build.moduler.push({ namn: "fa-import", byggd: "2026-11-06 15:16", hash: "cac2d68" });

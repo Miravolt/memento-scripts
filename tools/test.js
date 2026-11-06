@@ -1178,9 +1178,11 @@ suite("fa-import — A5: befintliga anläggningar uppdateras");
     var text = MV.Import.uppdateringsText(forslag).join("\n");
     ok(text.indexOf("1 anläggning(ar) får ändrade uppgifter, 4 ändring(ar)") === 0,
        "dialogen inleds med hur mycket det gäller");
-    ok(text.indexOf("Nätstation: Kvarnbacken → Söderby") > -1,
+    ok(text.indexOf("Nätstation: Kvarnbacken -> Söderby") > -1,
        "AVSIKT: varje rad visar före och efter");
-    ok(text.indexOf("Tfn. 2: tomt → 070-9") > -1,
+    eq(text.indexOf("\u2192"), -1,
+       "REGRESSION: ingen pil utanför ASCII — dialogen gör den till ?");
+    ok(text.indexOf("Tfn. 2: tomt -> 070-9") > -1,
        "ett tomt nuvarande värde skrivs som 'tomt', inte som ingenting");
     ok(text.indexOf("Avbryter du skrivs inget alls") > -1,
        "det står att man kan avbryta");

@@ -513,4 +513,4 @@ MV.ui.fraga = function (title, lines, jaText, onJa) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "mv-core", byggd: "2026-11-06 13:49", hash: "abec1dd" });
+MV.build.moduler.push({ namn: "mv-core", byggd: "2026-11-06 15:16", hash: "abec1dd" });

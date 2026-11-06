@@ -393,10 +393,10 @@ Frågan har två halvor som är lätta att blanda ihop:
 - **Lagring** — var ligger värdet på enheten mellan körningarna?
 
 Det finns exakt **två** kanaler för spridning, eftersom modulcachen är det som
-ska kringgås: Mementos egen datasynk (ett entry) eller nätet (`http()`).
-Ingenting annat lämnar Jimmys dator.
+ska kringgås: Mementos egen datasynk (ett entry — med eller utan filfält) eller
+nätet (`http()`). Ingenting annat lämnar Jimmys dator.
 
-För lagring finns tre kandidater, och listan är uttömmande — Java-åtkomsten är
+För lagring finns fyra kandidater, och listan är uttömmande — Java-åtkomsten är
 blockerad, så det dokumenterade API:t är hela API:t:
 
 | Bärare | Sprider? | Omdöme |
@@ -404,6 +404,7 @@ blockerad, så det dokumenterade API:t är hela API:t:
 | `lib().notes` | ja, via synk | **Död.** `undefined` i appen, och Notes är dessutom struktur — Jimmy får inte skriva den i drift. Uppmätt 11 sep. |
 | Ett entry | ja, via synk | Fungerar, men bär hela bibliotekets fältuppsättning. Obligatoriska fält kan stoppa en manuell redigering, och posten blandas med riktig data. Kräver manuell stämpling efter varje push. |
 | En fil på enheten (`file()`) | **nej** | Filen är lokal. Den kan aldrig bära ett värde från Jimmys dator till en telefon. Däremot en utmärkt **cache** för ett värde man hämtat på annat sätt. |
+| **Ett filfält på ett entry (`http().download()`)** | ja, via synk | **Nytt 21 okt 2026, outrett.** Desktop 3.11.0 fick `http().download()`, och changelogen säger att filen kan sparas **direkt i ett filfält på ett entry**. Ett filfält synkas som all annan data. Se nedan. |
 | **REST API-connector** | ja, direkt från nätet | **Mest lovande, minst utrett.** Memento har en inbyggd connector som hämtar JSON från en extern tjänst och mappar in i biblioteket. Vårt repo är publikt, så `No Auth` räcker. Då gör *appen* hämtningen — inget `http()` i vår kod, ingen `Network`-permission, ingen manuell stämpling. Se nedan. |
 
 **Filen är alltså inget alternativ till entryt — den löser den andra halvan.**
@@ -421,6 +422,54 @@ blir automatisk. Priset är två nya permissions (`Network` och fil) per
 bibliotek och per enhet, plus att Android kräver att användaren pekar ut en
 mapp i behörighetsdialogen. Rättigheter per enhet är redan det svåraste i hela
 upplägget, så det priset är inte litet.
+
+#### `http().download()` — prova den när tillfälle ges
+
+Kom med **desktop 3.11.0, 21 okt 2026**, och upptäcktes i changelogen 6 nov.
+Raden lyder: *"new http().download() function to download files. The downloaded
+file can be saved directly to a file field of an entry."*
+
+Det är den sista halvan som är intressant. Hela problemet med punkt 6 har varit
+**spridningen** — hur ett värde från Jimmys dator når en telefon. Ett filfält
+på ett entry synkas som all annan data, och då blir kedjan:
+
+1. Datorn kör `http().download()` på `senaste.json` i ett **användartryckt**
+   anrop och sparar filen i ett filfält på ett markör-entry.
+2. Memento synkar entryt, filfältet inkluderat.
+3. Telefonerna **läser bara filen lokalt** och jämför mot sin egen
+   byggstämpel. Inget nät, ingen `Network`-permission, ingen väntan.
+
+Det tar bort både den manuella stämplingen *och* nätverksberoendet på
+telefonerna — de två invändningar som sänkt varje tidigare variant. Det är
+därmed den mest lovande vägen sedan connectorn.
+
+**Fyra saker måste mätas först. Inget av dem står i dokumentationen:**
+
+- **M9. Blockerar `download()` synkront?** `http().get()` gör det, och
+  API-dokumentationen säger fortfarande "HTTP requests must be executed
+  asynchronously in the last Phase of an Event" utan att förklara vad det
+  betyder. Blockerar den duger den bara i en användartryckt action — aldrig i
+  en trigger, samma regel som för `get()`.
+- **M10. Går ett filfälts innehåll att LÄSA från ett script?** Hela idén
+  faller annars. `Files.md` i dokumentationen handlar om `file()` på enheten,
+  inte om filfält på entries, och vi har inget filfält i `memento/FALT.md` att
+  prova mot.
+- **M11. Följer filen med synken till en annan enhet, och hur snabbt?**
+  Fältvärden synkar, men en bifogad fil är inte självklart samma sak.
+- **M12. BESVARAD 6 nov: ja, `download()` finns på Android.** Android 5.10.0,
+  samma datum som desktop 3.11.1, har samma rad i sin changelog. Det var den
+  frågan connectorn föll på (M5), och den faller inte här. *Läst i
+  changelogen, inte provat i appen.*
+
+**Provas billigast utan att röra något:** ett nytt litet testbibliotek med ett
+filfält och en action som laddar ner vilken publik fil som helst, på desktop
+och sedan på telefon, med och utan täckning. Ingenting i det här kräver att
+driftbiblioteken rörs.
+
+**Ordningen står fast ändå.** Steg 1 nedan — bara desktop, ingen bärare alls —
+kräver inte att någon av M9–M12 är besvarad, och ger värde på egen hand. Den
+här vägen är kandidat till **steg 2**, där frågan om var markören ska bo
+annars tvingar fram ett entry med manuell stämpling.
 
 #### Connectorn — utred den först
 

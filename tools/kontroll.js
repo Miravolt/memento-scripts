@@ -291,6 +291,20 @@ function kontrolleraToppniva() {
  * I2 — ES5. Rhino 1.7.15 klarar inte mer.
  * ================================================================== */
 
+/*
+ * I2 — ES5-nivån.
+ *
+ * OBS om formuleringen i felmeddelandet: motorn är INTE ren ES5. Uppmätt på
+ * desktop 3.11.1 den 6 nov 2026 parsas let, const, pilfunktioner, template
+ * literals, spread OCH for...of utan problem. Det enda som fälls är `const` i
+ * ett for-huvud: `for (const v of arr)` ger syntaxfel, `for (var v of arr)`
+ * gör det inte.
+ *
+ * Förbudet är därför en POLICY, inte en motorgräns: ett parsfel dödar hela
+ * modulen och med den alla script i biblioteket, på den enhet som råkar ha en
+ * äldre app. Se I2 i CLAUDE.md för mätningen och för vad som krävs för att
+ * släppa något av det här.
+ */
 function kontrolleraES5() {
     var forbjudet = [
         [/\blet\s+[A-Za-z_$]/, "let"],
@@ -315,8 +329,9 @@ function kontrolleraES5() {
             for (var f = 0; f < forbjudet.length; f++) {
                 if (forbjudet[f][0].test(rader[r])) {
                     fail("I2", namn + ":" + (r + 1) + " använder " +
-                        forbjudet[f][1] + " — Rhino är ES5 och kraschar på det." +
-                        " Felet syns först i appen, inte här.");
+                        forbjudet[f][1] + " — utanför den nivå vi lovat stödja." +
+                        " Ett parsfel dödar hela modulen, och det syns först i" +
+                        " appen. Se I2 i CLAUDE.md.");
                 }
             }
         }

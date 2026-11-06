@@ -719,10 +719,19 @@ Välj **en** anläggning som har tidigare ärenden och följ den hela vägen.
    fel värden, eller skapats där det inte hör hemma?
 3. Står det något om **permission** i felet: det är delsteg .6 i det
    biblioteket. Det är den vanligaste orsaken.
-4. Är strukturen trasig: importera template-filen från **steg 1 b)** igen.
-5. Är datan trasig: kopian från **steg 1 a)** har den som den såg ut före.
-6. Är ett script trasigt: klistra tillbaka den gamla koden. Den finns sparad.
-7. Vill du snabbt stänga av allt: ta bort modulerna ur `Moduler`. Då slutar
+4. **Har Memento uppdaterat sig nyligen?** En ny version av appen kan sluta
+   köra script som fungerade dagen innan. Det hände i oktober 2026: desktop
+   3.11.0 stoppade befintliga script, och 3.11.1 som kom strax efter rättade
+   det. Slutar allt fungera samtidigt, i alla bibliotek, är appversionen det
+   första att titta på — inte vår kod. Kontrollera om det finns en nyare
+   version att installera.
+
+   *Av samma skäl: installera helst ingen nyss släppt Memento-version mitt i
+   den här uppsättningen. Vänta tills du är klar.*
+5. Är strukturen trasig: importera template-filen från **steg 1 b)** igen.
+6. Är datan trasig: kopian från **steg 1 a)** har den som den såg ut före.
+7. Är ett script trasigt: klistra tillbaka den gamla koden. Den finns sparad.
+8. Vill du snabbt stänga av allt: ta bort modulerna ur `Moduler`. Då slutar
    enradsscripten fungera med ett tydligt fel i stället för att göra fel sak.
 
 Koden som hämtas utifrån kan inte göra något i sig — den kör ingenting förrän

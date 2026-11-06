@@ -268,6 +268,85 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
   Samtidigt rättat: arkivbiblioteket fanns bara i `ARBETSLAGE.md` och saknas
   inte längre i `ARBETSFLODE.md` (punkt 8, template-paketet blev 9), och I5
   pekade fortfarande på `UPPSATTNING.md` i stället för `KORSCHEMA.md`.
+- **A5-dialogen skrev `?` i stället för pil.** Uppmätt i appen 6 nov: Mementos
+  dialoger renderar inte tecken utanför Latin-1, och `→` (U+2192) kom ut som
+  `?` — mitt i raden som bär hela budskapet, `Kund: Anton ? Annan Kund`. Det
+  läser som "okänt", inte som "blir". Svenska bokstäver i samma ruta renderades
+  korrekt.
+
+  Pilen är nu `->`. Låst med ett `REGRESSION`-test som underkänner all
+  användning av U+2192 i dialogtexten, och infört som sanning i `CLAUDE.md`:
+  ASCII plus svenska bokstäver i allt som går till `dialog()`, `ui().text()`
+  eller `message()`.
+- **En Memento-uppdatering kan ta sönder fungerande script.** Ägaren körde en
+  period på desktop 3.11.0 och hans befintliga script slutade fungera; de kom
+  tillbaka först med 3.11.1 (rapporterat 6 nov, symptomet inte utrett av oss).
+
+  Både han och Jimmy installerar alltid senaste version, och Android uppdaterar
+  sig självt — en dålig utgåva når alltså hela flottan. Ny rad i
+  sanningstabellen, och en ny punkt i `KORSCHEMA.md` under *Om något ser fel
+  ut*: slutar allt fungera samtidigt i alla bibliotek är appversionen första
+  misstänkta, inte vår kod. Med rådet att inte installera en nyss släppt
+  version mitt i uppsättningen.
+
+  Det här är numera **huvudskälet till I2**. Den yta vi styr över är hur mycket
+  av språket vi lutar oss mot.
+- **"Rhino 1.7.15 = ES5" var fel, och är rättat.** Påståendet stod överst i
+  sanningstabellen, styrde invariant I2 — och hade aldrig mätts.
+
+  Ett syntaxprov på desktop 3.11.1 (6 nov) föll på **rad 7**, och en andra
+  körning snävade in det: `let`, `const`, pilfunktioner, template literals,
+  spread och `for...of` **parsas alla**. Det enda som fälls är **`const` i ett
+  for-huvud** — `for (const v of arr)` ger syntaxfel, `for (var v of arr)` går
+  igenom. Stacktracen nämner dessutom `nullishCoalescingExpr` och `expExpr`,
+  som inte finns i gammal Rhino. Motorn är alltså nästan helt ES6-kapabel.
+
+  **I2 står ändå kvar**, men skälet är inte längre motorn — det är driftrisk.
+  Gränsen ligger där ingen letar: `const` i ett for-huvud ser normalt ut och
+  ingen linter varnar. Ett parsfel dödar hela modulen och varje script i
+  biblioteket, tyst tills någon trycker på en knapp. Och nivån sätts av den
+  äldsta appen i uppsättningen — **ägarens dator är omätt**, och det är hen som
+  ska köra driftsättningen. Det är den enda mätning som återstår; det räcker
+  att fråga vad hens About-ruta visar.
+
+  I2 bär nu mätningen rad för rad, syntaxprovet att köra om, och ordningen för
+  att släppa en konstruktion i taget om det blir aktuellt. `const` i ett
+  for-huvud förblir förbjudet oavsett. Felmeddelandet i `kontrolleraES5()` sade
+  "Rhino är ES5 och kraschar på det"; det är nu omskrivet, eftersom förbudet är
+  en policy och inte en motorgräns.
+
+  Nytt i sanningstabellen: **Android-apparna uppdaterar sig själva, desktop gör
+  det inte** (Jimmy 6 nov). Telefonflottan är enhetlig och ny; den äldsta
+  enheten i en uppsättning är sannolikt en dator.
+
+  *En lärdom om mätande: första provet frågade efter `Symbol`, `Promise`,
+  `Array.includes` och `Object.assign`, fick fyra `function` och såg ut som ett
+  klart besked. Alla fyra finns i Rhino 1.7.15 också. Inbyggda objekt säger
+  ingenting om syntax — det är parsningen som avgör, och den måste provas med
+  syntax.*
+- **Appens egen changelog genomläst till 6 nov, tre fynd.** Mirror-filen ligger
+  i `Docs/Memento Database Changelog.md`, utanför repot.
+
+  **M12 besvarad: `download()` finns även på Android** (5.10.0, samma datum som
+  desktop 3.11.1). Det var frågan connectorn föll på; den faller inte här.
+
+  **Android 5.9.0 bytte JS-motor till Rhino 1.9.1.** Desktop nämner ingen
+  motoruppdatering, så samma kod körs nu på olika motorer beroende på enhet och
+  appversion. **I2 står fast** — ES5 är den enda nivå som säkert fungerar
+  överallt — och invarianten har fått en skrivning om exakt vad som måste vara
+  uppmätt innan den ens kan diskuteras.
+
+  **Privata GitHub-repon löser inte sekretessfrågan.** Android 5.9.0 kan koppla
+  ett privat repo för att *redigera* script, men Mementos egen text säger att
+  synk kräver att repot görs publikt. I3 står fast. Noterat i `GITHUB.md`.
+- **`http().download()` tillagd som kandidat till versionsmarkören.** Kom i
+  Memento desktop 3.11.0 (21 okt 2026) och kan enligt changelogen spara en
+  nedladdad fil direkt i ett **filfält på ett entry** — och filfält synkar.
+  Det skulle lösa spridningsfrågan som sänkt varje tidigare variant: datorn
+  hämtar, synken bär, telefonerna läser lokalt utan nät och utan
+  `Network`-permission. Fyra mätningar står i `ARBETSFLODE.md` punkt 6 som
+  M9–M12. **Ingenting är byggt eller provat.** Appens changelog ligger i
+  `Docs/Memento Database Changelog.md`.
 - **`Bruten i kabelskåp` räknas som en omstart.** Bekräftat 23 sep: bryts
   matningen i kabelskåpet startar modulen om när strömmen kommer tillbaka.
   Räkningen i `ARBETSFLODE.md` punkt 2 tar nu både den och `Terminal omstartad`.

@@ -338,6 +338,14 @@ punkt 7 och är **byggd 23 sep**. Se *Avvikelser* nedan.
 
 ## Öppna frågor
 
+- **Vad var det 3.11.0 tog sönder?** Ägaren körde en period på desktop 3.11.0
+  och hans befintliga script slutade fungera; de kom tillbaka med 3.11.1
+  (6 nov 2026). Symptomet är inte utrett av oss — vi vet bara att det hände
+  och att det gick över. Det spelar roll om det var något vi lutar oss mot.
+  **Fråga hur det yttrade sig** nästa gång ni ändå pratar: vägrade scripten
+  köra, kastade de fel, eller gjorde de fel sak? Det kostar en fråga och kan
+  spara en felsökning.
+
 - **Varför hämtade desktop om en gång, av sig själv?** Vid ett tillfälle visade
   `Version` den nya byggtiden på desktop utan att modullistan uppdaterats — men
   vid en senare omstart hände det inte. Mekanismen är okänd (periodisk kontroll?).
@@ -361,9 +369,12 @@ punkt 7 och är **byggd 23 sep**. Se *Avvikelser* nedan.
   värd, inte mindre: användaren kan då åtminstone *se* att koden är gammal och
   säga till.
 - **Var ska versionsmarkören bo?** M1 och M2 är besvarade och båda föll — ingen
-  schemaläggning på desktop, och `lib().notes` finns inte. Kvar står ett vanligt
-  entry som bärare; öppet är vilket bibliotek det ska ligga i. Se
-  `ARBETSFLODE.md` punkt 6. Behövs inte före driftsättning.
+  schemaläggning på desktop, och `lib().notes` finns inte. **Ny kandidat sedan
+  6 nov:** `http().download()` kom i desktop 3.11.0 och kan enligt changelogen
+  spara filen direkt i ett **filfält på ett entry**, vilket synkar. Det skulle
+  ta bort både den manuella stämplingen och nätverksberoendet på telefonerna.
+  Fyra mätningar krävs först (M9–M12). Annars står ett vanligt entry kvar som
+  bärare. Se `ARBETSFLODE.md` punkt 6. Behövs inte före driftsättning.
 - ~~Nollställer `Mätare bytt` omstartsräknaren?~~ **Besvarad 23 sep: ja.** Det
   sitter alltid en ny kommunikationsmodul på en ny mätare, så både
   `Mätare bytt` och `Terminal bytt` nollställer. Räknaren mäter hur väl den

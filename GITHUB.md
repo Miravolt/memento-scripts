@@ -204,6 +204,14 @@ ingen kod behöver ändras.
 Memento läser filerna utan inloggning, så repot måste vara publikt. Vad som
 hamnar där är värt en tanke:
 
+> **Privata repon löser det inte.** Android 5.9.0 (juli 2026) lade till
+> möjligheten att koppla ett privat GitHub-repo — men bara för att *redigera*
+> scripten därifrån. Memento säger det rakt ut i sin egen changelog: *"to sync
+> such libraries you must make the repository public, as the private access
+> key is not synced"*. Ska modulerna nå enheterna måste repot alltså vara
+> publikt även i fortsättningen. Invariant I3 står fast.
+
+
 - **Koden** — logik, fältnamn, bibliotekens namn. Publikt.
 - **Er data** — ligger aldrig i repot. Anläggningar, kunder, mätarnummer och
   koordinater bor i Memento.

@@ -27,7 +27,8 @@ härleda — de är uppmätta i appen.
 | Sanning | Följd |
 |---|---|
 | **Memento laddar JS-bibliotek i ALFABETISK ordning**, inte i den ordning man bockar i dem | `fa-*` laddas före `mv-core.js`. Ingen modul får förutsätta att en annan är laddad. Se invariant I1. |
-| **Rhino 1.7.15 = ES5** | Ingen `let`/`const`, inga arrow functions, inga template literals, inget `Object.assign`, inget `Array.includes`, inget `for...of`. Invariant I2. |
+| **En ny version av Memento kan sluta köra script som fungerade dagen innan** | Desktop **3.11.0 stoppade ägarens befintliga script**; de började fungera igen först med 3.11.1, som kom strax efter (ägaren via Jimmy, 6 nov 2026 — rapporterat, symptomet inte utrett av oss). Både Jimmy och ägaren installerar alltid senaste version, och Android uppdaterar sig självt. **Plattformen under oss är alltså rörlig och kan gå sönder utan att vi rört något.** Två följder: slutar allt fungera samtidigt i alla bibliotek är appversionen första misstänkta, inte vår kod — och ju mer välbeprövad syntax vi håller oss till, desto mindre yta har vi mot sådana regressioner. Det är numera huvudskälet till I2. |
+| **Motorn klarar nästan hela ES6 — gränsen går på ett absurt smalt ställe** | Uppmätt på desktop 3.11.1 den 6 nov 2026: `let`, `const`, pilfunktioner, template literals, spread och `for...of` **parsas alla**. Det enda som fälls är **`const` i ett for-huvud** — `for (const v of arr)` ger `syntax error` i `Parser.forLoopInit`, medan `for (var v of arr)` går igenom och `const` som vanlig sats också gör det. Raden hette tidigare "Rhino 1.7.15 = ES5"; det var fel och hade aldrig mätts. Vi använder ändå inget av det — se I2, där skälet numera är driftrisk och inte motorgräns. |
 | **Bibliotek ibockade på ett *Shared*-script blir tillgängliga för alla script i biblioteket** | Därför finns `Moduler` som Shared script — ett ställe per bibliotek. Verifierat på både Android och desktop. |
 | **Ingen enhet hämtar om moduler av sig själv — varken desktop eller Android** | En push slår igenom först när man klickar uppdateringsknappen i `Moduler`-scriptet, per bibliotek och per enhet. Skriv aldrig att en push "når enheterna" av sig själv; det gör den inte. *Detta har två gånger sett ut som en Android/desktop-skillnad — det är det inte.* |
 | **Bara bibliotekets ägare kommer åt script-sidan — och därmed uppdateringsknappen** | Jimmys observation 11 sep. En vanlig användare har alltså inget känt sätt att tvinga fram nya moduler på sin egen enhet. Kombinerat med raden ovan betyder det att en fälttekniker varken uppdaterar automatiskt *eller* manuellt. Skriv aldrig en text som säger åt användaren att "uppdatera modullistan" — se `MV.config.byggVarningAtgard`. Vad som *händer* när ägaren uppdaterar på sin enhet, och om det når andras, är omätt. |
@@ -48,6 +49,9 @@ härleda — de är uppmätta i appen.
 | **Två Shared-script kan heta exakt samma sak** | Appen hindrar det inte. Två `Moduler` i samma bibliotek laddar varje modul två gånger; `Version` rapporterade 16 i stället för 8. Uppmätt i Import Fältarbete 15 sep. Byggstämpeln är den enda satsen på toppnivå som inte är idempotent, så det är räkningen som avslöjar det — `MV.about()` pekar numera ut dubbletterna. |
 | **Java-åtkomsten är blockerad** | `lib().getClass()` kastar. Ingen reflektion, inga `Packages.*`, inget `java.io`. Följden är att **det dokumenterade API:t är hela API:t** — det finns inget sätt att ta reda på vad som egentligen finns. Står en egenskap inte i dokumentationen och svarar `undefined` är frågan avgjord; leta inte vidare. |
 | **En dialogs knappkod körs asynkront, och kan köras som en NY instans av scriptet** | Jimmys erfarenhet av Mementos dialoger, 23 sep. Två följder: `show()` kan returnera direkt, så allt som ska hända måste ligga i knappens callback och inget efter anropet — och callbacken kan sakna den anropande körningens variabler, så den får inte bära med sig entry-handtag, listor eller opts. Skriv den som ett anrop som hämtar sitt eget underlag på nytt. Se invariant I12 och `MV.ui.fraga()`. Om en dialog kan visas ovanpå en annan är **omätt**; kvittera med `message()` inifrån en callback. |
+| **JS-motorn är INTE densamma på alla enheter** | Android 5.9.0 (9 juli 2026) uppdaterade till **Rhino 1.9.1**; desktop nämner ingen motoruppdatering men kör ändå något betydligt nyare än 1.7.15 — stacktracen visar `nullishCoalescingExpr` och `expExpr`, metoder som inte finns i gamla Rhino. Vad varje enhet faktiskt kör är alltså okänt, och olika. Det är hela skälet till att I2 inte släpps: nivån bestäms av den äldsta appen i uppsättningen, inte av din. |
+| **Android-apparna uppdaterar sig själva, desktop gör det inte** | Telefonerna går till senaste officiella versionen automatiskt så snart den lämnat release candidate (Jimmy 6 nov 2026). Det betyder att **telefonflottan är enhetlig och ny**, medan desktop uppdateras när var och en väljer det — och ägarens dator är en annan maskin än Jimmys. Den som är äldst i en uppsättning är alltså sannolikt en dator, inte en telefon. |
+| **Dialoger renderar inte tecken utanför Latin-1** | `→` (U+2192) kom ut som `?` i en `dialog()` på desktop 3.11.1, 6 nov 2026. Svenska bokstäver — `åäöÅÄÖ` — renderas korrekt i samma ruta, så det är inte teckenkodningen utan teckensnittet eller Mementos egen hantering av symboler. **Håll dig till ASCII plus svenska bokstäver i allt som går till `dialog()`, `ui().text()` eller `message()`.** Skriv `->`, inte `→`. I *Rich text*-fält är läget ett annat: `✔` och `·` har använts i loggen och historiken hela projektet utan att någon rapporterat fel — men det är frånvaro av klagomål, inte en mätning. |
 | **`message()` försvinner efter några sekunder** | Duger för en kvittens, inte för något man ska läsa. Allt med mer än en rad ska visas med `MV.ui.info()` / `dialog()`, som står kvar tills man trycker OK. Gäller i synnerhet mätscript. |
 | **Entries direkt från `create()`, `find()` eller ett länkfält är inte fullt skrivbara** | Hämta om med `findById()`. Det är hela poängen med `mv-db.js`. Mockens flagga `COLD_CREATE`. |
 
@@ -72,7 +76,98 @@ Anropa aldrig en annan moduls funktion på toppnivå. Definiera bara; anropen
 sker vid körning, när allt är inläst. Byggstämpeln skriver därför direkt i
 arrayen i stället för att anropa en funktion.
 
-**I2 — ES5. Ingen modernare syntax, någonsin.** `tools/kontroll.js` stoppar det.
+**I2 — håll dig till ES5-nivån, även där motorn klarar mer.**
+`tools/kontroll.js` stoppar det. Regeln ifrågasattes 6 nov 2026 och överlevde,
+men **motiveringen har ändrats** — läs den innan du tar upp frågan igen.
+
+**Vad som faktiskt är uppmätt, desktop 3.11.1, 6 nov 2026.** Ett syntaxprov
+kördes som eget script. Felet kom på **rad 7**:
+
+```
+org.mozilla.javascript.EvaluatorException: syntax error (Action 4.js#7)
+	... at org.mozilla.javascript.Parser.forLoopInit(Parser.java:1778)
+```
+
+| Rad | Konstruktion | Utfall |
+|---|---|---|
+| 1 | `let a = 1;` | **parsas** |
+| 2 | `const b = 2;` | **parsas** |
+| 4 | `var pil = (x) => x + 1;` | **parsas** |
+| 5 | `` var mall = `a är ${a}`; `` | **parsas** |
+| 6 | `var arr = [...[1, 2]];` | **parsas** |
+| 7 | `for (const v of arr) { ... }` | **SYNTAXFEL** |
+| 7 | `for (var v of arr) { ... }` | **parsas** |
+
+Parsern hann alltså till rad 7. Motorn är **inte** ren ES5 — den gamla hade
+dött på rad 1. Stacktracen nämner dessutom `nullishCoalescingExpr` och
+`expExpr`, metoder som inte finns i gammal Rhino. Påståendet "Rhino 1.7.15 =
+ES5" som stod i sanningstabellen var alltså fel, och hade aldrig mätts.
+
+**Gränsen är avgjord, och den är löjligt smal.** Samma rad med `var` i stället
+för `const` går igenom. `for...of` fungerar alltså — det är **`const` i
+for-huvudet** som inte gör det, trots att `const` som vanlig sats fungerar på
+rad 2. Stacken pekade rätt hela tiden: `forLoopInit`.
+
+Av allt vi förbjuder är det alltså **en enda konstruktion** som bevisligen
+fälls på desktop 3.11.1, och det är den som ingen skulle gissa på.
+
+**Och ändå står regeln kvar. Skälen är inte tekniska:**
+
+- **Gränsen ligger där ingen letar.** Allt vi ville ha fungerar utom `const` i
+  ett for-huvud — en konstruktion som ser fullkomligt normal ut, som ingen
+  linter varnar för, och som man skriver utan att tänka. Det är inte en gräns
+  man håller sig innanför av vana; det är en mina.
+- **Ett parsfel dödar allt.** Inte bara raden — hela modulen, och därmed varje
+  script i biblioteket som bygger på den. Tyst tills någon trycker på en knapp.
+- **Plattformen kan gå sönder av sig själv.** Desktop 3.11.0 stoppade ägarens
+  script tills 3.11.1 kom. Alla enheter följer senaste version, så en dålig
+  utgåva når hela flottan. Konservativ syntax är den enda yta vi styr över.
+- **Vinsten är kosmetisk.** ES5 har inte kostat oss något på hela projektet.
+
+**Den sista okända enheten är numera mätt, och svaret vände argumentet.**
+Ägaren kör också 3.11.1 och uppdaterar alltid till senaste version. Hela
+flottan ligger alltså på en motor som klarar nästan hela ES6, och den tekniska
+invändningen mot att släppa I2 är därmed borta.
+
+Men samma svar bar med sig något viktigare: **ägaren körde en period på 3.11.0,
+och då slutade hans befintliga script fungera.** De kom tillbaka först med
+3.11.1. En punktutgåva av appen tog alltså sönder fungerande kod, utan att
+någon rört koden.
+
+Det gör "alla kör senaste version" till en risk i stället för en garanti.
+Plattformen under oss rör sig, den kan gå sönder, och vi får veta det efteråt.
+Den enda yta vi styr över är hur mycket av språket vi lutar oss mot — och ju
+mer välbeprövad syntax, desto mindre att träffa. **Det är numera huvudskälet
+till I2, och det är starkare än det tekniska argument som just försvann.**
+
+Skulle regeln ändå släppas någon gång är ordningen **en konstruktion i taget**,
+med `const` och `let` först, och raden tas bort ur `forbjudet` i
+`tools/kontroll.js` i samma veva. `const` i ett for-huvud förblir förbjudet
+oavsett — det är mätt och fungerar inte.
+
+**Syntaxprovet, för den som vill köra om det.** Eget, tomt script i en kopia:
+
+```js
+let a = 1;
+const b = 2;
+var f = function (x) { return x + b; };
+var pil = (x) => x + 1;
+var mall = `a är ${a}`;
+var arr = [...[1, 2]];
+for (var v of arr) { a += v; }
+message("ES6-syntax OK: " + mall + " " + f(a) + " " + pil(a) + " " + arr.length);
+```
+
+Den versionen går igenom på desktop 3.11.1. Byt rad 7 till
+`for (const v of arr)` för att se den enda konstruktion som faktiskt fälls.
+
+Radnumret i felmeddelandet säger var gränsen går. Kommer meddelandet fram
+klarar motorn alltihop.
+
+*Till den som bara vill veta vilka inbyggda objekt som finns: `typeof Symbol`,
+`typeof Promise`, `typeof [].includes` och `typeof Object.assign` svarade alla
+`function` på desktop 3.11.1. Det säger dock ingenting om syntax — Rhino 1.7.15
+har dem också. Jag mätte det först och drog fel slutsats.*
 
 **I3 — Repot är publikt. Inga kundnamn, personnamn eller adresser.**
 Kundnamnet härleds vid körning ur biblioteksnamnet (`MV.db.affix()`), så det
