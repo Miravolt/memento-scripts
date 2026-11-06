@@ -283,11 +283,25 @@ MV.Import.foreslagnaAndringar = function (rad, anl) {
 
         if (MV.Import.UPPDATERA_FALT.indexOf(till) === -1) continue;
 
-        var nytt = MV.fmt.value(rad, fran);
+        /*
+         * Jämför TRIMMAT, skriv trimmat.
+         *
+         * Datan i drift bär blanktecken i ändarna — provkörningen 6 nov visade
+         * `Kund` som "Jonsson, Åsa " med ett efterföljande mellanslag. Utan
+         * trim hade "Anna Andersson " i anläggningen och "Anna Andersson" i
+         * filen räknats som en ändring, och dialogen hade bett om godkännande
+         * för raden "Anna Andersson  -> Anna Andersson". Det ser ut som ett
+         * fel, och den som godkänner det godkänner en skrivning utan innebörd.
+         *
+         * Att också skriva trimmat är en liten förbättring på köpet: inga nya
+         * blanktecken i ändarna förs in. Befintliga lämnas som de är — vi
+         * städar inte data vi inte blivit ombedda att städa.
+         */
+        var nytt = MV.fmt.value(rad, fran).trim();
         if (nytt === "") continue;
 
         var gammalt = MV.fmt.value(anl, till);
-        if (gammalt === nytt) continue;
+        if (gammalt.trim() === nytt) continue;
 
         andringar.push({ falt: till, fran: gammalt, till: nytt });
     }
@@ -651,4 +665,4 @@ MV.Import._forklara = function (reason) {
 
 // byggstämpel — skrivs av tools/stamp.js
 MV.build = MV.build || { moduler: [] };
-MV.build.moduler.push({ namn: "fa-import", byggd: "2026-11-06 15:16", hash: "cac2d68" });
+MV.build.moduler.push({ namn: "fa-import", byggd: "2026-11-06 15:25", hash: "f4d82ff" });

@@ -1275,6 +1275,49 @@ suite("fa-import — A5: befintliga anläggningar uppdateras");
     eq(res2.totalt, 0, "och skapar inget nytt");
 })();
 
+/*
+ * REGRESSION: blanktecken i ändarna är ingen ändring.
+ *
+ * Uppmätt i drift 6 nov: `Kund` låg som "Jonsson, Åsa " med ett efterföljande
+ * mellanslag. Utan trim hade en identisk uppgift i importfilen räknats som en
+ * ändring, och dialogen bett om godkännande för raden
+ * "Anna Andersson  -> Anna Andersson". Det ser ut som ett fel, och den som
+ * godkänner det godkänner en skrivning utan innebörd.
+ */
+(function () {
+    var s = scenario();
+    var impLib = mock.defineLib(s.n("Import Fältarbete"), {
+        fields: ["Namn", "Tjänstenr", "Status", "Status Koordinater",
+                 "Koordinater"],
+        linkFields: ["Befintlig"], mapFields: ["Koordinater"], nameField: "Namn"
+    });
+
+    var anl = s.anlLib.seed({
+        "Anl. adress": "Blankgatan 1", "Tjänst": "900900",
+        "Kund": "Anna Andersson ", "Logg": ""
+    });
+    var rad = impLib.seed({
+        Namn: "  Anna Andersson", "Tjänstenr": "900900",
+        Status: "Hittat befintlig", "Status Koordinater": "Koordinater inmatade",
+        "Koordinater": "56.1,14.1"
+    });
+    rad.link("Befintlig", anl);
+
+    eq(MV.Import.foreslagnaAndringar(rad, anl).length, 0,
+       "REGRESSION: enbart blanktecken räknas inte som en ändring");
+
+    mock.use(impLib);
+    eq(MV.Import.samlaUppdateringar(impLib.entries()).antalAndringar, 0,
+       "och ingen dialog ställs för den");
+
+    // ...men ett verkligt nytt värde hittas, och skrivs trimmat.
+    rad.set("Namn", "  Bengt Bengtsson  ");
+    var andringar = MV.Import.foreslagnaAndringar(rad, anl);
+    eq(andringar.length, 1, "en riktig ändring hittas fortfarande");
+    eq(andringar[0].till, "Bengt Bengtsson",
+       "AVSIKT: det nya värdet skrivs utan blanktecken i ändarna");
+})();
+
 /* Samma sak utan dialogvägen, för siffrornas skull. */
 (function () {
     var s = scenario();

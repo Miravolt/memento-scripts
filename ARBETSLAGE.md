@@ -44,7 +44,16 @@ I pushen ingår bilder i logg och historik samt utbrytningen av körschemat.
 
 399 tester gröna, alla fyra kontroller rena i det läge som ligger på disken.
 
-**1. Prova A5-dialogen i appen. Detta är spärren före push.**
+**1. ~~Prova A5-dialogen i appen.~~ KLART 6 nov — grönt.**
+Två anläggningar, åtta ändringar, Avbryt skrev ingenting. I12 höll i appen.
+Två rättelser gjordes efteråt, båda hittade i skärmbilderna och båda låsta med
+`REGRESSION`-test: pilen `→` renderades som `?` i dialogen, och blanktecken i
+ändarna räknades som en ändring. **De två ligger opushade** — pusha dem, och
+hämta om modulerna i kopian en sista gång för att se pilen som `->`.
+
+*Det ursprungliga provet står kvar nedan för den som vill köra om det.*
+
+**~~Prova A5-dialogen i appen.~~ Detta var spärren före push.**
 Det är enda stället i kodbasen där en dialog fattar ett beslut, och Mementos
 dialoger körs asynkront med knappkoden möjligen i en ny instans (I12). Koden är
 skriven för det, men det är inte provat i appen. Gör det i en kopia:

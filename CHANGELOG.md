@@ -268,6 +268,21 @@ Formatet följer [Keep a Changelog](https://keepachangelog.com/sv/1.1.0/) löst:
   Samtidigt rättat: arkivbiblioteket fanns bara i `ARBETSLAGE.md` och saknas
   inte längre i `ARBETSFLODE.md` (punkt 8, template-paketet blev 9), och I5
   pekade fortfarande på `UPPSATTNING.md` i stället för `KORSCHEMA.md`.
+- **A5 provkörd i appen 6 nov — grönt, med två rättelser.** Två anläggningar,
+  åtta ändringar, siffrorna i dialogen stämde med vad som skrevs, och **Avbryt
+  skrev ingenting**. Det var provets hela syfte: I12 höll i appen, inte bara i
+  mocken.
+
+  Båda rättelserna hittades i skärmbilderna, inte av testerna:
+
+  **Blanktecken i ändarna räknades som en ändring.** Loggen visade
+  `Kund ändrades från 'Jonsson, Åsa ' till ...` — driftdatan bär efterföljande
+  mellanslag. Utan trim hade "Anna Andersson " i anläggningen och
+  "Anna Andersson" i filen gett raden `Anna Andersson  -> Anna Andersson`, och
+  den som godkänner den godkänner en skrivning utan innebörd. Jämförelsen
+  trimmar nu i båda ändar, och det nya värdet skrivs trimmat. Befintliga
+  blanktecken lämnas — vi städar inte data vi inte blivit ombedda att städa.
+  Låst med `REGRESSION`-test.
 - **A5-dialogen skrev `?` i stället för pil.** Uppmätt i appen 6 nov: Mementos
   dialoger renderar inte tecken utanför Latin-1, och `→` (U+2192) kom ut som
   `?` — mitt i raden som bär hela budskapet, `Kund: Anton ? Annan Kund`. Det

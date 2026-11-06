@@ -97,14 +97,14 @@ Allt nedan görs i **kopieuppsättningen**, på desktop.
 
 #### Förbered
 
-* [ ] Kör `push.cmd`
+* [x] Kör `push.cmd`
 
-* [ ] Öppna **Import Fältarbete**-kopian → *Automation* → `Moduler` → tryck
+* [x] Öppna **Import Fältarbete**-kopian → *Automation* → `Moduler` → tryck
   **uppdateringsknappen** vid bibliotekslistan (runda pilen ovanför listan)
 
-* [ ] Kör `Version` → byggtiden ska vara den nya, och **8 moduler**
+* [x] Kör `Version` → byggtiden ska vara den nya, och **8 moduler**
 
-* [ ] Öppna **Anläggningar**-kopian och välj ut en anläggning att prova mot.
+* [x] Öppna **Anläggningar**-kopian och välj ut en anläggning att prova mot.
   Den ska ha ett `Tjänst`-nummer, en koordinat, och **inget aktivt
   fältarbete**. Anteckna dess `Tjänst` och dess `Kund`.
 
@@ -113,7 +113,7 @@ Allt nedan görs i **kopieuppsättningen**, på desktop.
   fältarbetet — så provet funkar, men rapporten säger "1 hoppades över" och
   det ser ut som ett fel fast det inte är det.*
 
-* [ ] Skapa **en** rad i Import Fältarbete-kopian:
+* [x] Skapa **en** rad i Import Fältarbete-kopian:
 
   * `Tjänstenr` = anläggningens `Tjänst`
   * `Namn` = något annat än anläggningens `Kund`, t.ex. `Testkund A5`
@@ -121,43 +121,55 @@ Allt nedan görs i **kopieuppsättningen**, på desktop.
   * `Status` = `-`
   * `Koordinater` = vad som helst, den skrivs över av anläggningens
 
-* [ ] Kör `Hitta befintliga` → raden får status **Hittat befintlig** och
+* [x] Kör `Hitta befintliga` → raden får status **Hittat befintlig** och
   `Befintlig` pekar på anläggningen
 
 #### Kör provet
 
-* [ ] Kör `Lägg upp` → **dialogen kommer först**, före allt annat, och visar
+* [x] Kör `Lägg upp` → **dialogen kommer först**, före allt annat, och visar
   anläggningens namn med en rad per fält: `Kund: <gammalt> → Testkund A5` och
   `Tfn. 2: tomt → <numret>`
 
-* [ ] **Stäng rutan utan att välja** (klicka utanför, eller Esc) → öppna
+* [x] **Stäng rutan utan att välja** (klicka utanför, eller Esc) → öppna
   anläggningen: den ska vara **orörd**, och importraden ska fortfarande stå på
   `Hittat befintlig`
 
   *Det här är själva poängen med provet. Händer något här ligger skrivningen
   på fel sida om knappen.*
 
-* [ ] Kör `Lägg upp` igen → tryck **Avbryt** → samma sak, ingenting skrivet
+* [x] Kör `Lägg upp` igen → tryck **Avbryt** → samma sak, ingenting skrivet
 
-* [ ] Kör `Lägg upp` igen → tryck **Uppdatera och lägg upp**
+* [x] Kör `Lägg upp` igen → tryck **Uppdatera och lägg upp**
 
-* [ ] **Kom kvittensen fram?** Den är ett kort meddelande, inte en ruta —
+* [x] **Kom kvittensen fram?** Den är ett kort meddelande, inte en ruta —
   det är omätt om en dialog kan visas ovanpå en annan. Säg till om den inte
   syns alls.
 
 #### Kontrollera efteråt
 
-* [ ] Anläggningen har `Kund` = `Testkund A5` och `Tfn. 2` ifyllt
+* [x] Anläggningen har `Kund` = `Testkund A5` och `Tfn. 2` ifyllt
 
-* [ ] Anläggningens `Logg` har raderna, med `(importen)` som källa
+* [x] Anläggningens `Logg` har raderna, med `(importen)` som källa
 
-* [ ] `Anl. adress` och `Tjänst` är **orörda**
+* [x] `Anl. adress` och `Tjänst` är **orörda**
 
-* [ ] Fält som var tomma i importraden raderade ingenting
+* [x] Fält som var tomma i importraden raderade ingenting
 
-* [ ] Det fältarbete som skapades bär **de nya** värdena, inte de gamla
+* [x] Det fältarbete som skapades bär **de nya** värdena, inte de gamla
 
-* [ ] Kör `Lägg upp` igen → ingen dialog, inget att uppdatera
+* [x] Kör `Lägg upp` igen → ingen dialog, inget att uppdatera
+
+**Genomfört 6 nov 2026, allt grönt.** Två anläggningar, åtta ändringar, och
+siffrorna i dialogen stämde med vad som skrevs. Avbryt skrev ingenting — det
+var provets hela syfte, och I12 höll i appen och inte bara i mocken.
+
+Två saker rättades efteråt, båda hittade i skärmbilderna:
+
+* Pilen `→` renderades som `?` i dialogen. Mementos dialoger klarar inte
+  tecken utanför Latin-1. Nu `->`.
+* `Kund` i drift bär blanktecken i ändarna — `"Jonsson, Åsa "`. Jämförelsen
+  trimmar numera, annars hade en oförändrad uppgift i importfilen räknats som
+  en ändring.
 
 ### Tjänstenr saknas (byggt 23 sep)
 
